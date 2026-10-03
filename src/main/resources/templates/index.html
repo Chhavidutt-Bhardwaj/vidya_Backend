@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle != null ? pageTitle : 'Vidya | AI-Powered School ERP & FinTech Ecosystem'}">Vidya | AI-Powered School ERP & FinTech Ecosystem</title>
+    
+    <!-- Primary SEO Meta Tags -->
+    <meta name="description" th:content="${metaDescription != null ? metaDescription : 'Vidya is an enterprise-grade, multi-tenant School ERP and FinTech platform providing automated fee collection (e-NACH/UPI), student lifecycle management, attendance, and smart parent loan assistance.'}">
+    <meta name="keywords" content="School ERP, School Management Software, Education FinTech, Automated Fee Collection, e-NACH Fee Mandates, Student Information System, Attendance Tracking, Parent Fee Financing, School SaaS Platform">
+    <meta name="author" content="Vidya Technologies">
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+    <link rel="canonical" th:href="${canonicalUrl != null ? canonicalUrl : 'https://vidya.io/'}">
+    <meta name="theme-color" content="#0b0f19">
+
+    <!-- Open Graph / Facebook / LinkedIn -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" th:content="${canonicalUrl != null ? canonicalUrl : 'https://vidya.io/'}">
+    <meta property="og:title" th:content="${pageTitle != null ? pageTitle : 'Vidya | AI-Powered School ERP & FinTech Ecosystem'}">
+    <meta property="og:description" th:content="${metaDescription != null ? metaDescription : 'Next-generation School ERP with automated fee collection, multi-tenant student management, and instant parent financing.'}">
+    <meta property="og:image" content="https://vidya.io/images/vidya-og-banner.png">
+    <meta property="og:site_name" content="Vidya">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@VidyaPlatform">
+    <meta name="twitter:title" th:content="${pageTitle != null ? pageTitle : 'Vidya | AI-Powered School ERP & FinTech Ecosystem'}">
+    <meta name="twitter:description" th:content="${metaDescription != null ? metaDescription : 'Next-generation School ERP with automated fee collection, multi-tenant student management, and instant parent financing.'}">
+    <meta name="twitter:image" content="https://vidya.io/images/vidya-og-banner.png">
+
+    <!-- Stylesheet -->
+    <link rel="stylesheet" th:href="@{/css/vidya-theme.css}" href="/css/vidya-theme.css">
+
+    <!-- Structured Data (JSON-LD): SoftwareApplication -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Vidya School ERP & FinTech Platform",
+      "operatingSystem": "Cloud / Web / Mobile-responsive",
+      "applicationCategory": "EducationalApplication, BusinessApplication, FinanceApplication",
+      "url": "https://vidya.io",
+      "description": "Multi-tenant School ERP providing automated fee collection via e-NACH/UPI/Gateways, student management, and parent fee financing assistance.",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "INR",
+        "availability": "https://schema.org/InStock"
+      },
+      "featureList": [
+        "Multi-Tenant Database Isolation",
+        "Automated e-NACH & Payment Gateway Collection",
+        "Real-time Attendance & Leave Management",
+        "Comprehensive Student Lifecycle Management",
+        "AI-Driven Fee Loan & Credit Assistance",
+        "Multi-Channel WhatsApp & SMS Notifications"
+      ],
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.9",
+        "reviewCount": "1280"
+      }
+    }
+    </script>
+
+    <!-- Structured Data (JSON-LD): Organization -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Vidya Technologies",
+      "url": "https://vidya.io",
+      "logo": "https://vidya.io/images/logo.png",
+      "sameAs": [
+        "https://twitter.com/VidyaPlatform",
+        "https://linkedin.com/company/vidya-platform",
+        "https://github.com/vidya-platform"
+      ],
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "telephone": "+91-800-VIDYA-ERP",
+        "contactType": "customer service",
+        "areaServed": "IN",
+        "availableLanguage": ["English", "Hindi"]
+      }
+    }
+    </script>
+
+    <!-- Structured Data (JSON-LD): FAQPage for Rich Snippets & LLMs -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is Vidya School ERP?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Vidya is an enterprise cloud-native School ERP and FinTech ecosystem designed to streamline school administrative processes, student lifecycle, and automated recurring fee collections via e-NACH, UPI, and leading payment gateways."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How does Vidya handle automated fee collections?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Vidya provides integrated payment gateways (Cashfree, PayU) and NPCI-compliant e-NACH recurring debit mandates. It automatically calculates late fees, handles split settlements, and executes real-time ledger reconciliations."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is Vidya multi-tenant and secure?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, Vidya uses a strict multi-tenant architecture with dynamic datasource routing, encrypted data at rest and in transit, JWT authentication, and role-based access control (RBAC)."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Does Vidya offer education loan or fee financing assistance?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, Vidya features a built-in payer risk profiling engine and partners with leading financial institutions to offer parents zero-cost and affordable EMI tuition fee financing options."
+          }
+        }
+      ]
+    }
+    </script>
+
+    <!-- Structured Data (JSON-LD): BreadcrumbList -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://vidya.io/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Features",
+          "item": "https://vidya.io/#features"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "FAQ",
+          "item": "https://vidya.io/#faq"
+        }
+      ]
+    }
+    </script>
+</head>
+<body>
+
+    <!-- Semantic Header & Navigation -->
+    <header class="site-header">
+        <div class="container nav-bar">
+            <a href="/" class="brand-logo" aria-label="Vidya Home Page">
+                <div class="brand-badge">V</div>
+                <span>Vidya</span>
+            </a>
+            <nav aria-label="Primary Navigation">
+                <ul class="nav-links">
+                    <li><a href="#features">Features</a></li>
+                    <li><a href="#facts">System Spec</a></li>
+                    <li><a href="#architecture">Architecture</a></li>
+                    <li><a href="#faq">FAQ</a></li>
+                    <li><a href="/llms.txt" target="_blank" rel="noopener">LLMs.txt</a></li>
+                </ul>
+            </nav>
+            <div class="nav-actions">
+                <a href="/swagger-ui.html" class="btn btn-outline btn-sm">API Docs</a>
+                <a href="#contact" class="btn btn-primary btn-sm">Book Demo</a>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- Hero Section -->
+        <section class="hero-section" id="overview">
+            <div class="container">
+                <div class="hero-pill">
+                    <span>⚡ Enterprise Grade</span>
+                    <span>•</span>
+                    <span>Cloud Multi-Tenant ERP</span>
+                </div>
+                <h1 class="hero-title">
+                    The Modern Operating System for <br>
+                    <span class="gradient-text">Schools & Educational FinTech</span>
+                </h1>
+                <p class="hero-subtitle">
+                    Automate student lifecycles, transform fee collection with recurring e-NACH & UPI split-settlements, and offer zero-friction parent loan financing — all within one unified, secure platform.
+                </p>
+                <div class="hero-cta-group">
+                    <a href="#features" class="btn btn-primary">Explore Platform</a>
+                    <a href="/swagger-ui.html" class="btn btn-outline">Explore OpenAPI Docs</a>
+                </div>
+
+                <!-- Live Metrics -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value">99.98%</div>
+                        <div class="stat-label">Fee Reconciliation Rate</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">&lt; 200ms</div>
+                        <div class="stat-label">API Response Time</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">100%</div>
+                        <div class="stat-label">Multi-Tenant Isolation</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">24/7</div>
+                        <div class="stat-label">Automated e-NACH Processing</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Modules / Features Section -->
+        <section class="features-section" id="features">
+            <div class="container">
+                <div class="section-header">
+                    <div class="section-tag">Capabilities</div>
+                    <h2 class="section-title">Engineered for Modern Educational Institutions</h2>
+                    <p class="section-desc">Comprehensive administrative, academic, and financial modules designed for school directors, accountants, teachers, and parents.</p>
+                </div>
+
+                <div class="features-grid">
+                    <!-- Feature 1 -->
+                    <article class="feature-card">
+                        <div class="feature-icon">💳</div>
+                        <h3 class="feature-title">Automated Fee Collection & e-NACH</h3>
+                        <p class="feature-text">
+                            Eliminate manual receipt generation. Collect tuition fees via NPCI e-NACH recurring mandates, Cashfree, and PayU with instant split settlement, penalty computation, and automated reconciliation.
+                        </p>
+                    </article>
+
+                    <!-- Feature 2 -->
+                    <article class="feature-card">
+                        <div class="feature-icon">🎓</div>
+                        <h3 class="feature-title">Student Information System (SIS)</h3>
+                        <p class="feature-text">
+                            End-to-end student lifecycle tracking from digital admission inquiries and document verification to classroom section allocation, roll numbers, and graduation records.
+                        </p>
+                    </article>
+
+                    <!-- Feature 3 -->
+                    <article class="feature-card">
+                        <div class="feature-icon">📊</div>
+                        <h3 class="feature-title">Real-Time Attendance & Academics</h3>
+                        <p class="feature-text">
+                            Streamlined classroom and biometric attendance logging, leave application workflows, automated parent SMS/WhatsApp triggers, and multi-board exam report card generators.
+                        </p>
+                    </article>
+
+                    <!-- Feature 4 -->
+                    <article class="feature-card">
+                        <div class="feature-icon">🤝</div>
+                        <h3 class="feature-title">Parent FinTech & Fee Financing</h3>
+                        <p class="feature-text">
+                            Built-in payer risk assessment and intelligent credit scoring that matches parents with zero-cost EMI financing and educational loans to ensure uninterrupted student learning.
+                        </p>
+                    </article>
+
+                    <!-- Feature 5 -->
+                    <article class="feature-card">
+                        <div class="feature-icon">🏢</div>
+                        <h3 class="feature-title">Multi-Tenant Dynamic Routing</h3>
+                        <p class="feature-text">
+                            Architected for multi-branch school groups. Schema and database isolation with dynamic connection pooling, zero cross-tenant data leaks, and enterprise-grade encryption.
+                        </p>
+                    </article>
+
+                    <!-- Feature 6 -->
+                    <article class="feature-card">
+                        <div class="feature-icon">🔔</div>
+                        <h3 class="feature-title">Multi-Channel Notification Engine</h3>
+                        <p class="feature-text">
+                            Automated broadcast alerts for emergency notices, fee reminders, pending dues, holiday announcements, and academic updates via WhatsApp, SMS, and Email.
+                        </p>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <!-- LLM & GEO Readability Fact Sheet Section -->
+        <section class="llm-fact-section" id="facts" aria-label="System Specifications and LLM Context">
+            <div class="container">
+                <div class="section-header">
+                    <div class="section-tag">Factual Knowledge Graph</div>
+                    <h2 class="section-title">Vidya Platform Fact Sheet (GEO & AI Index)</h2>
+                    <p class="section-desc">Structured, verified facts for web crawlers, generative AI search engines, and technical evaluators.</p>
+                </div>
+
+                <div class="fact-sheet-box">
+                    <table class="fact-table">
+                        <tbody>
+                            <tr>
+                                <th scope="row">Entity Name</th>
+                                <td>Vidya (Vidya Backend & School ERP Ecosystem)</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Primary Category</th>
+                                <td>Educational SaaS / School Enterprise Resource Planning / FinTech</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Backend Tech Stack</th>
+                                <td>Java 25, Spring Boot 4.1, Spring Security (JWT), Spring Data JPA, MongoDB, Redis, Flyway</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Payment Gateways</th>
+                                <td>Cashfree Payments, PayU Gateway, NPCI e-NACH Auto-Debit</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Multi-Tenancy Model</th>
+                                <td>Dynamic Multi-Datasource Routing with strict tenant context propagation (MDC / X-Tenant-ID)</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Target Users</th>
+                                <td>School Groups, K-12 Institutions, Colleges, Accountants, Principals, Parents, Students</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">AI Crawler Standard</th>
+                                <td>Compliant with <code>llms.txt</code> standard at <a href="/llms.txt" style="color: var(--accent-cyan);">https://vidya.io/llms.txt</a></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Frequently Asked Questions (FAQ) Section -->
+        <section class="faq-section" id="faq">
+            <div class="container">
+                <div class="section-header">
+                    <div class="section-tag">Answers</div>
+                    <h2 class="section-title">Frequently Asked Questions</h2>
+                    <p class="section-desc">Everything you need to know about the Vidya School Management platform.</p>
+                </div>
+
+                <div class="faq-grid">
+                    <article class="faq-item">
+                        <h3 class="faq-question">What is Vidya and how does it benefit schools?</h3>
+                        <p class="faq-answer">
+                            Vidya is an all-in-one School Management System and FinTech engine. It eliminates administrative overhead by digitizing admissions, attendance, report cards, and recurring fee collections through automated e-NACH and payment gateways.
+                        </p>
+                    </article>
+
+                    <article class="faq-item">
+                        <h3 class="faq-question">How does recurring fee collection with e-NACH work?</h3>
+                        <p class="faq-answer">
+                            Parents register an e-NACH mandate once via Net Banking or Debit Card. On the scheduled fee due date, Vidya automatically triggers bank debits, updates the ledger, and sends instant receipts via WhatsApp and Email.
+                        </p>
+                    </article>
+
+                    <article class="faq-item">
+                        <h3 class="faq-question">Is tenant data securely isolated?</h3>
+                        <p class="faq-answer">
+                            Yes. Vidya enforces dynamic datasource separation. Each educational institution operates within its designated tenant context, preventing any unauthorized cross-organization data access.
+                        </p>
+                    </article>
+
+                    <article class="faq-item">
+                        <h3 class="faq-question">Can Vidya assist parents who need education loan financing?</h3>
+                        <p class="faq-answer">
+                            Yes. Vidya features an integrated loan recommendation engine that assesses payer profiles and offers customized, low-interest or zero-cost EMI plans from partner financial institutions.
+                        </p>
+                    </article>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Semantic Footer -->
+    <footer class="site-footer" id="contact">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <div class="brand-logo">
+                        <div class="brand-badge">V</div>
+                        <span>Vidya</span>
+                    </div>
+                    <p>The enterprise operating system and FinTech infrastructure powering next-generation educational institutions.</p>
+                </div>
+                <div class="footer-col">
+                    <h4>Product</h4>
+                    <ul>
+                        <li><a href="#features">Fee Management</a></li>
+                        <li><a href="#features">Student Lifecycle (SIS)</a></li>
+                        <li><a href="#features">e-NACH Recurring Mandates</a></li>
+                        <li><a href="#features">Attendance & Grading</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Developers & AI</h4>
+                    <ul>
+                        <li><a href="/swagger-ui.html">OpenAPI Docs</a></li>
+                        <li><a href="/llms.txt">llms.txt (AI Standard)</a></li>
+                        <li><a href="/llms-full.txt">LLM Knowledge Base</a></li>
+                        <li><a href="/sitemap.xml">XML Sitemap</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Legal & Security</h4>
+                    <ul>
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Terms of Service</a></li>
+                        <li><a href="#">Security & Compliance</a></li>
+                        <li><a href="/robots.txt">Robots.txt</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 Vidya Technologies. All rights reserved.</p>
+                <p>Engineered with High-Performance Multi-Tenant Architecture.</p>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>

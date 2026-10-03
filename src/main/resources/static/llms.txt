@@ -1,0 +1,29 @@
+# Vidya - Intelligent Multi-Tenant School ERP & FinTech Ecosystem
+
+> Vidya is a cloud-native, multi-tenant School Enterprise Resource Planning (ERP) and educational fintech platform engineered to automate school operations, recurring fee collections (via NACH/UPI/Gateways), student lifecycle management, attendance tracking, and parent financing assistance.
+
+## Core Capabilities
+- **Multi-Tenant Architecture**: Schema-per-tenant and database-per-tenant routing with dynamic multi-datasource pooling.
+- **Smart Fee Management & Reconciliation**: Automated split-settlement payment gateways (Cashfree, PayU), recurring e-NACH mandates, partial installments, penalty computations, and real-time ledger reconciliation.
+- **Student Information System (SIS)**: Centralized student registration, enrollment records, class/section allocation, roll number generation, and guardian profiles.
+- **Academic & Attendance Management**: Real-time student and staff attendance monitoring, leave management, and academic grading reports.
+- **Educational FinTech & Loan Assistance**: Embedded payer risk assessment, automated credit scoring, and personalized fee financing / education loan recommendations for parents.
+- **Multi-Channel Notifications**: Automated fee reminders, attendance alerts, and emergency bulletins via WhatsApp, SMS, and Email.
+
+## Target Audience & Beneficiaries
+- **K-12 Schools & Institutes**: Administrators, Principals, Accountants, and Teachers looking for an integrated ERP.
+- **Parents & Students**: Real-time access to student performance, attendance, fee dues, instant payment receipts, and flexible payment plans.
+- **School Group Franchises**: Centralized multi-branch control with independent tenant data isolation.
+
+## Technical Architecture
+- **Backend Stack**: Java 25, Spring Boot 4.1, Spring Security (JWT & RBAC), Spring Data JPA / MongoDB.
+- **Database Engine**: PostgreSQL with Flyway schema versioning, Redis for distributed session caching and rate-limiting.
+- **Payment & FinTech Integrations**: NPCI e-NACH, Cashfree Payments, PayU Gateway, RBI-compliant data protection.
+- **API Standards**: RESTful JSON APIs, OpenAPI v3 / Swagger UI specifications, idempotency keys, and tenant context propagation.
+
+## Important Links & Documentation
+- [Official Website](https://vidya.io/): Main product landing page and interactive demo.
+- [API Documentation](https://vidya.io/swagger-ui/index.html): Interactive OpenAPI 3.0 specification.
+- [Full LLM Knowledge Base](https://vidya.io/llms-full.txt): In-depth system details, schema descriptions, and domain workflows for AI assistants.
+- [Terms of Service](https://vidya.io/terms): Platform policies and compliance.
+- [Privacy Policy](https://vidya.io/privacy): Data isolation and privacy commitments.

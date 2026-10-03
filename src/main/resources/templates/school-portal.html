@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${schoolName != null ? schoolName + ' | Official Portal & Admissions on Vidya' : 'School Portal | Vidya'}">Delhi Public Academy | Official Portal & Admissions on Vidya</title>
+    
+    <!-- Dynamic SEO Meta Tags -->
+    <meta name="description" th:content="${schoolDescription != null ? schoolDescription : 'Official online portal for admissions, tuition fee payments, attendance tracking, and parent notices powered by Vidya ERP.'}">
+    <meta name="keywords" th:content="${schoolKeywords != null ? schoolKeywords : 'School Admissions, Online Fee Payment, Student Portal, Parent Notices, Academic Calendar'}">
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+    <link rel="canonical" th:href="${canonicalUrl != null ? canonicalUrl : 'https://vidya.io/schools/' + (schoolSlug != null ? schoolSlug : 'default')}">
+    <meta name="theme-color" content="#0b0f19">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" th:content="${schoolName != null ? schoolName + ' - Online School Portal' : 'School Portal | Vidya'}">
+    <meta property="og:description" th:content="${schoolDescription != null ? schoolDescription : 'Access online admissions, quick fee payment, report cards, and notices.'}">
+    <meta property="og:image" th:content="${schoolLogoUrl != null ? schoolLogoUrl : 'https://vidya.io/images/default-school-og.png'}">
+
+    <!-- Stylesheet -->
+    <link rel="stylesheet" th:href="@{/css/vidya-theme.css}" href="/css/vidya-theme.css">
+
+    <!-- Structured Data (JSON-LD): EducationalOrganization -->
+    <script type="application/ld+json" th:inline="javascript">
+    {
+      "@context": "https://schema.org",
+      "@type": "EducationalOrganization",
+      "name": /*[[${schoolName != null ? schoolName : 'Vidya Partner School'}]]*/ "Vidya Partner School",
+      "url": /*[[${canonicalUrl != null ? canonicalUrl : 'https://vidya.io/schools/portal'}]]*/ "https://vidya.io/schools/portal",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": /*[[${schoolCity != null ? schoolCity : 'New Delhi'}]]*/ "New Delhi",
+        "addressCountry": "IN"
+      },
+      "telephone": /*[[${schoolPhone != null ? schoolPhone : '+91-11-00000000'}]]*/ "+91-11-00000000",
+      "email": /*[[${schoolEmail != null ? schoolEmail : 'info@school.edu'}]]*/ "info@school.edu",
+      "sameAs": [
+        "https://vidya.io"
+      ]
+    }
+    </script>
+</head>
+<body>
+
+    <!-- Header -->
+    <header class="site-header">
+        <div class="container nav-bar">
+            <a href="/" class="brand-logo" aria-label="Vidya Platform">
+                <div class="brand-badge" th:text="${schoolInitial != null ? schoolInitial : 'S'}">S</div>
+                <span th:text="${schoolName != null ? schoolName : 'School Portal'}">Delhi Public Academy</span>
+            </a>
+            <nav aria-label="School Navigation">
+                <ul class="nav-links">
+                    <li><a href="#about">About</a></li>
+                    <li><a href="#admissions">Admissions</a></li>
+                    <li><a href="#fee-payment">Pay Fees</a></li>
+                    <li><a href="#notices">Notices</a></li>
+                </ul>
+            </nav>
+            <div class="nav-actions">
+                <a href="#fee-payment" class="btn btn-primary btn-sm">Pay Fee Online</a>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- School Hero -->
+        <section class="hero-section" id="about">
+            <div class="container">
+                <div class="hero-pill">
+                    <span>🏫 Verified Vidya Campus</span>
+                    <span>•</span>
+                    <span th:text="${schoolBoard != null ? schoolBoard : 'CBSE Affiliated'}">CBSE Affiliated</span>
+                </div>
+                <h1 class="hero-title">
+                    Welcome to <br>
+                    <span class="gradient-text" th:text="${schoolName != null ? schoolName : 'Delhi Public Academy'}">Delhi Public Academy</span>
+                </h1>
+                <p class="hero-subtitle" th:text="${schoolDescription != null ? schoolDescription : 'Empowering future leaders with excellence in academics, holistic development, and transparent digital parent engagement.'}">
+                    Empowering future leaders with excellence in academics, holistic development, and transparent digital parent engagement.
+                </p>
+                <div class="hero-cta-group">
+                    <a href="#admissions" class="btn btn-primary">Admissions Inquiry</a>
+                    <a href="#fee-payment" class="btn btn-outline">Instant Online Fee Payment</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- School Services & Features -->
+        <section class="features-section" id="admissions">
+            <div class="container">
+                <div class="section-header">
+                    <div class="section-tag">Student & Parent Services</div>
+                    <h2 class="section-title">Digital Campus Portal</h2>
+                    <p class="section-desc">Manage school fee payments, view academic progress, and stay connected with classroom notifications.</p>
+                </div>
+
+                <div class="features-grid">
+                    <article class="feature-card" id="fee-payment">
+                        <div class="feature-icon">💳</div>
+                        <h3 class="feature-title">Instant Online Fee Payment</h3>
+                        <p class="feature-text">
+                            Pay tuition and transport fees securely using UPI, Net Banking, Credit/Debit cards, or set up zero-stress monthly e-NACH auto-debit mandates.
+                        </p>
+                    </article>
+
+                    <article class="feature-card">
+                        <div class="feature-icon">📝</div>
+                        <h3 class="feature-title">Online Admission Inquiry</h3>
+                        <p class="feature-text">
+                            Submit digital applications for the upcoming academic session with instant document verification and enrollment tracking.
+                        </p>
+                    </article>
+
+                    <article class="feature-card" id="notices">
+                        <div class="feature-icon">📢</div>
+                        <h3 class="feature-title">Real-Time Notices & Calendar</h3>
+                        <p class="feature-text">
+                            Access circulars, holiday calendars, examination schedules, and timetable updates directly on your mobile device.
+                        </p>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <!-- LLM & GEO Readability Details -->
+        <section class="llm-fact-section" aria-label="School Entity Facts">
+            <div class="container">
+                <div class="section-header">
+                    <div class="section-tag">Institutional Profile</div>
+                    <h2 class="section-title">Institutional Overview (AI Knowledge Card)</h2>
+                </div>
+                <div class="fact-sheet-box">
+                    <table class="fact-table">
+                        <tbody>
+                            <tr>
+                                <th scope="row">Institution</th>
+                                <td th:text="${schoolName != null ? schoolName : 'Delhi Public Academy'}">Delhi Public Academy</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Curriculum / Board</th>
+                                <td th:text="${schoolBoard != null ? schoolBoard : 'CBSE (Central Board of Secondary Education)'}">CBSE (Central Board of Secondary Education)</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Admissions Status</th>
+                                <td>Open for Academic Session 2026-2027</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Digital Platform</th>
+                                <td>Powered by Vidya School Management System (<a href="https://vidya.io" style="color: var(--accent-cyan);">vidya.io</a>)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-bottom">
+                <p>&copy; 2026 <span th:text="${schoolName != null ? schoolName : 'School'}">School</span>. Powered by <a href="https://vidya.io" style="color: var(--accent-indigo); text-decoration: none;">Vidya ERP</a>.</p>
+                <p>Secure Cloud Multi-Tenant Infrastructure.</p>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>

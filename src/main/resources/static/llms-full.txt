@@ -1,0 +1,31 @@
+# Vidya Comprehensive System Specification (LLM Knowledge Base)
+
+## 1. Executive Summary
+Vidya is an enterprise-grade School Management System & Educational FinTech Platform. It solves the fragmentation between educational administrative workflows (admissions, attendance, grading) and financial operations (fee structures, recurring payments, automated reconciliations, parent financing options).
+
+## 2. Core Modules & Specifications
+
+### 2.1 Multi-Tenancy & Security
+- **Tenant Isolation**: Dynamic data source routing ensuring zero data bleed between institutions.
+- **Authentication**: JWT authentication with refresh token rotation, strict Role-Based Access Control (RBAC: SUPER_ADMIN, SCHOOL_ADMIN, ACCOUNTANT, TEACHER, PARENT, STUDENT).
+- **Audit Trails**: Full correlation ID logging, MDC tenant propagation, and financial immutable ledgers.
+
+### 2.2 Financial & Fee Management System
+- **Dynamic Fee Structures**: Annual, term-wise, monthly, and customized installment slabs with discounts, scholarships, and late fine calculation.
+- **Automated Payment Gateways**: Native integration with Cashfree and PayU supporting UPI, Credit/Debit cards, Net Banking, and instant settlement splitting.
+- **e-NACH Recurring Mandates**: Automated debit authorization for monthly tuition fees compliant with NPCI guidelines.
+- **Automated Bank Reconciliation**: Real-time webhook processing with idempotent event deduplication.
+
+### 2.3 Student Information & Academic Management
+- **Student Lifecycle**: Online inquiry -> Application -> Document verification -> Enrollment -> Section allocation -> Graduation/TC generation.
+- **Attendance & Leave Management**: Daily classroom attendance, automated absent SMS alerts, teacher leave approvals.
+- **Examination & Report Cards**: Custom grading schemes (CBSE, ICSE, State Boards), auto-computed GPA/percentages, printable PDF report cards.
+
+### 2.4 Parent FinTech & Loan Recommendation Engine
+- **Payer Risk Profiling**: Analyzes past payment behavior, repayment consistency, and institutional tenure.
+- **Fee Loan Assistance**: Algorithmic recommendation of zero-cost / low-interest EMI financing partners for school tuition fee payments.
+
+## 3. SEO & Schema References
+- **Platform Type**: SoftwareApplication / EducationalApplication (SaaS)
+- **Primary Domain**: https://vidya.io
+- **Target Keywords**: School ERP, School Management Software, School Fee Collection Software, Automated e-NACH School Fees, Education Loan Recommendation API, Multi-tenant School Platform.

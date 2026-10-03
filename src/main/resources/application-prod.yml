@@ -1,0 +1,79 @@
+# ==============================================================
+# Production Profile (Activated with SPRING_PROFILES_ACTIVE=prod)
+# Direct environment variable bindings — same key structure as dev.
+# ==============================================================
+
+spring:
+  jpa:
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+
+vidya:
+  datasource:
+    master:
+      url: ${MASTER_DB_URL}
+      username: ${MASTER_DB_USER}
+      password: ${MASTER_DB_PASS}
+      hikari:
+        pool-name: vidya-master-prod-pool
+        maximum-pool-size: ${MASTER_DB_POOL_MAX:20}
+        minimum-idle: ${MASTER_DB_POOL_MIN_IDLE:5}
+        connection-timeout: 30000
+        idle-timeout: 600000
+        max-lifetime: 1800000
+        auto-commit: false
+
+  # Tenant DataSource pool defaults (applied per-tenant DataSource)
+  tenant:
+    datasource:
+      hikari:
+        pool-name-prefix: vidya-tenant-prod-
+        maximum-pool-size: ${TENANT_DB_POOL_MAX:10}
+        minimum-idle: ${TENANT_DB_POOL_MIN_IDLE:2}
+        connection-timeout: 30000
+        idle-timeout: 300000
+        max-lifetime: 900000
+        auto-commit: false
+      cache:
+        max-size: ${TENANT_CACHE_MAX_SIZE:500}
+        ttl-minutes: ${TENANT_CACHE_TTL_MINUTES:60}
+
+  # PostgreSQL admin connection used during tenant database provisioning
+  provisioning:
+    admin:
+      url: ${PROVISION_ADMIN_DB_URL}
+      username: ${PROVISION_DB_ADMIN_USER}
+      password: ${PROVISION_DB_ADMIN_PASS}
+
+  redis:
+    host: ${REDIS_HOST}
+    port: ${REDIS_PORT:6379}
+    password: ${REDIS_PASSWORD}
+    ttl:
+      tenant-registry-seconds: ${REDIS_TENANT_TTL:600}
+
+  security:
+    jwt:
+      secret: ${JWT_SECRET}
+      expiry-seconds: ${JWT_EXPIRY_SECONDS:86400}
+      refresh-expiry-seconds: ${JWT_REFRESH_EXPIRY_SECONDS:604800}
+    cors:
+      allowed-origins: ${CORS_ALLOWED_ORIGINS}
+
+  payment:
+    razorpay:
+      key-id: ${RAZORPAY_KEY_ID}
+      key-secret: ${RAZORPAY_KEY_SECRET}
+      webhook-secret: ${RAZORPAY_WEBHOOK_SECRET}
+    cashfree:
+      app-id: ${CASHFREE_APP_ID}
+      secret-key: ${CASHFREE_SECRET_KEY}
+
+logging:
+  level:
+    root: INFO
+    com.vidya: INFO
+    org.flywaydb: INFO
+    com.zaxxer.hikari: WARN
