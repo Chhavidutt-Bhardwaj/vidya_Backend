@@ -33,6 +33,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String jwt = extractJwtFromRequest(request);
 
             if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) {
+                if (tokenProvider.isRefreshToken(jwt)) {
+                    log.warn("Attempt to use refresh token as bearer access token rejected");
+                    filterChain.doFilter(request, response);
+                    return;
+                }
                 String email = tokenProvider.getEmailFromToken(jwt);
                 UserDetails userDetails = userDetailsService.loadUserByUsername(email);
 

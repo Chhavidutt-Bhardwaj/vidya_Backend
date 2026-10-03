@@ -200,6 +200,19 @@ class AuthServiceTest {
     }
 
     @Test
+    @DisplayName("refreshToken with access token (missing type=REFRESH) should throw UnauthorizedException")
+    void refreshToken_withAccessToken_throwsUnauthorizedException() {
+        String accessToken = jwtTokenProvider.generateAccessToken(userId, "admin@vidya.io", "USR-ADMIN01", "PLATFORM_SUPER_ADMIN");
+        RefreshTokenRequest request = new RefreshTokenRequest(accessToken);
+
+        assertThatThrownBy(() -> authService.refreshToken(request))
+                .isInstanceOf(UnauthorizedException.class)
+                .hasMessageContaining("Invalid token type");
+
+        verify(refreshTokenRepository, never()).findByTokenHash(anyString());
+    }
+
+    @Test
     @DisplayName("logout should revoke refresh token")
     void logout_Success() {
         String validRefreshToken = jwtTokenProvider.generateRefreshToken(userId, "admin@vidya.io");

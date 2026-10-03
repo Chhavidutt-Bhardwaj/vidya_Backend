@@ -194,6 +194,17 @@ public class GlobalExceptionHandler {
                         .withCorrelationId(correlationId()));
     }
 
+    // ── Invalid Arguments ──────────────────────────────────────────────────
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ApiResponse<Void>> handleIllegalArgument(IllegalArgumentException ex) {
+        log.warn("[{}] Invalid argument: {}", correlationId(), ex.getMessage());
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.<Void>error(ApiResponseCode.INVALID_ARGUMENT, ex.getMessage())
+                        .withCorrelationId(correlationId()));
+    }
+
     // ── Catch-All ─────────────────────────────────────────────────────────────
 
     @ExceptionHandler(Exception.class)

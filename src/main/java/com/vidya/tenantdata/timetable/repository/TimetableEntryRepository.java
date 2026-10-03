@@ -55,6 +55,8 @@ public interface TimetableEntryRepository extends JpaRepository<TimetableEntry, 
            "LEFT JOIN FETCH e.section sec " +
            "LEFT JOIN FETCH e.subject sub " +
            "LEFT JOIN FETCH e.teacher tea " +
+           "LEFT JOIN FETCH tea.tenantUser tu " +
+           "LEFT JOIN FETCH tu.profile prof " +
            "LEFT JOIN FETCH e.room r " +
            "WHERE e.timetable.id = :timetableId " +
            "AND e.academicClass.id = :academicClassId " +
@@ -75,6 +77,8 @@ public interface TimetableEntryRepository extends JpaRepository<TimetableEntry, 
            "LEFT JOIN FETCH e.section sec " +
            "LEFT JOIN FETCH e.subject sub " +
            "JOIN FETCH e.teacher tea " +
+           "LEFT JOIN FETCH tea.tenantUser tu " +
+           "LEFT JOIN FETCH tu.profile prof " +
            "LEFT JOIN FETCH e.room r " +
            "WHERE e.timetable.id = :timetableId " +
            "AND e.teacher.id = :teacherId " +
@@ -93,6 +97,8 @@ public interface TimetableEntryRepository extends JpaRepository<TimetableEntry, 
            "LEFT JOIN FETCH e.section sec " +
            "LEFT JOIN FETCH e.subject sub " +
            "LEFT JOIN FETCH e.teacher tea " +
+           "LEFT JOIN FETCH tea.tenantUser tu " +
+           "LEFT JOIN FETCH tu.profile prof " +
            "JOIN FETCH e.room r " +
            "WHERE e.timetable.id = :timetableId " +
            "AND e.room.id = :roomId " +
@@ -129,7 +135,8 @@ public interface TimetableEntryRepository extends JpaRepository<TimetableEntry, 
            "AND (:teacherId IS NULL OR e.teacher.id = :teacherId) " +
            "AND (:subjectId IS NULL OR e.subject.id = :subjectId) " +
            "AND (:roomId IS NULL OR e.room.id = :roomId) " +
-           "AND (:dayOfWeek IS NULL OR e.dayOfWeek = :dayOfWeek)")
+           "AND (:dayOfWeek IS NULL OR e.dayOfWeek = :dayOfWeek) " +
+           "AND (:periodId IS NULL OR e.period.id = :periodId)")
     Page<TimetableEntry> searchEntries(
             @Param("timetableId") UUID timetableId,
             @Param("academicClassId") UUID academicClassId,
@@ -138,6 +145,7 @@ public interface TimetableEntryRepository extends JpaRepository<TimetableEntry, 
             @Param("subjectId") UUID subjectId,
             @Param("roomId") UUID roomId,
             @Param("dayOfWeek") DayOfWeek dayOfWeek,
+            @Param("periodId") UUID periodId,
             Pageable pageable
     );
 
@@ -210,5 +218,42 @@ public interface TimetableEntryRepository extends JpaRepository<TimetableEntry, 
     long countWeeklyPeriodsForTeacher(
             @Param("timetableId") UUID timetableId,
             @Param("teacherId") UUID teacherId
+    );
+
+    @Query("SELECT COUNT(e) > 0 FROM TimetableEntry e " +
+           "WHERE e.room.id = :roomId " +
+           "AND e.deletedAt IS NULL " +
+           "AND e.timetable.deletedAt IS NULL " +
+           "AND e.timetable.status <> com.vidya.tenantdata.timetable.enums.TimetableStatus.ARCHIVED")
+    boolean isRoomUsedInActiveTimetables(@Param("roomId") UUID roomId);
+
+    @Query("SELECT COUNT(e) > 0 FROM TimetableEntry e " +
+           "WHERE e.period.id = :periodId " +
+           "AND e.deletedAt IS NULL " +
+           "AND e.timetable.deletedAt IS NULL " +
+           "AND e.timetable.status <> com.vidya.tenantdata.timetable.enums.TimetableStatus.ARCHIVED")
+    boolean isPeriodUsedInActiveTimetables(@Param("periodId") UUID periodId);
+
+    @Query("SELECT e FROM TimetableEntry e " +
+           "JOIN FETCH e.timetable t " +
+           "JOIN FETCH e.academicYear ay " +
+           "JOIN FETCH e.period p " +
+           "JOIN FETCH e.academicClass ac " +
+           "LEFT JOIN FETCH e.section sec " +
+           "LEFT JOIN FETCH e.subject sub " +
+           "LEFT JOIN FETCH e.teacher tea " +
+           "LEFT JOIN FETCH e.room r " +
+           "WHERE e.timetable.id = :timetableId " +
+           "AND e.dayOfWeek = :dayOfWeek " +
+           "AND e.period.id = :periodId " +
+           "AND e.academicClass.id = :academicClassId " +
+           "AND ((:sectionId IS NULL AND e.section IS NULL) OR e.section.id = :sectionId) " +
+           "AND e.deletedAt IS NULL")
+    List<TimetableEntry> findActiveSlotEntries(
+            @Param("timetableId") UUID timetableId,
+            @Param("dayOfWeek") DayOfWeek dayOfWeek,
+            @Param("periodId") UUID periodId,
+            @Param("academicClassId") UUID academicClassId,
+            @Param("sectionId") UUID sectionId
     );
 }

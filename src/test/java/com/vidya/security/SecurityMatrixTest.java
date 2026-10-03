@@ -275,4 +275,29 @@ class SecurityMatrixTest {
         assertThat(tenantAuthorizationService.canAccessSchool(auth, schoolA.getId())).isTrue();
         assertThat(tenantAuthorizationService.canAccessSchool(auth, schoolB.getId())).isFalse();
     }
+
+    @Test
+    @DisplayName("RBAC: Substitution permissions - School Admin/Owner have MANAGE and READ; Teacher has READ only; others have neither")
+    void rbac_substitutionPermissions() {
+        // Platform Super Admin has both
+        assertThat(PlatformRole.PLATFORM_SUPER_ADMIN.getPermissions()).contains(PlatformPermission.SUBSTITUTION_READ, PlatformPermission.SUBSTITUTION_MANAGE);
+
+        // Platform Admin has both
+        assertThat(PlatformRole.PLATFORM_ADMIN.getPermissions()).contains(PlatformPermission.SUBSTITUTION_READ, PlatformPermission.SUBSTITUTION_MANAGE);
+
+        // School Owner has both
+        assertThat(PlatformRole.SCHOOL_OWNER.getPermissions()).contains(PlatformPermission.SUBSTITUTION_READ, PlatformPermission.SUBSTITUTION_MANAGE);
+
+        // School Admin has both
+        assertThat(PlatformRole.SCHOOL_ADMIN.getPermissions()).contains(PlatformPermission.SUBSTITUTION_READ, PlatformPermission.SUBSTITUTION_MANAGE);
+
+        // Teacher has READ only, NOT MANAGE
+        assertThat(PlatformRole.TEACHER.getPermissions()).contains(PlatformPermission.SUBSTITUTION_READ);
+        assertThat(PlatformRole.TEACHER.getPermissions()).doesNotContain(PlatformPermission.SUBSTITUTION_MANAGE);
+
+        // Community roles have neither
+        assertThat(PlatformRole.COMMUNITY_ADMIN.getPermissions()).doesNotContain(PlatformPermission.SUBSTITUTION_READ, PlatformPermission.SUBSTITUTION_MANAGE);
+        assertThat(PlatformRole.COMMUNITY_MANAGER.getPermissions()).doesNotContain(PlatformPermission.SUBSTITUTION_READ, PlatformPermission.SUBSTITUTION_MANAGE);
+        assertThat(PlatformRole.FIELD_AGENT.getPermissions()).doesNotContain(PlatformPermission.SUBSTITUTION_READ, PlatformPermission.SUBSTITUTION_MANAGE);
+    }
 }

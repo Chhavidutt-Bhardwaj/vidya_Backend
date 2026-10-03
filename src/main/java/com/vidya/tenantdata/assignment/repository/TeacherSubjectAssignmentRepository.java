@@ -98,4 +98,15 @@ public interface TeacherSubjectAssignmentRepository extends JpaRepository<Teache
             @Param("academicClassId") UUID academicClassId,
             @Param("sectionId") UUID sectionId
     );
+
+    @Query("SELECT COUNT(tsa) > 0 FROM TeacherSubjectAssignment tsa " +
+           "WHERE tsa.teacher.id = :teacherId " +
+           "AND tsa.subject.id = :subjectId " +
+           "AND tsa.academicYear.id = :academicYearId " +
+           "AND tsa.deletedAt IS NULL AND tsa.status = 'ACTIVE'")
+    boolean isTeacherQualifiedForSubject(
+            @Param("teacherId") UUID teacherId,
+            @Param("subjectId") UUID subjectId,
+            @Param("academicYearId") UUID academicYearId
+    );
 }

@@ -6,7 +6,10 @@ import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.Profiles;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
@@ -21,26 +24,41 @@ import java.util.UUID;
 @Component
 public class JwtTokenProvider {
 
+    public static final String DEV_TEST_NON_PROD_SECRET = "vidya-dev-test-only-secret-key-do-not-use-in-production-min-256-bits";
+
     private final SecretKey signingKey;
     private final long accessTokenExpiryMs;
     private final long refreshTokenExpiryMs;
 
+    @Autowired
     public JwtTokenProvider(
-            @Value("${vidya.security.jwt.secret:vidya-dev-secret-key-change-in-production-min-256-bits-length}") String secret,
-            @Value("${vidya.security.jwt.expiry-seconds:86400}") long expirySeconds,
+            Environment env,
+            @Value("${vidya.security.jwt.secret:}") String secret,
+            @Value("${vidya.security.jwt.expiry-seconds:1800}") long expirySeconds,
             @Value("${vidya.security.jwt.refresh-expiry-seconds:604800}") long refreshExpirySeconds) {
 
-        byte[] keyBytes = secret.getBytes(StandardCharsets.UTF_8);
-        if (keyBytes.length < 32) {
-            byte[] padded = new byte[32];
-            System.arraycopy(keyBytes, 0, padded, 0, keyBytes.length);
-            this.signingKey = Keys.hmacShaKeyFor(padded);
-        } else {
-            this.signingKey = Keys.hmacShaKeyFor(keyBytes);
+        String effectiveSecret = secret != null ? secret.trim() : "";
+        if (effectiveSecret.isEmpty()) {
+            if (env != null && env.acceptsProfiles(Profiles.of("dev", "test"))) {
+                log.warn("Using default non-production JWT secret under dev/test profile. DO NOT USE IN PRODUCTION.");
+                effectiveSecret = DEV_TEST_NON_PROD_SECRET;
+            } else {
+                throw new IllegalStateException("Startup failed: vidya.security.jwt.secret must be configured and not empty.");
+            }
         }
 
+        byte[] keyBytes = effectiveSecret.getBytes(StandardCharsets.UTF_8);
+        if (keyBytes.length < 32) {
+            throw new IllegalStateException("Startup failed: vidya.security.jwt.secret must be at least 32 bytes (256 bits) long. Current length: " + keyBytes.length);
+        }
+
+        this.signingKey = Keys.hmacShaKeyFor(keyBytes);
         this.accessTokenExpiryMs = expirySeconds * 1000L;
         this.refreshTokenExpiryMs = refreshExpirySeconds * 1000L;
+    }
+
+    public JwtTokenProvider(String secret, long expirySeconds, long refreshExpirySeconds) {
+        this(null, secret, expirySeconds, refreshExpirySeconds);
     }
 
     public String generateAccessToken(UUID userId, String email, String userCode, String role) {
@@ -57,6 +75,7 @@ public class JwtTokenProvider {
                 .claim("email", email)
                 .claim("userCode", userCode)
                 .claim("role", role)
+                .claim("type", "ACCESS")
                 .issuedAt(now)
                 .expiration(expiry);
 
@@ -118,6 +137,15 @@ public class JwtTokenProvider {
     public UUID getSchoolIdFromToken(String token) {
         String schoolIdStr = getClaims(token).get("schoolId", String.class);
         return schoolIdStr != null ? UUID.fromString(schoolIdStr) : null;
+    }
+
+    public String getTokenType(String token) {
+        Claims claims = getClaims(token);
+        return claims != null ? claims.get("type", String.class) : null;
+    }
+
+    public boolean isRefreshToken(String token) {
+        return "REFRESH".equalsIgnoreCase(getTokenType(token));
     }
 
     public String getJtiFromToken(String token) {

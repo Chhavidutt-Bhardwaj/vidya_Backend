@@ -28,5 +28,36 @@ public record TimetableGridSlotResponse(
         String className,
         UUID sectionId,
         String sectionName,
-        TimetableEntryType entryType
-) {}
+        TimetableEntryType entryType,
+        TimetableGridSubstitutionResponse substitution
+) {
+    public TimetableGridSlotResponse(
+            UUID periodId,
+            String periodCode,
+            String periodName,
+            int periodSequence,
+            LocalTime startTime,
+            LocalTime endTime,
+            PeriodType periodType,
+            UUID entryId,
+            String entryCode,
+            UUID subjectId,
+            String subjectCode,
+            String subjectName,
+            UUID teacherId,
+            String teacherName,
+            UUID roomId,
+            String roomCode,
+            String roomName,
+            UUID academicClassId,
+            String className,
+            UUID sectionId,
+            String sectionName,
+            TimetableEntryType entryType
+    ) {
+        this(periodId, periodCode, periodName, periodSequence, startTime, endTime, periodType,
+             entryId, entryCode, subjectId, subjectCode, subjectName, teacherId, teacherName,
+             roomId, roomCode, roomName, academicClassId, className, sectionId, sectionName,
+             entryType, null);
+    }
+}

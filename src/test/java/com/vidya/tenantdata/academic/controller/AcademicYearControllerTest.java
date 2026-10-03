@@ -39,6 +39,9 @@ class AcademicYearControllerTest {
     @Mock
     private AcademicYearService academicYearService;
 
+    @Mock
+    private com.vidya.tenantdata.timetable.service.TimetableService timetableService;
+
     @InjectMocks
     private AcademicYearController academicYearController;
 
@@ -72,7 +75,7 @@ class AcademicYearControllerTest {
     }
 
     @Test
-    @DisplayName("POST /api/v1/tenant/academic-years — 201 Created")
+    @DisplayName("POST /api/v1/academic-years — 201 Created")
     void createAcademicYear_Success() throws Exception {
         CreateAcademicYearRequest request = CreateAcademicYearRequest.builder()
                 .code("AY2026-27")
@@ -84,7 +87,7 @@ class AcademicYearControllerTest {
 
         when(academicYearService.createAcademicYear(any(CreateAcademicYearRequest.class))).thenReturn(sampleResponse);
 
-        mockMvc.perform(post("/api/v1/tenant/academic-years")
+        mockMvc.perform(post("/api/v1/academic-years")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -93,23 +96,38 @@ class AcademicYearControllerTest {
     }
 
     @Test
-    @DisplayName("GET /api/v1/tenant/academic-years/{id} — 200 OK")
+    @DisplayName("GET /api/v1/academic-years/{id} — 200 OK")
     void getAcademicYearById_Success() throws Exception {
         when(academicYearService.getAcademicYearById(sampleId)).thenReturn(sampleResponse);
 
-        mockMvc.perform(get("/api/v1/tenant/academic-years/{id}", sampleId))
+        mockMvc.perform(get("/api/v1/academic-years/{id}", sampleId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.id").value(sampleId.toString()));
     }
 
     @Test
-    @DisplayName("PATCH /api/v1/tenant/academic-years/{id}/current — 200 OK")
+    @DisplayName("PATCH /api/v1/academic-years/{id}/current — 200 OK")
     void setCurrentAcademicYear_Success() throws Exception {
         when(academicYearService.setCurrentAcademicYear(sampleId)).thenReturn(sampleResponse);
 
-        mockMvc.perform(patch("/api/v1/tenant/academic-years/{id}/current", sampleId))
+        mockMvc.perform(patch("/api/v1/academic-years/{id}/current", sampleId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true));
+    }
+
+    @Test
+    @DisplayName("GET /api/v1/academic-years/{id}/sections/{sectionId}/timetable — 200 OK")
+    void getActiveSectionTimetable_Success() throws Exception {
+        UUID sectionId = UUID.randomUUID();
+        when(timetableService.getActiveSectionTimetable(sampleId, sectionId))
+                .thenReturn(new com.vidya.tenantdata.timetable.dto.TimetableGridResponse(
+                        UUID.randomUUID(), "TTB-01", "Master Timetable", "SECTION", sectionId, "Class 8 - A", java.util.List.of()
+                ));
+
+        mockMvc.perform(get("/api/v1/academic-years/{id}/sections/{sectionId}/timetable", sampleId, sectionId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.timetableName").value("Master Timetable"));
     }
 }

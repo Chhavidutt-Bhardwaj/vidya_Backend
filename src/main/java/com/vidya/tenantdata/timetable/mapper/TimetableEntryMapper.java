@@ -11,6 +11,10 @@ import org.springframework.stereotype.Component;
 public class TimetableEntryMapper {
 
     public TimetableEntryResponse toResponse(TimetableEntry entry) {
+        return toResponse(entry, null);
+    }
+
+    public TimetableEntryResponse toResponse(TimetableEntry entry, String warning) {
         if (entry == null) {
             return null;
         }
@@ -45,6 +49,7 @@ public class TimetableEntryMapper {
                 entry.getRoom() != null ? entry.getRoom().getRoomCode() : null,
                 entry.getRoom() != null ? entry.getRoom().getName() : null,
                 entry.getEntryType(),
+                warning,
                 entry.getCreatedAt(),
                 entry.getUpdatedAt(),
                 entry.getVersion()

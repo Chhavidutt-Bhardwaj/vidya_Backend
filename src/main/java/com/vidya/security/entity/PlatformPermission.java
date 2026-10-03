@@ -158,6 +158,10 @@ public enum PlatformPermission {
     TIMETABLE_ENTRY_UPDATE,
     TIMETABLE_ENTRY_DELETE,
 
+    // Timetable Substitution permissions
+    SUBSTITUTION_READ,
+    SUBSTITUTION_MANAGE,
+
     // Audit permissions
     AUDIT_READ,
 

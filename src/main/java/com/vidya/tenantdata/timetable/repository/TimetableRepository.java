@@ -27,11 +27,13 @@ public interface TimetableRepository extends JpaRepository<Timetable, UUID> {
     @Query("SELECT t FROM Timetable t " +
            "WHERE t.deletedAt IS NULL " +
            "AND (:academicYearId IS NULL OR t.academicYear.id = :academicYearId) " +
+           "AND (:bellScheduleId IS NULL OR t.bellSchedule.id = :bellScheduleId) " +
            "AND (:status IS NULL OR t.status = :status) " +
            "AND (:search IS NULL OR LOWER(t.name) LIKE LOWER(CONCAT('%', :search, '%')) " +
            "     OR LOWER(t.timetableCode) LIKE LOWER(CONCAT('%', :search, '%')))")
     Page<Timetable> searchTimetables(
             @Param("academicYearId") UUID academicYearId,
+            @Param("bellScheduleId") UUID bellScheduleId,
             @Param("status") TimetableStatus status,
             @Param("search") String search,
             Pageable pageable
@@ -42,4 +44,21 @@ public interface TimetableRepository extends JpaRepository<Timetable, UUID> {
            "AND t.status = 'ACTIVE' " +
            "AND t.deletedAt IS NULL")
     List<Timetable> findActiveByAcademicYear(@Param("academicYearId") UUID academicYearId);
+
+    @Query("SELECT COUNT(t) > 0 FROM Timetable t " +
+           "WHERE t.bellSchedule.id = :scheduleId " +
+           "AND t.deletedAt IS NULL " +
+           "AND t.status <> com.vidya.tenantdata.timetable.enums.TimetableStatus.ARCHIVED")
+    boolean isBellScheduleUsedInActiveTimetables(@Param("scheduleId") UUID scheduleId);
+
+    @Query("SELECT COUNT(t) > 0 FROM Timetable t " +
+           "WHERE LOWER(t.name) = LOWER(:name) " +
+           "AND t.academicYear.id = :academicYearId " +
+           "AND (:id IS NULL OR t.id <> :id) " +
+           "AND t.deletedAt IS NULL")
+    boolean existsByNameIgnoreCaseAndAcademicYearIdAndNotDeleted(
+            @Param("name") String name,
+            @Param("academicYearId") UUID academicYearId,
+            @Param("id") UUID id
+    );
 }

@@ -18,14 +18,17 @@ public enum TimetableStatus {
 
     private static final Map<TimetableStatus, Set<TimetableStatus>> VALID_TRANSITIONS = Map.of(
             DRAFT, EnumSet.of(PUBLISHED, DELETED),
-            PUBLISHED, EnumSet.of(ACTIVE, DRAFT, DELETED),
-            ACTIVE, EnumSet.of(ARCHIVED, DRAFT, DELETED),
-            ARCHIVED, EnumSet.of(DELETED),
+            PUBLISHED, EnumSet.of(ACTIVE, DRAFT),
+            ACTIVE, EnumSet.of(ARCHIVED),
+            ARCHIVED, EnumSet.noneOf(TimetableStatus.class),
             DELETED, EnumSet.noneOf(TimetableStatus.class)
     );
 
     public boolean canTransitionTo(TimetableStatus target) {
-        if (target == null || this == target) {
+        if (target == null) {
+            return false;
+        }
+        if (this == target) {
             return true;
         }
         return VALID_TRANSITIONS.getOrDefault(this, Set.of()).contains(target);

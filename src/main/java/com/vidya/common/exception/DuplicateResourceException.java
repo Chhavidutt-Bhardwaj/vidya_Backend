@@ -17,6 +17,13 @@ public class DuplicateResourceException extends RuntimeException {
     private final String field;
     private final Object value;
 
+    public DuplicateResourceException(String message) {
+        super(message);
+        this.resourceType = "Resource";
+        this.field = "conflict";
+        this.value = message;
+    }
+
     public DuplicateResourceException(String resourceType, String field, Object value) {
         super(String.format("%s already exists with %s: %s", resourceType, field, value));
         this.resourceType = resourceType;

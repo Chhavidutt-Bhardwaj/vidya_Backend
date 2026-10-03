@@ -35,12 +35,24 @@ import java.util.UUID;
 
 @Slf4j
 @RestController
-@RequestMapping({"/api/v1/tenant/academic-years", "/api/v1/academic-years"})
+@RequestMapping("/api/v1/academic-years")
 @RequiredArgsConstructor
 @Tag(name = "Academic Years", description = "Academic year lifecycle operations for the active tenant")
 public class AcademicYearController {
 
     private final AcademicYearService academicYearService;
+    private final com.vidya.tenantdata.timetable.service.TimetableService timetableService;
+
+    @GetMapping("/{id}/sections/{sectionId}/timetable")
+    @PreAuthorize("hasAuthority('TIMETABLE_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @Operation(summary = "Get active section timetable for academic year", description = "Retrieves the active timetable weekly grid for a section within an academic year")
+    public ResponseEntity<ApiResponse<com.vidya.tenantdata.timetable.dto.TimetableGridResponse>> getActiveSectionTimetable(
+            @PathVariable UUID id,
+            @PathVariable UUID sectionId) {
+        log.info("REST: Get active section timetable for year [{}] section [{}]", id, sectionId);
+        com.vidya.tenantdata.timetable.dto.TimetableGridResponse response = timetableService.getActiveSectionTimetable(id, sectionId);
+        return ResponseEntity.ok(ApiResponse.success("ACTIVE_TIMETABLE_GRID_RETRIEVED", "Active section timetable retrieved successfully", response));
+    }
 
     @PostMapping
     @PreAuthorize("hasAuthority('ACADEMIC_YEAR_CREATE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")

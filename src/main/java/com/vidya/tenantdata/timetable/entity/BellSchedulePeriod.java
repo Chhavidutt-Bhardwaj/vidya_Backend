@@ -71,6 +71,12 @@ public class BellSchedulePeriod {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
+    @Column(name = "created_by")
+    private UUID createdBy;
+
+    @Column(name = "updated_by")
+    private UUID updatedBy;
+
     @Version
     @Column(name = "version", nullable = false)
     private Long version = 0L;

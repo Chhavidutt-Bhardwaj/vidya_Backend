@@ -42,4 +42,11 @@ public interface SchoolOnboardingRepository extends JpaRepository<SchoolOnboardi
             @Param("communityId") UUID communityId,
             Pageable pageable
     );
+
+    @Query("SELECT CASE WHEN COUNT(o) > 0 THEN true ELSE false END " +
+            "FROM SchoolOnboarding o, CommunityMember cm " +
+            "WHERE o.communityId = cm.community.id " +
+            "AND cm.platformUserId = :platformUserId " +
+            "AND o.school.id = :schoolId")
+    boolean existsByPlatformUserIdAndSchoolId(@Param("platformUserId") UUID platformUserId, @Param("schoolId") UUID schoolId);
 }

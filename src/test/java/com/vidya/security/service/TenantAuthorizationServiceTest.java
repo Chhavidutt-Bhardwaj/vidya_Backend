@@ -208,8 +208,8 @@ class TenantAuthorizationServiceTest {
 
         when(userRepository.findById(fieldAgentId)).thenReturn(Optional.of(fieldAgent));
         when(schoolRepository.findById(schoolAId)).thenReturn(Optional.of(schoolA));
+        when(onboardingRepository.existsByPlatformUserIdAndSchoolId(fieldAgentId, schoolAId)).thenReturn(true);
         when(communityMemberRepository.findByPlatformUserId(fieldAgentId)).thenReturn(List.of(member));
-        when(onboardingRepository.findByCommunityId(communityId)).thenReturn(List.of(onboarding));
         when(onboardingRepository.findById(onboardingId)).thenReturn(Optional.of(onboarding));
 
         assertThat(authorizationService.canAccessSchool(fieldAgentId, schoolAId)).isTrue();
@@ -221,7 +221,7 @@ class TenantAuthorizationServiceTest {
     void fieldAgent_UnassignedSchool_AccessDenied() {
         when(userRepository.findById(fieldAgentId)).thenReturn(Optional.of(fieldAgent));
         when(schoolRepository.findById(schoolBId)).thenReturn(Optional.of(schoolB));
-        when(communityMemberRepository.findByPlatformUserId(fieldAgentId)).thenReturn(List.of());
+        when(onboardingRepository.existsByPlatformUserIdAndSchoolId(fieldAgentId, schoolBId)).thenReturn(false);
 
         assertThat(authorizationService.canAccessSchool(fieldAgentId, schoolBId)).isFalse();
     }
@@ -237,5 +237,110 @@ class TenantAuthorizationServiceTest {
         assertThat(authorizationService.hasPermission(schoolAdminAId, PlatformPermission.TENANT_SUSPEND)).isFalse();
         // School Admin should NOT have permission to create communities
         assertThat(authorizationService.hasPermission(schoolAdminAId, PlatformPermission.COMMUNITY_CREATE)).isFalse();
+    }
+
+    @Test
+    @DisplayName("Tenant with null schoolId is safely denied without throwing NullPointerException")
+    void tenantWithoutSchool_safelyDenied() {
+        Tenant tenantNullSchool = Tenant.create(null, "TNT-NOSCHOOL", "host", 5432, "db_null", "u", "p");
+        tenantNullSchool.setStatus(TenantStatus.ACTIVE);
+        when(userRepository.findById(schoolAdminAId)).thenReturn(Optional.of(schoolAdminA));
+        when(tenantRepository.findByTenantCode("TNT-NOSCHOOL")).thenReturn(Optional.of(tenantNullSchool));
+
+        assertThat(authorizationService.canAccessTenant(schoolAdminAId, "TNT-NOSCHOOL")).isFalse();
+    }
+
+    @Test
+    @DisplayName("PLATFORM_ADMIN can access ACTIVE and SUSPENDED tenants, but not DEACTIVATED or ARCHIVED")
+    void platformAdmin_tenantAccessRules() {
+        UUID adminId = UUID.randomUUID();
+        PlatformUser platformAdmin = new PlatformUser("USR-PA", "pa@vidya.io", "h", "PA", "User", null, PlatformRole.PLATFORM_ADMIN);
+        platformAdmin.setId(adminId);
+
+        when(userRepository.findById(adminId)).thenReturn(Optional.of(platformAdmin));
+        when(tenantRepository.findByTenantCode("TNT-001")).thenReturn(Optional.of(tenantA));
+
+        tenantA.setStatus(TenantStatus.ACTIVE);
+        assertThat(authorizationService.canAccessTenant(adminId, "TNT-001")).isTrue();
+
+        tenantA.setStatus(TenantStatus.SUSPENDED);
+        assertThat(authorizationService.canAccessTenant(adminId, "TNT-001")).isTrue();
+
+        tenantA.setStatus(TenantStatus.DEACTIVATED);
+        assertThat(authorizationService.canAccessTenant(adminId, "TNT-001")).isFalse();
+
+        tenantA.setStatus(TenantStatus.ARCHIVED);
+        assertThat(authorizationService.canAccessTenant(adminId, "TNT-001")).isFalse();
+    }
+
+    @Test
+    @DisplayName("SCHOOL_OWNER can access their school tenant and is denied for mismatched tenant")
+    void schoolOwner_tenantAccess() {
+        UUID ownerId = UUID.randomUUID();
+        PlatformUser owner = new PlatformUser("USR-OWNER", "owner@a.com", "h", "Owner", "A", null, PlatformRole.SCHOOL_OWNER, schoolAId);
+        owner.setId(ownerId);
+
+        when(userRepository.findById(ownerId)).thenReturn(Optional.of(owner));
+        when(tenantRepository.findByTenantCode("TNT-001")).thenReturn(Optional.of(tenantA));
+        when(tenantRepository.findByTenantCode("TNT-002")).thenReturn(Optional.of(tenantB));
+
+        assertThat(authorizationService.canAccessTenant(ownerId, "TNT-001")).isTrue();
+        assertThat(authorizationService.canAccessTenant(ownerId, "TNT-002")).isFalse();
+    }
+
+    @Test
+    @DisplayName("TEACHER can access their school tenant and is denied for mismatched tenant")
+    void teacher_tenantAccess() {
+        UUID teacherId = UUID.randomUUID();
+        PlatformUser teacher = new PlatformUser("USR-TEACH", "teacher@a.com", "h", "Teach", "A", null, PlatformRole.TEACHER, schoolAId);
+        teacher.setId(teacherId);
+
+        when(userRepository.findById(teacherId)).thenReturn(Optional.of(teacher));
+        when(tenantRepository.findByTenantCode("TNT-001")).thenReturn(Optional.of(tenantA));
+        when(tenantRepository.findByTenantCode("TNT-002")).thenReturn(Optional.of(tenantB));
+
+        assertThat(authorizationService.canAccessTenant(teacherId, "TNT-001")).isTrue();
+        assertThat(authorizationService.canAccessTenant(teacherId, "TNT-002")).isFalse();
+    }
+
+    @Test
+    @DisplayName("COMMUNITY_ADMIN and COMMUNITY_MANAGER can access tenant of onboarded school via single exists query")
+    void communityRoles_tenantAccess() {
+        UUID commAdminId = UUID.randomUUID();
+        PlatformUser commAdmin = new PlatformUser("USR-CA", "ca@vidya.io", "h", "CA", "User", null, PlatformRole.COMMUNITY_ADMIN);
+        commAdmin.setId(commAdminId);
+
+        when(userRepository.findById(commAdminId)).thenReturn(Optional.of(commAdmin));
+        when(tenantRepository.findByTenantCode("TNT-001")).thenReturn(Optional.of(tenantA));
+        when(onboardingRepository.existsByPlatformUserIdAndSchoolId(commAdminId, schoolAId)).thenReturn(true);
+
+        assertThat(authorizationService.canAccessTenant(commAdminId, "TNT-001")).isTrue();
+    }
+
+    @Test
+    @DisplayName("COMMUNITY_ADMIN is denied access to tenant when no onboarding link exists")
+    void communityRoles_tenantAccess_unlinked_denied() {
+        UUID commAdminId = UUID.randomUUID();
+        PlatformUser commAdmin = new PlatformUser("USR-CA2", "ca2@vidya.io", "h", "CA2", "User", null, PlatformRole.COMMUNITY_ADMIN);
+        commAdmin.setId(commAdminId);
+
+        when(userRepository.findById(commAdminId)).thenReturn(Optional.of(commAdmin));
+        when(tenantRepository.findByTenantCode("TNT-001")).thenReturn(Optional.of(tenantA));
+        when(onboardingRepository.existsByPlatformUserIdAndSchoolId(commAdminId, schoolAId)).thenReturn(false);
+
+        assertThat(authorizationService.canAccessTenant(commAdminId, "TNT-001")).isFalse();
+    }
+
+    @Test
+    @DisplayName("User with no assigned schoolId is denied access to tenant")
+    void userWithoutSchoolId_deniedTenantAccess() {
+        UUID noSchoolAdminId = UUID.randomUUID();
+        PlatformUser noSchoolAdmin = new PlatformUser("USR-NOSCH", "ns@vidya.io", "h", "NS", "User", null, PlatformRole.SCHOOL_ADMIN, null);
+        noSchoolAdmin.setId(noSchoolAdminId);
+
+        when(userRepository.findById(noSchoolAdminId)).thenReturn(Optional.of(noSchoolAdmin));
+        when(tenantRepository.findByTenantCode("TNT-001")).thenReturn(Optional.of(tenantA));
+
+        assertThat(authorizationService.canAccessTenant(noSchoolAdminId, "TNT-001")).isFalse();
     }
 }

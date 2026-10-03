@@ -79,10 +79,12 @@ public class TenantAuthorizationServiceImpl implements TenantAuthorizationServic
             return false;
         }
 
-        // School Users (SCHOOL_OWNER, SCHOOL_ADMIN)
-        if (user.getPlatformRole() == PlatformRole.SCHOOL_OWNER || user.getPlatformRole() == PlatformRole.SCHOOL_ADMIN) {
-            if (user.getSchoolId() == null) {
-                auditAccessDenied(user, "TENANT:" + tenantCode, "School user has no assigned schoolId");
+        // School Users (SCHOOL_OWNER, SCHOOL_ADMIN, TEACHER)
+        if (user.getPlatformRole() == PlatformRole.SCHOOL_OWNER
+                || user.getPlatformRole() == PlatformRole.SCHOOL_ADMIN
+                || user.getPlatformRole() == PlatformRole.TEACHER) {
+            if (user.getSchoolId() == null || tenant.getSchoolId() == null) {
+                auditAccessDenied(user, "TENANT:" + tenantCode, "School user or tenant has no assigned schoolId");
                 return false;
             }
             boolean belongsToSchool = tenant.getSchoolId().equals(user.getSchoolId());
@@ -96,19 +98,19 @@ public class TenantAuthorizationServiceImpl implements TenantAuthorizationServic
         if (user.getPlatformRole() == PlatformRole.COMMUNITY_ADMIN
                 || user.getPlatformRole() == PlatformRole.COMMUNITY_MANAGER
                 || user.getPlatformRole() == PlatformRole.FIELD_AGENT) {
-            List<CommunityMember> members = communityMemberRepository.findByPlatformUserId(user.getId());
-            for (CommunityMember member : members) {
-                List<SchoolOnboarding> onboardings = onboardingRepository.findByCommunityId(member.getCommunity().getId());
-                for (SchoolOnboarding ob : onboardings) {
-                    if (ob.getSchool() != null && ob.getSchool().getId().equals(tenant.getSchoolId())) {
-                        return true;
-                    }
-                }
+            if (tenant.getSchoolId() == null) {
+                auditAccessDenied(user, "TENANT:" + tenantCode, "Tenant has no assigned schoolId for community access");
+                return false;
+            }
+            boolean hasAccess = onboardingRepository.existsByPlatformUserIdAndSchoolId(user.getId(), tenant.getSchoolId());
+            if (hasAccess) {
+                return true;
             }
             auditAccessDenied(user, "TENANT:" + tenantCode, "Community user not linked to tenant's school");
             return false;
         }
 
+        // Default Deny for all other roles or unspecified roles (e.g. STUDENT, PARENT)
         auditAccessDenied(user, "TENANT:" + tenantCode, "Role not authorized");
         return false;
     }
@@ -164,14 +166,9 @@ public class TenantAuthorizationServiceImpl implements TenantAuthorizationServic
         if (user.getPlatformRole() == PlatformRole.COMMUNITY_ADMIN
                 || user.getPlatformRole() == PlatformRole.COMMUNITY_MANAGER
                 || user.getPlatformRole() == PlatformRole.FIELD_AGENT) {
-            List<CommunityMember> members = communityMemberRepository.findByPlatformUserId(user.getId());
-            for (CommunityMember member : members) {
-                List<SchoolOnboarding> onboardings = onboardingRepository.findByCommunityId(member.getCommunity().getId());
-                for (SchoolOnboarding ob : onboardings) {
-                    if (ob.getSchool() != null && ob.getSchool().getId().equals(schoolId)) {
-                        return true;
-                    }
-                }
+            boolean hasAccess = onboardingRepository.existsByPlatformUserIdAndSchoolId(user.getId(), schoolId);
+            if (hasAccess) {
+                return true;
             }
             auditAccessDenied(user, "SCHOOL:" + schoolId, "Community user not authorized for school");
             return false;

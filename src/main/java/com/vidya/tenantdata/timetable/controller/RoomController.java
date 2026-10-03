@@ -5,6 +5,7 @@ import com.vidya.common.api.PagedApiResponse;
 import com.vidya.tenantdata.timetable.dto.CreateRoomRequest;
 import com.vidya.tenantdata.timetable.dto.RoomResponse;
 import com.vidya.tenantdata.timetable.dto.UpdateRoomRequest;
+import com.vidya.tenantdata.timetable.dto.UpdateRoomStatusRequest;
 import com.vidya.tenantdata.timetable.enums.RoomStatus;
 import com.vidya.tenantdata.timetable.enums.RoomType;
 import com.vidya.tenantdata.timetable.service.RoomService;
@@ -23,6 +24,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -35,7 +37,7 @@ import java.util.UUID;
 
 @Slf4j
 @RestController
-@RequestMapping({"/api/v1/tenant/rooms", "/api/v1/rooms"})
+@RequestMapping("/api/v1/rooms")
 @RequiredArgsConstructor
 @Tag(name = "Room Management", description = "Physical classrooms and facility management for the active school tenant")
 public class RoomController {
@@ -62,9 +64,11 @@ public class RoomController {
             @RequestParam(required = false) RoomType roomType,
             @Parameter(description = "Filter by room status")
             @RequestParam(required = false) RoomStatus status,
+            @Parameter(description = "Filter by building")
+            @RequestParam(required = false) String building,
             @PageableDefault(size = 20, sort = "name", direction = Sort.Direction.ASC) Pageable pageable
     ) {
-        Page<RoomResponse> page = roomService.searchRooms(search, roomType, status, pageable);
+        Page<RoomResponse> page = roomService.searchRooms(search, roomType, status, building, pageable);
         return ResponseEntity.ok(PagedApiResponse.of("ROOMS_RETRIEVED", "Rooms retrieved successfully", page.getContent(), page));
     }
 
@@ -86,6 +90,18 @@ public class RoomController {
         log.info("REST: Update room [{}]", id);
         RoomResponse response = roomService.updateRoom(id, request);
         return ResponseEntity.ok(ApiResponse.success("ROOM_UPDATED", "Room updated successfully", response));
+    }
+
+    @PatchMapping("/{id}/status")
+    @PreAuthorize("hasAuthority('ROOM_UPDATE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @Operation(summary = "Update room status", description = "Updates the operational status of a physical room")
+    public ResponseEntity<ApiResponse<RoomResponse>> updateRoomStatus(
+            @PathVariable UUID id,
+            @Valid @RequestBody UpdateRoomStatusRequest request
+    ) {
+        log.info("REST: Update room status [{}] -> [{}]", id, request.status());
+        RoomResponse response = roomService.updateRoomStatus(id, request);
+        return ResponseEntity.ok(ApiResponse.success("ROOM_STATUS_UPDATED", "Room status updated successfully", response));
     }
 
     @DeleteMapping("/{id}")

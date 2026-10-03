@@ -5,5 +5,11 @@ import jakarta.validation.constraints.NotNull;
 
 public record UpdateTimetableStatusRequest(
         @NotNull(message = "Timetable status is required")
-        TimetableStatus status
-) {}
+        TimetableStatus status,
+
+        Boolean replaceActive
+) {
+    public UpdateTimetableStatusRequest(TimetableStatus status) {
+        this(status, false);
+    }
+}

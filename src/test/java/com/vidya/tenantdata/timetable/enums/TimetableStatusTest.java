@@ -24,22 +24,22 @@ class TimetableStatusTest {
     }
 
     @Test
-    @DisplayName("PUBLISHED can transition to ACTIVE, DRAFT, DELETED")
+    @DisplayName("PUBLISHED can transition to ACTIVE, DRAFT, and self")
     void publishedTransitions() {
         assertThat(TimetableStatus.PUBLISHED.canTransitionTo(TimetableStatus.ACTIVE)).isTrue();
         assertThat(TimetableStatus.PUBLISHED.canTransitionTo(TimetableStatus.DRAFT)).isTrue();
-        assertThat(TimetableStatus.PUBLISHED.canTransitionTo(TimetableStatus.DELETED)).isTrue();
+        assertThat(TimetableStatus.PUBLISHED.canTransitionTo(TimetableStatus.DELETED)).isFalse();
         assertThat(TimetableStatus.PUBLISHED.canTransitionTo(TimetableStatus.PUBLISHED)).isTrue();
 
         assertThatCode(() -> TimetableStatus.PUBLISHED.validateTransitionTo(TimetableStatus.ACTIVE)).doesNotThrowAnyException();
     }
 
     @Test
-    @DisplayName("ACTIVE can transition to ARCHIVED, DRAFT, DELETED")
+    @DisplayName("ACTIVE can transition to ARCHIVED, and self")
     void activeTransitions() {
         assertThat(TimetableStatus.ACTIVE.canTransitionTo(TimetableStatus.ARCHIVED)).isTrue();
-        assertThat(TimetableStatus.ACTIVE.canTransitionTo(TimetableStatus.DRAFT)).isTrue();
-        assertThat(TimetableStatus.ACTIVE.canTransitionTo(TimetableStatus.DELETED)).isTrue();
+        assertThat(TimetableStatus.ACTIVE.canTransitionTo(TimetableStatus.DRAFT)).isFalse();
+        assertThat(TimetableStatus.ACTIVE.canTransitionTo(TimetableStatus.DELETED)).isFalse();
         assertThat(TimetableStatus.ACTIVE.canTransitionTo(TimetableStatus.ACTIVE)).isTrue();
         assertThat(TimetableStatus.ACTIVE.canTransitionTo(TimetableStatus.PUBLISHED)).isFalse();
 
@@ -47,14 +47,15 @@ class TimetableStatusTest {
     }
 
     @Test
-    @DisplayName("ARCHIVED can transition to DELETED")
+    @DisplayName("ARCHIVED is terminal, only allows self")
     void archivedTransitions() {
-        assertThat(TimetableStatus.ARCHIVED.canTransitionTo(TimetableStatus.DELETED)).isTrue();
+        assertThat(TimetableStatus.ARCHIVED.canTransitionTo(TimetableStatus.DELETED)).isFalse();
         assertThat(TimetableStatus.ARCHIVED.canTransitionTo(TimetableStatus.ARCHIVED)).isTrue();
         assertThat(TimetableStatus.ARCHIVED.canTransitionTo(TimetableStatus.DRAFT)).isFalse();
         assertThat(TimetableStatus.ARCHIVED.canTransitionTo(TimetableStatus.PUBLISHED)).isFalse();
 
-        assertThatCode(() -> TimetableStatus.ARCHIVED.validateTransitionTo(TimetableStatus.DELETED)).doesNotThrowAnyException();
+        assertThatThrownBy(() -> TimetableStatus.ARCHIVED.validateTransitionTo(TimetableStatus.DELETED))
+                .isInstanceOf(InvalidStateTransitionException.class);
     }
 
     @Test

@@ -25,12 +25,13 @@ public interface RoomRepository extends JpaRepository<Room, UUID> {
     @Query("SELECT r FROM Room r WHERE r.deletedAt IS NULL " +
            "AND (:roomType IS NULL OR r.roomType = :roomType) " +
            "AND (:status IS NULL OR r.status = :status) " +
+           "AND (:building IS NULL OR LOWER(r.building) LIKE LOWER(CONCAT('%', :building, '%'))) " +
            "AND (:query IS NULL OR LOWER(r.name) LIKE LOWER(CONCAT('%', :query, '%')) " +
-           "     OR LOWER(r.building) LIKE LOWER(CONCAT('%', :query, '%')) " +
            "     OR LOWER(r.roomCode) LIKE LOWER(CONCAT('%', :query, '%')))")
     Page<Room> searchRooms(
             @Param("roomType") RoomType roomType,
             @Param("status") RoomStatus status,
+            @Param("building") String building,
             @Param("query") String query,
             Pageable pageable
     );

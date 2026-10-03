@@ -266,4 +266,58 @@ class SecurityTenantIsolationIntegrationTest {
         // Verify TenantContext remains clean after exception
         assertThat(TenantContext.getTenantCode()).isNull();
     }
+
+    @Test
+    @DisplayName("User whose token is for Tenant A sending X-Tenant-ID: B must be rejected (403)")
+    void userWithTenantAToken_sendingXTenantIdB_isRejectedWith403() {
+        PlatformUserDetails principalA = new PlatformUserDetails(adminA);
+        UsernamePasswordAuthenticationToken authToken =
+                new UsernamePasswordAuthenticationToken(principalA, null, principalA.getAuthorities());
+        SecurityContextHolder.getContext().setAuthentication(authToken);
+
+        when(request.getRequestURI()).thenReturn("/api/v1/timetables");
+        when(request.getHeader("X-Tenant-ID")).thenReturn("TNT-SHELBYVILLE");
+
+        TenantRegistration regB = new TenantRegistration(
+                UUID.randomUUID(), "TNT-SHELBYVILLE", schoolBId, "ACTIVE",
+                "pg-node-2.vidya.internal", 5432, "tenant_shelbyville", "usr_shelbyville", "pwd_shelbyville"
+        );
+        when(tenantRegistryService.findByTenantCode("TNT-SHELBYVILLE")).thenReturn(Optional.of(regB));
+        when(userRepository.findById(adminAId)).thenReturn(Optional.of(adminA));
+        when(tenantRepository.findByTenantCode("TNT-SHELBYVILLE")).thenReturn(Optional.of(tenantB));
+
+        assertThatThrownBy(() -> tenantResolutionFilter.doFilter(request, response, filterChain))
+                .isInstanceOf(TenantAccessDeniedException.class);
+
+        assertThat(TenantContext.getTenantCode()).isNull();
+    }
+
+    @Test
+    @DisplayName("Token with no tenant/school claim accessing tenant-scoped endpoint must be rejected")
+    void tokenWithNoTenantClaim_accessingTenantScopedEndpoint_isRejected() {
+        PlatformUser userNoSchool = new PlatformUser(
+                "USR-NO-SCH", "noschool@example.com", "hash", "No", "School", null, PlatformRole.SCHOOL_ADMIN, null
+        );
+        UUID noSchoolUserId = UUID.randomUUID();
+        userNoSchool.setId(noSchoolUserId);
+        PlatformUserDetails principal = new PlatformUserDetails(userNoSchool);
+        UsernamePasswordAuthenticationToken authToken =
+                new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities());
+        SecurityContextHolder.getContext().setAuthentication(authToken);
+
+        when(request.getRequestURI()).thenReturn("/api/v1/timetables");
+        when(request.getHeader("X-Tenant-ID")).thenReturn("TNT-SPRINGFIELD");
+
+        TenantRegistration regA = new TenantRegistration(
+                UUID.randomUUID(), "TNT-SPRINGFIELD", schoolAId, "ACTIVE",
+                "pg-node-1.vidya.internal", 5432, "tenant_springfield", "usr_springfield", "pwd_springfield"
+        );
+        when(tenantRegistryService.findByTenantCode("TNT-SPRINGFIELD")).thenReturn(Optional.of(regA));
+        when(userRepository.findById(noSchoolUserId)).thenReturn(Optional.of(userNoSchool));
+
+        assertThatThrownBy(() -> tenantResolutionFilter.doFilter(request, response, filterChain))
+                .isInstanceOf(TenantAccessDeniedException.class);
+
+        assertThat(TenantContext.getTenantCode()).isNull();
+    }
 }

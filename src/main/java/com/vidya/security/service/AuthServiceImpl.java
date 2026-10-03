@@ -137,6 +137,11 @@ public class AuthServiceImpl implements AuthService {
             throw new UnauthorizedException("Invalid or expired refresh token");
         }
 
+        if (!jwtTokenProvider.isRefreshToken(request.getRefreshToken())) {
+            log.warn("[{}] Token refresh rejected: Provided token does not have REFRESH type claim", correlationId);
+            throw new UnauthorizedException("Invalid token type: Expected REFRESH token");
+        }
+
         UUID userId = jwtTokenProvider.getUserIdFromToken(request.getRefreshToken());
         String tokenHash = jwtTokenProvider.hashToken(request.getRefreshToken());
 

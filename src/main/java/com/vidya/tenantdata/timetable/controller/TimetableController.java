@@ -2,6 +2,10 @@ package com.vidya.tenantdata.timetable.controller;
 
 import com.vidya.common.api.ApiResponse;
 import com.vidya.common.api.PagedApiResponse;
+import com.vidya.tenantdata.timetable.dto.BulkUpsertEntriesResponse;
+import com.vidya.tenantdata.timetable.dto.BulkUpsertSectionEntriesRequest;
+import com.vidya.tenantdata.timetable.dto.CloneTimetableRequest;
+import com.vidya.tenantdata.timetable.dto.CloneTimetableResponse;
 import com.vidya.tenantdata.timetable.dto.CreateTimetableEntryRequest;
 import com.vidya.tenantdata.timetable.dto.CreateTimetableRequest;
 import com.vidya.tenantdata.timetable.dto.ScheduleValidationResponse;
@@ -43,7 +47,7 @@ import java.util.UUID;
 
 @Slf4j
 @RestController
-@RequestMapping({"/api/v1/tenant/timetables", "/api/v1/timetables"})
+@RequestMapping("/api/v1/timetables")
 @RequiredArgsConstructor
 @Tag(name = "Timetable & Scheduling", description = "Timetable creation, entries, validation, publish, and grid views for the active school tenant")
 public class TimetableController {
@@ -66,17 +70,19 @@ public class TimetableController {
 
     @GetMapping
     @PreAuthorize("hasAuthority('TIMETABLE_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
-    @Operation(summary = "Search timetables", description = "Searches timetables with optional academic year and status filters")
+    @Operation(summary = "Search timetables", description = "Searches timetables with optional academic year, bell schedule, and status filters")
     public ResponseEntity<PagedApiResponse<TimetableResponse>> searchTimetables(
             @Parameter(description = "Filter by academic year ID")
             @RequestParam(required = false) UUID academicYearId,
+            @Parameter(description = "Filter by bell schedule ID")
+            @RequestParam(required = false) UUID bellScheduleId,
             @Parameter(description = "Filter by timetable status")
             @RequestParam(required = false) TimetableStatus status,
             @Parameter(description = "Search term by name or code")
             @RequestParam(required = false) String search,
             @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
     ) {
-        Page<TimetableResponse> page = timetableService.searchTimetables(academicYearId, status, search, pageable);
+        Page<TimetableResponse> page = timetableService.searchTimetables(academicYearId, bellScheduleId, status, search, pageable);
         return ResponseEntity.ok(PagedApiResponse.of("TIMETABLES_RETRIEVED", "Timetables retrieved successfully", page.getContent(), page));
     }
 
@@ -139,7 +145,33 @@ public class TimetableController {
         return ResponseEntity.ok(ApiResponse.success("TIMETABLE_PUBLISHED", "Timetable published successfully", response));
     }
 
+    @PostMapping("/{id}/clone")
+    @PreAuthorize("hasAuthority('TIMETABLE_CREATE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @Operation(summary = "Clone timetable", description = "Clones an existing timetable and its scheduled entries into a new draft timetable")
+    public ResponseEntity<ApiResponse<CloneTimetableResponse>> cloneTimetable(
+            @PathVariable UUID id,
+            @Valid @RequestBody(required = false) CloneTimetableRequest request
+    ) {
+        log.info("REST: Clone timetable [{}]", id);
+        CloneTimetableResponse response = timetableService.cloneTimetable(id, request);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success("TIMETABLE_CLONED", "Timetable cloned successfully", response));
+    }
+
     // --- Timetable Entry Endpoints ---
+
+    @PutMapping("/{timetableId}/sections/{sectionId}/entries")
+    @PreAuthorize("hasAuthority('TIMETABLE_ENTRY_UPDATE') or hasAuthority('TIMETABLE_ENTRY_CREATE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @Operation(summary = "Bulk upsert section timetable entries", description = "Atomically bulk upserts timetable slot entries for a class section in a draft timetable")
+    public ResponseEntity<ApiResponse<BulkUpsertEntriesResponse>> bulkUpsertSectionEntries(
+            @PathVariable UUID timetableId,
+            @PathVariable UUID sectionId,
+            @Valid @RequestBody BulkUpsertSectionEntriesRequest request
+    ) {
+        log.info("REST: Bulk upsert section timetable entries in timetable [{}] for section [{}]", timetableId, sectionId);
+        BulkUpsertEntriesResponse response = timetableService.bulkUpsertSectionEntries(timetableId, sectionId, request);
+        return ResponseEntity.ok(ApiResponse.success("TIMETABLE_ENTRIES_BULK_UPSERTED", "Timetable section entries bulk upserted successfully", response));
+    }
 
     @PostMapping("/{timetableId}/entries")
     @PreAuthorize("hasAuthority('TIMETABLE_ENTRY_CREATE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
@@ -165,9 +197,10 @@ public class TimetableController {
             @RequestParam(required = false) UUID subjectId,
             @RequestParam(required = false) UUID roomId,
             @RequestParam(required = false) DayOfWeek dayOfWeek,
+            @RequestParam(required = false) UUID periodId,
             @PageableDefault(size = 50) Pageable pageable
     ) {
-        Page<TimetableEntryResponse> page = timetableService.searchEntries(timetableId, academicClassId, sectionId, teacherId, subjectId, roomId, dayOfWeek, pageable);
+        Page<TimetableEntryResponse> page = timetableService.searchEntries(timetableId, academicClassId, sectionId, teacherId, subjectId, roomId, dayOfWeek, periodId, pageable);
         return ResponseEntity.ok(PagedApiResponse.of("TIMETABLE_ENTRIES_RETRIEVED", "Timetable entries retrieved successfully", page.getContent(), page));
     }
 
@@ -207,7 +240,7 @@ public class TimetableController {
         return ResponseEntity.ok(ApiResponse.success("TIMETABLE_ENTRY_DELETED", "Timetable entry deleted successfully", null));
     }
 
-    // --- Timetable Grid / Schedule Views ---
+    // --- Timetable Grid / Schedule & Occupancy Views ---
 
     @GetMapping("/{timetableId}/class/{academicClassId}")
     @PreAuthorize("hasAuthority('TIMETABLE_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
@@ -215,31 +248,96 @@ public class TimetableController {
     public ResponseEntity<ApiResponse<TimetableGridResponse>> getClassTimetableGrid(
             @PathVariable UUID timetableId,
             @PathVariable UUID academicClassId,
-            @RequestParam(required = false) UUID sectionId
+            @RequestParam(required = false) UUID sectionId,
+            @RequestParam(required = false) java.util.List<DayOfWeek> days
     ) {
-        TimetableGridResponse response = timetableService.getClassTimetableGrid(timetableId, academicClassId, sectionId);
+        TimetableGridResponse response = timetableService.getClassTimetableGrid(timetableId, academicClassId, sectionId, days);
         return ResponseEntity.ok(ApiResponse.success("TIMETABLE_GRID_RETRIEVED", "Class timetable grid retrieved successfully", response));
     }
 
-    @GetMapping("/{timetableId}/teacher/{teacherId}")
+    @GetMapping("/{timetableId}/sections/{sectionId}/grid")
     @PreAuthorize("hasAuthority('TIMETABLE_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
-    @Operation(summary = "Get teacher weekly timetable grid", description = "Produces a day-by-period matrix view of the weekly teaching schedule for a teacher")
+    @Operation(summary = "Get section weekly timetable grid", description = "Produces a day-by-period matrix view of the weekly schedule for a specific section, with optional weekOf substitution overlay")
+    public ResponseEntity<ApiResponse<TimetableGridResponse>> getSectionTimetableGrid(
+            @PathVariable UUID timetableId,
+            @PathVariable UUID sectionId,
+            @RequestParam(required = false) java.util.List<DayOfWeek> days,
+            @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate weekOf
+    ) {
+        TimetableGridResponse response = timetableService.getSectionTimetableGrid(timetableId, sectionId, days, weekOf);
+        return ResponseEntity.ok(ApiResponse.success("TIMETABLE_GRID_RETRIEVED", "Section timetable grid retrieved successfully", response));
+    }
+
+    @GetMapping({"/{timetableId}/teachers/{teacherId}/grid", "/{timetableId}/teacher/{teacherId}"})
+    @PreAuthorize("hasAuthority('TIMETABLE_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @Operation(summary = "Get teacher weekly timetable grid", description = "Produces a day-by-period matrix view of the weekly teaching schedule for a teacher, with optional weekOf substitution overlay")
     public ResponseEntity<ApiResponse<TimetableGridResponse>> getTeacherTimetableGrid(
             @PathVariable UUID timetableId,
-            @PathVariable UUID teacherId
+            @PathVariable UUID teacherId,
+            @RequestParam(required = false) java.util.List<DayOfWeek> days,
+            @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate weekOf
     ) {
-        TimetableGridResponse response = timetableService.getTeacherTimetableGrid(timetableId, teacherId);
+        TimetableGridResponse response = timetableService.getTeacherTimetableGrid(timetableId, teacherId, days, weekOf);
         return ResponseEntity.ok(ApiResponse.success("TIMETABLE_GRID_RETRIEVED", "Teacher timetable grid retrieved successfully", response));
     }
 
-    @GetMapping("/{timetableId}/room/{roomId}")
+    @GetMapping("/{timetableId}/sections/{sectionId}/day")
+    @PreAuthorize("hasAuthority('TIMETABLE_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @Operation(summary = "Get section day timetable schedule", description = "Produces an effective day schedule for a section on a specific date, overlaying active substitutions")
+    public ResponseEntity<ApiResponse<com.vidya.tenantdata.timetable.dto.SectionDayScheduleResponse>> getSectionDaySchedule(
+            @PathVariable UUID timetableId,
+            @PathVariable UUID sectionId,
+            @RequestParam @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate date
+    ) {
+        com.vidya.tenantdata.timetable.dto.SectionDayScheduleResponse response = timetableService.getSectionDaySchedule(timetableId, sectionId, date);
+        return ResponseEntity.ok(ApiResponse.success("SECTION_DAY_SCHEDULE_RETRIEVED", "Section day schedule retrieved successfully", response));
+    }
+
+    @GetMapping("/{timetableId}/teachers/{teacherId}/day")
+    @PreAuthorize("hasAuthority('TIMETABLE_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @Operation(summary = "Get teacher day timetable schedule", description = "Produces an effective day schedule for a teacher on a specific date, marking covered slots and extra substituted periods")
+    public ResponseEntity<ApiResponse<com.vidya.tenantdata.timetable.dto.TeacherDayScheduleResponse>> getTeacherDaySchedule(
+            @PathVariable UUID timetableId,
+            @PathVariable UUID teacherId,
+            @RequestParam @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate date
+    ) {
+        com.vidya.tenantdata.timetable.dto.TeacherDayScheduleResponse response = timetableService.getTeacherDaySchedule(timetableId, teacherId, date);
+        return ResponseEntity.ok(ApiResponse.success("TEACHER_DAY_SCHEDULE_RETRIEVED", "Teacher day schedule retrieved successfully", response));
+    }
+
+    @GetMapping({"/{timetableId}/rooms/{roomId}/grid", "/{timetableId}/room/{roomId}"})
     @PreAuthorize("hasAuthority('TIMETABLE_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
     @Operation(summary = "Get room weekly timetable grid", description = "Produces a day-by-period matrix view of the weekly occupancy schedule for a room")
     public ResponseEntity<ApiResponse<TimetableGridResponse>> getRoomTimetableGrid(
             @PathVariable UUID timetableId,
-            @PathVariable UUID roomId
+            @PathVariable UUID roomId,
+            @RequestParam(required = false) java.util.List<DayOfWeek> days
     ) {
-        TimetableGridResponse response = timetableService.getRoomTimetableGrid(timetableId, roomId);
+        TimetableGridResponse response = timetableService.getRoomTimetableGrid(timetableId, roomId, days);
         return ResponseEntity.ok(ApiResponse.success("TIMETABLE_GRID_RETRIEVED", "Room timetable grid retrieved successfully", response));
+    }
+
+    @GetMapping("/{timetableId}/rooms/{roomId}/occupancy")
+    @PreAuthorize("hasAuthority('TIMETABLE_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @Operation(summary = "Get room occupancy and utilisation", description = "Calculates occupied periods and utilisation percentage for a room across selected days")
+    public ResponseEntity<ApiResponse<com.vidya.tenantdata.timetable.dto.RoomOccupancyResponse>> getRoomOccupancy(
+            @PathVariable UUID timetableId,
+            @PathVariable UUID roomId,
+            @RequestParam(required = false) java.util.List<DayOfWeek> days
+    ) {
+        com.vidya.tenantdata.timetable.dto.RoomOccupancyResponse response = timetableService.getRoomOccupancy(timetableId, roomId, days);
+        return ResponseEntity.ok(ApiResponse.success("ROOM_OCCUPANCY_RETRIEVED", "Room occupancy retrieved successfully", response));
+    }
+
+    @GetMapping("/{timetableId}/teachers/{teacherId}/load")
+    @PreAuthorize("hasAuthority('TIMETABLE_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @Operation(summary = "Get teacher workload and free periods", description = "Calculates assigned teaching periods and free teaching slots per day and per week for a teacher")
+    public ResponseEntity<ApiResponse<com.vidya.tenantdata.timetable.dto.TeacherLoadResponse>> getTeacherLoad(
+            @PathVariable UUID timetableId,
+            @PathVariable UUID teacherId,
+            @RequestParam(required = false) java.util.List<DayOfWeek> days
+    ) {
+        com.vidya.tenantdata.timetable.dto.TeacherLoadResponse response = timetableService.getTeacherLoad(timetableId, teacherId, days);
+        return ResponseEntity.ok(ApiResponse.success("TEACHER_LOAD_RETRIEVED", "Teacher load retrieved successfully", response));
     }
 }

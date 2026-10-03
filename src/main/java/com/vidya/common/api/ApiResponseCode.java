@@ -23,6 +23,7 @@ public final class ApiResponseCode {
     public static final String INTERNAL_ERROR               = "INTERNAL_ERROR";
     public static final String BUSINESS_ERROR               = "BUSINESS_ERROR";
     public static final String INVALID_STATE_TRANSITION     = "INVALID_STATE_TRANSITION";
+    public static final String INVALID_ARGUMENT              = "INVALID_ARGUMENT";
 
     // ── Authentication & User ────────────────────────────────────────────────
     public static final String LOGIN_SUCCESS                = "LOGIN_SUCCESS";

@@ -117,6 +117,8 @@ public enum PlatformRole {
             PlatformPermission.TIMETABLE_ENTRY_CREATE,
             PlatformPermission.TIMETABLE_ENTRY_UPDATE,
             PlatformPermission.TIMETABLE_ENTRY_DELETE,
+            PlatformPermission.SUBSTITUTION_READ,
+            PlatformPermission.SUBSTITUTION_MANAGE,
             PlatformPermission.AUDIT_READ,
             PlatformPermission.ATTENDANCE_READ,
             PlatformPermission.ATTENDANCE_CREATE,
@@ -246,6 +248,8 @@ public enum PlatformRole {
             PlatformPermission.TIMETABLE_ENTRY_CREATE,
             PlatformPermission.TIMETABLE_ENTRY_UPDATE,
             PlatformPermission.TIMETABLE_ENTRY_DELETE,
+            PlatformPermission.SUBSTITUTION_READ,
+            PlatformPermission.SUBSTITUTION_MANAGE,
             PlatformPermission.ATTENDANCE_READ,
             PlatformPermission.ATTENDANCE_CREATE,
             PlatformPermission.ATTENDANCE_UPDATE,
@@ -346,6 +350,8 @@ public enum PlatformRole {
             PlatformPermission.TIMETABLE_ENTRY_CREATE,
             PlatformPermission.TIMETABLE_ENTRY_UPDATE,
             PlatformPermission.TIMETABLE_ENTRY_DELETE,
+            PlatformPermission.SUBSTITUTION_READ,
+            PlatformPermission.SUBSTITUTION_MANAGE,
             PlatformPermission.ATTENDANCE_READ,
             PlatformPermission.ATTENDANCE_CREATE,
             PlatformPermission.ATTENDANCE_UPDATE,
@@ -370,7 +376,8 @@ public enum PlatformRole {
             PlatformPermission.ACADEMIC_CLASS_READ,
             PlatformPermission.STUDENT_ACADEMIC_ASSIGNMENT_READ,
             PlatformPermission.TIMETABLE_READ,
-            PlatformPermission.TIMETABLE_ENTRY_READ
+            PlatformPermission.TIMETABLE_ENTRY_READ,
+            PlatformPermission.SUBSTITUTION_READ
     ));
 
     private final Set<PlatformPermission> permissions;
