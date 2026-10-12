@@ -49,4 +49,10 @@ public class DailyAttendanceEntryResponse {
 
     @Schema(description = "Remarks")
     private String remarks;
+
+    @Schema(description = "Whether this record is on a non-working day with an override")
+    private boolean nonWorkingDayOverride;
+
+    @Schema(description = "Reason for overriding non-working day")
+    private String overrideReason;
 }

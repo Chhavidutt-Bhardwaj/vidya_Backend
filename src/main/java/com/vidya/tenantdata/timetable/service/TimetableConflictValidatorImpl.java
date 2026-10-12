@@ -29,11 +29,13 @@ import com.vidya.tenantdata.timetable.repository.BellSchedulePeriodRepository;
 import com.vidya.tenantdata.timetable.repository.RoomRepository;
 import com.vidya.tenantdata.timetable.repository.TimetableEntryRepository;
 import com.vidya.tenantdata.timetable.repository.TimetableRepository;
+import com.vidya.tenantdata.calendar.service.CalendarService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.DayOfWeek;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -55,6 +57,7 @@ public class TimetableConflictValidatorImpl implements TimetableConflictValidato
     private final SubjectRepository subjectRepository;
     private final TeacherSubjectAssignmentRepository teacherSubjectAssignmentRepository;
     private final ClassSubjectAssignmentRepository classSubjectAssignmentRepository;
+    private final CalendarService calendarService;
 
     @Override
     @Transactional(readOnly = true, transactionManager = "tenantTransactionManager")
@@ -255,6 +258,19 @@ public class TimetableConflictValidatorImpl implements TimetableConflictValidato
             }
         }
 
+        // 9. Calendar working day check (WARNING severity)
+        if (request.dayOfWeek() != null && timetable.getAcademicYear() != null) {
+            Set<DayOfWeek> everWorking = calendarService.getEverWorkingWeekdays(timetable.getAcademicYear().getId());
+            if (!everWorking.contains(request.dayOfWeek())) {
+                conflicts.add(new ScheduleConflictResponse(
+                        ScheduleConflictType.NON_WORKING_DAY,
+                        ConflictSeverity.WARNING,
+                        "scheduled on " + request.dayOfWeek() + ", a weekly off for this academic year",
+                        excludeEntryId, null, request.periodId(), request.dayOfWeek(), null
+                ));
+            }
+        }
+
         boolean valid = conflicts.stream().noneMatch(c -> c.severity() == ConflictSeverity.ERROR);
         return new ScheduleValidationResponse(valid, conflicts.size(), conflicts, 1);
     }
@@ -272,6 +288,10 @@ public class TimetableConflictValidatorImpl implements TimetableConflictValidato
     public ScheduleValidationResponse validateTimetable(Timetable timetable) {
         List<TimetableEntry> entries = timetableEntryRepository.findAllByTimetableIdWithDetails(timetable.getId());
         List<ScheduleConflictResponse> allConflicts = new ArrayList<>();
+
+        Set<DayOfWeek> everWorking = timetable.getAcademicYear() != null
+                ? calendarService.getEverWorkingWeekdays(timetable.getAcademicYear().getId())
+                : java.util.Collections.emptySet();
 
         Set<String> teacherSlots = new HashSet<>();
         Set<String> classSlots = new HashSet<>();
@@ -333,6 +353,16 @@ public class TimetableConflictValidatorImpl implements TimetableConflictValidato
                             entry.getId(), null, entry.getPeriod().getId(), entry.getDayOfWeek(), entry.getRoom().getId()
                     ));
                 }
+            }
+
+            // 5. Calendar working day check (WARNING severity)
+            if (entry.getDayOfWeek() != null && !everWorking.contains(entry.getDayOfWeek())) {
+                allConflicts.add(new ScheduleConflictResponse(
+                        ScheduleConflictType.NON_WORKING_DAY,
+                        ConflictSeverity.WARNING,
+                        "scheduled on " + entry.getDayOfWeek() + ", a weekly off for this academic year",
+                        entry.getId(), null, entry.getPeriod() != null ? entry.getPeriod().getId() : null, entry.getDayOfWeek(), null
+                ));
             }
         }
 

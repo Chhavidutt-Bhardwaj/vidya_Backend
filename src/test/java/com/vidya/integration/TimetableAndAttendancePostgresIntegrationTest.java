@@ -452,4 +452,48 @@ class TimetableAndAttendancePostgresIntegrationTest extends AbstractTenantPostgr
         assertThat(fetchedCreatedBy).isEqualTo(createdBy);
         assertThat(fetchedUpdatedBy).isEqualTo(updatedBy);
     }
+
+    @Test
+    @DisplayName("V16 — student_attendance non_working_day_override CHECK constraint requires override_reason when true")
+    void v16_studentAttendance_overrideCheckConstraint() {
+        String suffix = UUID.randomUUID().toString().substring(0, 8);
+        UUID yearId = createAcademicYear("AY-ATT-" + suffix, "Year " + suffix);
+        UUID classId = createAcademicClass("CLS-ATT-" + suffix, "Class " + suffix, 1);
+        UUID sectionId = createSection(yearId, classId, "SEC-ATT-" + suffix, "Section " + suffix);
+        UUID userId = createTenantUser("USR-ATT-" + suffix, "att" + suffix + "@test.com", "STUDENT");
+        UUID studentId = createStudent(userId, "STU-ATT-" + suffix, "ADM-" + suffix);
+
+        LocalDate attDate = LocalDate.now();
+
+        // 1. Override is TRUE but override_reason is NULL -> must fail due to chk_student_attendance_override_reason
+        UUID invalidAttId = UUID.randomUUID();
+        assertThatThrownBy(() ->
+                jdbcTemplate.update(
+                        "INSERT INTO student_attendance (id, attendance_code, student_id, academic_year_id, academic_class_id, section_id, attendance_date, status, non_working_day_override, override_reason) " +
+                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                        invalidAttId, "ATT-INV-" + suffix, studentId, yearId, classId, sectionId, attDate, "PRESENT", true, null
+                ))
+                .isInstanceOf(DataAccessException.class)
+                .hasMessageMatching("(?s).*chk_student_attendance_override_reason.*|.*check constraint.*");
+
+        // 2. Override is TRUE and override_reason is provided -> must succeed
+        UUID validAttId1 = UUID.randomUUID();
+        int inserted1 = jdbcTemplate.update(
+                "INSERT INTO student_attendance (id, attendance_code, student_id, academic_year_id, academic_class_id, section_id, attendance_date, status, non_working_day_override, override_reason) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                validAttId1, "ATT-V1-" + suffix, studentId, yearId, classId, sectionId, attDate, "PRESENT", true, "Special Saturday class"
+        );
+        assertThat(inserted1).isEqualTo(1);
+
+        // 3. Override is FALSE and override_reason is NULL -> must succeed
+        UUID student2UserId = createTenantUser("USR-ATT2-" + suffix, "att2" + suffix + "@test.com", "STUDENT");
+        UUID student2Id = createStudent(student2UserId, "STU-ATT2-" + suffix, "ADM2-" + suffix);
+        UUID validAttId2 = UUID.randomUUID();
+        int inserted2 = jdbcTemplate.update(
+                "INSERT INTO student_attendance (id, attendance_code, student_id, academic_year_id, academic_class_id, section_id, attendance_date, status, non_working_day_override, override_reason) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                validAttId2, "ATT-V2-" + suffix, student2Id, yearId, classId, sectionId, attDate, "PRESENT", false, null
+        );
+        assertThat(inserted2).isEqualTo(1);
+    }
 }

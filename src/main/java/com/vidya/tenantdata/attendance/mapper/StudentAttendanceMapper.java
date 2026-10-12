@@ -54,6 +54,8 @@ public final class StudentAttendanceMapper {
                 .attendanceDate(entity.getAttendanceDate())
                 .status(entity.getStatus())
                 .remarks(entity.getRemarks())
+                .nonWorkingDayOverride(entity.isNonWorkingDayOverride())
+                .overrideReason(entity.getOverrideReason())
                 .markedByStaffId(markedByStaffId)
                 .markedAt(entity.getMarkedAt())
                 .createdAt(entity.getCreatedAt())
@@ -112,6 +114,8 @@ public final class StudentAttendanceMapper {
                 .attendanceDate(entity.getAttendanceDate())
                 .status(entity.getStatus())
                 .remarks(entity.getRemarks())
+                .nonWorkingDayOverride(entity.isNonWorkingDayOverride())
+                .overrideReason(entity.getOverrideReason())
                 .markedByStaffId(markedByStaffId)
                 .markedByStaffCode(markedByStaffCode)
                 .markedByStaffName(markedByStaffName)
@@ -154,6 +158,8 @@ public final class StudentAttendanceMapper {
                     .attendanceDate(null)
                     .status(null)
                     .remarks(null)
+                    .nonWorkingDayOverride(false)
+                    .overrideReason(null)
                     .build();
         }
 
@@ -167,6 +173,8 @@ public final class StudentAttendanceMapper {
                 .attendanceDate(entity.getAttendanceDate())
                 .status(entity.getStatus())
                 .remarks(entity.getRemarks())
+                .nonWorkingDayOverride(entity.isNonWorkingDayOverride())
+                .overrideReason(entity.getOverrideReason())
                 .build();
     }
 }

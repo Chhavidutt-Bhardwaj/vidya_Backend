@@ -49,4 +49,15 @@ public class MarkAttendanceRequest {
 
     @Schema(description = "Optional remarks or reason for the status")
     private String remarks;
+
+    @Schema(description = "Optional flag to allow marking attendance on non-working days or holidays", defaultValue = "false")
+    private Boolean allowNonWorkingDay;
+
+    @Schema(description = "Reason for overriding non-working day attendance (required when allowNonWorkingDay is true)")
+    private String overrideReason;
+
+    public MarkAttendanceRequest(UUID studentId, UUID academicYearId, UUID academicClassId, UUID sectionId,
+                                 LocalDate attendanceDate, AttendanceStatus status, String remarks) {
+        this(studentId, academicYearId, academicClassId, sectionId, attendanceDate, status, remarks, false, null);
+    }
 }

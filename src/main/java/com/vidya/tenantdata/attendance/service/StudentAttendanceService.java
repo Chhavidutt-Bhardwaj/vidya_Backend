@@ -152,4 +152,16 @@ public interface StudentAttendanceService {
      * @return summary counts (created, updated, total) and per-student results
      */
     BulkAttendanceResponse markBulkAttendance(BulkAttendanceRequest request, UUID markerStaffId);
+
+    /**
+     * Gaps report: returns working dates in range (max 92 days) on which no attendance was recorded
+     * for any student in the section.
+     *
+     * @param sectionId      section UUID
+     * @param academicYearId academic year UUID
+     * @param fromDate       inclusive start date
+     * @param toDate         inclusive end date
+     * @return list of working dates with no attendance recorded
+     */
+    List<LocalDate> getMissingAttendanceDates(UUID sectionId, UUID academicYearId, LocalDate fromDate, LocalDate toDate);
 }

@@ -4,7 +4,7 @@
 > **Version**: 1.0.0-SNAPSHOT  
 > **Java Version**: 25  
 > **Framework**: Spring Boot 4.1.1  
-> **Test Status**: `724 passed / 724 total (100%)`  
+> **Test Status**: `983 passed / 983 total (100%)`  
 > **Architecture**: Modular Monolith with Multi-Tenant Database-per-Tenant Isolation
 
 ---
@@ -26,7 +26,7 @@
 graph TD
     Client[Web / Mobile Clients / API Consumers] --> Gateway[Spring Boot 4.1.1 Modular Monolith]
     Gateway --> Security[Spring Security + JWT + RBAC]
-    Security --> TenantFilter[TenantContext Resolver]
+    Security --> TenantFilter[TenantResolutionFilter]
     
     subgraph "Master Data Domain (Master DB)"
         PlatformUsers[Platform Users & RBAC]
@@ -43,7 +43,7 @@ graph TD
         Enrollment[Student Enrollment & Assignments]
         StaffMgmt[Staff & Teacher Assignments]
         Curriculum[Subjects & Curriculums]
-        Timetable[Timetable & Scheduling]
+        Timetable[Timetable, Bell Schedules, Rooms & Substitutions]
         Attendance[Daily Student Attendance & Upsert]
     end
     
@@ -62,12 +62,12 @@ graph TD
 | **Persistence** | Spring Data JPA / Hibernate ORM | Entity management and repositories |
 | **Database** | PostgreSQL 16+ | Relational data store for Master and Tenant databases |
 | **Database Migrations** | Flyway | Versioned migrations (`db/migration/master` and `db/migration/tenant`) |
-| **Cache & Distributed State** | Redis / Redisson | Caching, rate limiting, and distributed sessions |
-| **Security** | Spring Security 6+ | Stateless JWT authentication, role & authority RBAC |
+| **Cache & Distributed State** | Redis / Spring Session | Distributed session store (`spring-session-data-redis` with Lettuce driver) |
+| **Security** | Spring Security 6+ | Stateless JWT authentication (Access & Refresh tokens), role & authority RBAC |
 | **API Documentation** | SpringDoc OpenAPI (Swagger 3) | Interactive REST API documentation |
 | **Validation** | Jakarta Bean Validation / Hibernate Validator | Input validation with standard constraints |
 | **Boilerplate Reduction**| Lombok | `@Getter`, `@Setter`, `@Builder`, `@RequiredArgsConstructor` |
-| **Testing** | JUnit 5, Mockito, AssertJ, MockMvc | Comprehensive unit and integration test suite |
+| **Testing** | JUnit 5, Mockito, AssertJ, MockMvc, Testcontainers | Unit, mock MVC, and real containerized PostgreSQL integration tests |
 
 ---
 
@@ -83,23 +83,23 @@ graph TD
 ### 4.2 Dynamic Routing Lifecycle
 ```text
 HTTP Request
-  └─ Header: X-Tenant-ID: <tenantCode> (or JWT tenant claim)
-       └─ TenantContextFilter: Sets TenantContext.setTenantId(tenantCode)
+  └─ Header: X-Tenant-ID: <schoolId>
+       └─ TenantResolutionFilter: Sets TenantContext.setTenantId(schoolId) after TenantAuthorizationService validation
             └─ Service Layer: @Transactional(transactionManager = "tenantTransactionManager")
-                 └─ TenantRoutingDataSource.determineCurrentLookupKey() -> returns tenantCode
+                 └─ TenantRoutingDataSource.determineCurrentLookupKey() -> returns schoolId
                       └─ Returns dedicated ConnectionPool for that tenant DB
                            └─ After completion: TenantContext.clear() in finally block
 ```
 
 ### 4.3 Database Migration Separation
 - Master DB migrations: `src/main/resources/db/migration/master/V1__*.sql` (currently at `V20`)
-- Tenant DB migrations: `src/main/resources/db/migration/tenant/V1__*.sql` (currently at `V12`)
+- Tenant DB migrations: `src/main/resources/db/migration/tenant/V1__*.sql` (currently at `V14`)
 
 ---
 
-## 5. What Is Completed (Steps 1 – 23)
+## 5. What Is Completed (Steps 1 – 24)
 
-Vidya currently has **724 passing tests** across **23 fully implemented steps**.
+Vidya currently has **983 passing tests** across **24 fully implemented steps**.
 
 ### 5.1 Master Platform Domain (`com.vidya.master`)
 - [x] **Platform Identity & RBAC** (`V1`): Platform Super Admin, Platform Admin, role hierarchy, password hashing.
@@ -128,13 +128,17 @@ Vidya currently has **724 passing tests** across **23 fully implemented steps**.
   - Mapping teachers to subjects across specific sections and academic years.
 - [x] **Class Teacher / Section Teacher Assignment** (`V11`, Step 22):
   - Single active class teacher per section invariant with historical assignment tracking.
-- [x] **Timetable & Scheduling Foundation** (`V9`):
-  - Timetable periods, slots, classroom allocations, and conflict avoidance schema.
 - [x] **Student Daily Attendance & Bulk Upsert** (`V12`, Step 23):
   - Daily attendance tracking (`StudentAttendance`) with state machine (PRESENT, ABSENT, LATE, HALF_DAY, EXCUSED, DELETED).
   - Transactional bulk upsert (`POST /api/v1/attendance/bulk`) with natural key `studentId + academicYearId + attendanceDate`.
   - PostgreSQL partial unique index protection (`WHERE deleted_at IS NULL`) preventing concurrent duplicates.
   - Attendance summary calculations with weighted percentage computation.
+- [x] **Timetable & Scheduling Engine** (`V13-V14`, Step 24A-24H):
+  - Canonical entities: `room`, `bell_schedule`, `bell_schedule_period`, `timetable`, `timetable_entry`, `timetable_substitution`.
+  - Conflict-free grid queries (section, teacher, room occupancy, teacher load) with bounded statement counts.
+  - Fail-fast bulk upsert with clash detection.
+  - Day schedule views (`/sections/{id}/day?date=` and `/teachers/{id}/day?date=`).
+  - Substitution management (`POST /api/v1/timetables/{id}/substitutions`) and weekly/day schedule overlays.
 
 ---
 
@@ -147,8 +151,20 @@ gantt
     title Vidya Engineering Roadmap
     dateFormat  YYYY-MM-DD
     section Core Academic
-    Attendance Foundation (Step 23)        :done, 2026-10-01, 2026-10-03
-    Timetable Engine & Scheduler (Step 24) :active, 2026-10-04, 2026-10-07
+    Timetable Engine & Substitutions (Step 24) :done, 2026-10-01, 2026-10-04
+    Examination & Assessment (Step 25)    :active, 2026-10-05, 2026-10-09
+    Grading & Report Cards (Step 26)       :2026-10-10, 2026-10-13
+    section Financial & Ops
+    Fee Structure & Invoicing (Step 27)    :2026-10-14, 2026-10-18
+    Fee Collection & Online Pay (Step 28)  :2026-10-19, 2026-10-22
+    Transport & Fleet Tracking (Step 29)   :2026-10-23, 2026-10-26
+    Library Management (Step 30)           :2026-10-27, 2026-10-30
+    section Engagement & Portals
+    Parent & Student Portal API (Step 31)  :2026-10-31, 2026-11-03
+    Communication, SMS & Notices (Step 32) :2026-11-04, 2026-11-07
+    Staff Payroll & Leave Mgmt (Step 33)   :2026-11-08, 2026-11-11
+    Analytics & Executive Reports (Step 34):2026-11-12, 2026-11-15
+```
     Examination & Assessment (Step 25)    :2026-10-08, 2026-10-12
     Grading & Report Cards (Step 26)       :2026-10-13, 2026-10-16
     section Financial & Ops
@@ -165,10 +181,14 @@ gantt
 
 ### Detailed Roadmap Specifications
 
-#### Step 24 — Timetable Scheduling & Generation Engine
-- **Objective**: Manage weekly timetable slots, break periods, room allocation, and automated teacher conflict resolution.
-- **Key Tables**: `timetable_period`, `timetable_entry`, `classroom`.
-- **Invariants**: A teacher cannot be scheduled in two sections at the same period; a room cannot host two sections at the same period.
+#### Step 24 — Timetable Scheduling & Substitution Engine
+- **Objective**: Manage master bell schedules, periods, room inventories, weekly timetable entries, conflict resolution, daily schedule views, and teacher substitutions.
+- **Key Tables**: `room`, `bell_schedule`, `bell_schedule_period`, `timetable`, `timetable_entry`, `timetable_substitution`.
+- **Invariants**: 
+  - Teacher conflict: A teacher cannot be scheduled in two sections at the same weekday + period.
+  - Room conflict: A room cannot host two sections at the same weekday + period.
+  - Substitution conflict: A substitute teacher or substitute room cannot be assigned to multiple sections at the same period on the same date.
+  - Bounded queries: Grid and day views execute in $O(1)$ prepared SQL statements regardless of timetable size.
 
 #### Step 25 — Examination & Assessment Foundation
 - **Objective**: Define exam terms (Term 1, Mid-term, Final), exam schedules, max marks, passing thresholds, and grading scales (CBSE/ICSE/State Board).
@@ -229,7 +249,7 @@ When implementing any feature in Vidya, the following architectural invariants *
 
 ### 7.2 Entity Standards
 - **Primary Keys**: Always `UUID` generated via `@GeneratedValue(strategy = GenerationType.UUID)`.
-- **Business Identifiers**: Always include a unique, human-readable immutable business code generated via `CodeGenerator` (e.g., `ATT-XXXX`, `STU-XXXX`, `SEC-XXXX`).
+- **Business Identifiers**: Always include a unique, human-readable immutable business code generated via `CodeGenerator` (e.g., `ATT-XXXX`, `STU-XXXX`, `SEC-XXXX`, `SUB-XXXX`).
 - **Audit Columns**: Include `createdAt`, `updatedAt`, `createdBy`, `updatedBy`.
 - **Soft Deletion**: Include `@Column(name = "deleted_at") private Instant deletedAt;`.
 - **Optimistic Locking**: Always include `@Version @Column(name = "version") private Long version;`.
@@ -269,28 +289,30 @@ When implementing any feature in Vidya, the following architectural invariants *
 com.vidya
 ├── VidyaApplication.java
 ├── common/                  # Cross-cutting concerns
-│   ├── api/                 # ApiResponse, PagedApiResponse, ErrorResponse
-│   ├── exception/           # BusinessException, ResourceNotFoundException, etc.
-│   └── util/                # CodeGenerator, DateUtils
+│   ├── api/                 # ApiResponse, PagedApiResponse, ErrorResponse, ApiResponseCode
+│   ├── exception/           # BusinessException, ResourceNotFoundException, DuplicateResourceException, etc.
+│   └── util/                # CodeGenerator, DateUtils, SecurityUtils
 ├── config/                  # Master & Tenant DataSource configuration, Flyway config, Redis config
 ├── master/                  # Master Platform Domain (SaaS Operations)
+│   ├── audit/               # Platform-wide audit logs
 │   ├── community/           # Multi-school community networks
-│   ├── school/              # Schools & School Branches
-│   ├── tenant/              # Tenant registry, datasource routing & provisioning
 │   ├── onboarding/          # Multi-step school onboarding state machine
-│   ├── subscription/        # SaaS subscription plans, features & tiers
 │   ├── payment/             # Master platform billing & payments
-│   └── audit/               # Platform-wide audit logs
-├── security/                # JWT filters, TenantContextFilter, Spring Security RBAC
+│   ├── school/              # Schools & School Branches
+│   ├── subscription/        # SaaS subscription plans, features & tiers
+│   ├── tenant/              # Tenant registry, datasource routing & provisioning
+│   └── workflow/            # Master state-machine workflows
+├── security/                # JWT filters, TenantResolutionFilter, Spring Security RBAC
 └── tenantdata/              # Tenant School Domain (Dynamic Database-per-Tenant)
     ├── academic/            # AcademicYear, AcademicClass, Section, Assignments
-    ├── student/             # Student master record, enrollments, admissions
-    ├── staff/               # Staff master record, employment, designations
-    ├── subject/             # Subjects, Curriculums, Subject-Class mapping
     ├── assignment/          # Teacher-Subject & Class Teacher assignments
-    ├── timetable/           # Period definitions, timetable entries
-    └── attendance/          # Student attendance, daily sheets, bulk upsert
+    ├── attendance/          # Student attendance, daily sheets, bulk upsert
+    ├── staff/               # Staff master record, employment, designations
+    ├── student/             # Student master record, enrollments, admissions
+    ├── subject/             # Subjects, Curriculums, Subject-Class mapping
+    └── timetable/           # Room, BellSchedule, Timetable, Entries, and Substitutions
 ```
+
 
 ---
 

@@ -42,6 +42,9 @@ public interface AcademicYearRepository extends JpaRepository<AcademicYear, UUID
     @Query("UPDATE AcademicYear y SET y.isCurrent = false WHERE y.isCurrent = true AND y.id <> :yearId")
     void unsetCurrentForOtherYears(@Param("yearId") UUID yearId);
 
+    @Query("SELECT y FROM AcademicYear y WHERE y.deletedAt IS NULL AND :date >= y.startDate AND :date <= y.endDate ORDER BY y.isCurrent DESC, y.startDate DESC")
+    java.util.List<AcademicYear> findAcademicYearsForDate(@Param("date") java.time.LocalDate date);
+
     @Modifying
     @Query("UPDATE AcademicYear y SET y.isCurrent = false WHERE y.isCurrent = true")
     void unsetAllCurrent();

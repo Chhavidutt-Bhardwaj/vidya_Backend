@@ -101,6 +101,7 @@ public class TimetableServiceImpl implements TimetableService {
     private final TimetableEntryMapper timetableEntryMapper;
     private final TimetableSubstitutionRepository timetableSubstitutionRepository;
     private final TimetableSubstitutionMapper timetableSubstitutionMapper;
+    private final com.vidya.tenantdata.calendar.service.CalendarService calendarService;
 
     @Override
     @Transactional(transactionManager = "tenantTransactionManager")
@@ -1290,6 +1291,13 @@ public class TimetableServiceImpl implements TimetableService {
             }
         }
 
+        com.vidya.tenantdata.calendar.enums.DayStatus dayStatus = null;
+        if (calendarService != null) {
+            try {
+                dayStatus = calendarService.getDayStatus(date).status();
+            } catch (Exception ignored) {}
+        }
+
         return new com.vidya.tenantdata.timetable.dto.SectionDayScheduleResponse(
                 timetable.getId(),
                 timetable.getTimetableCode(),
@@ -1300,7 +1308,8 @@ public class TimetableServiceImpl implements TimetableService {
                 section.getName(),
                 date,
                 dayOfWeek,
-                slots
+                slots,
+                dayStatus
         );
     }
 
@@ -1420,6 +1429,13 @@ public class TimetableServiceImpl implements TimetableService {
             }
         }
 
+        com.vidya.tenantdata.calendar.enums.DayStatus teacherDayStatus = null;
+        if (calendarService != null) {
+            try {
+                teacherDayStatus = calendarService.getDayStatus(date).status();
+            } catch (Exception ignored) {}
+        }
+
         return new com.vidya.tenantdata.timetable.dto.TeacherDayScheduleResponse(
                 timetable.getId(),
                 timetable.getTimetableCode(),
@@ -1429,7 +1445,8 @@ public class TimetableServiceImpl implements TimetableService {
                 teacherFullName,
                 date,
                 dayOfWeek,
-                slots
+                slots,
+                teacherDayStatus
         );
     }
 

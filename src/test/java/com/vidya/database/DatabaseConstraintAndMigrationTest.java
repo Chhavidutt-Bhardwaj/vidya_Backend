@@ -60,6 +60,8 @@ class DatabaseConstraintAndMigrationTest {
             assertThat(filenames).anyMatch(f -> f.startsWith("V1__"));
             assertThat(filenames).anyMatch(f -> f.startsWith("V2__"));
             assertThat(filenames).anyMatch(f -> f.startsWith("V3__"));
+            assertThat(filenames).anyMatch(f -> f.startsWith("V15__"));
+            assertThat(filenames).anyMatch(f -> f.startsWith("V16__"));
 
             for (String file : filenames) {
                 if (file.endsWith(".sql")) {

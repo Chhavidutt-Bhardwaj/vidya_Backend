@@ -39,6 +39,9 @@ spring:
 # Base / Default Shared Configuration
 # ==============================================================
 vidya:
+  school:
+    timezone: ${VIDYA_SCHOOL_TIMEZONE:Asia/Kolkata}
+
   security:
     login:
       max-failed-attempts: 5

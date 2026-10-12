@@ -12,6 +12,7 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -164,5 +165,34 @@ public interface StudentAttendanceRepository extends JpaRepository<StudentAttend
             @Param("sectionId") UUID sectionId,
             @Param("academicYearId") UUID academicYearId,
             @Param("attendanceDate") LocalDate attendanceDate
+    );
+
+    /**
+     * All active attendance records for a student in an academic year.
+     */
+    @Query("SELECT sa FROM StudentAttendance sa " +
+           "WHERE sa.student.id = :studentId " +
+           "AND sa.academicYear.id = :academicYearId " +
+           "AND sa.deletedAt IS NULL " +
+           "ORDER BY sa.attendanceDate ASC")
+    List<StudentAttendance> findAllActiveByStudentAndYear(
+            @Param("studentId") UUID studentId,
+            @Param("academicYearId") UUID academicYearId
+    );
+
+    /**
+     * Set of dates with at least one active attendance record for a section in a date range.
+     */
+    @Query("SELECT DISTINCT sa.attendanceDate FROM StudentAttendance sa " +
+           "WHERE sa.section.id = :sectionId " +
+           "AND sa.academicYear.id = :academicYearId " +
+           "AND sa.attendanceDate >= :fromDate " +
+           "AND sa.attendanceDate <= :toDate " +
+           "AND sa.deletedAt IS NULL")
+    Set<LocalDate> findDistinctAttendanceDatesBySectionAndYearAndRange(
+            @Param("sectionId") UUID sectionId,
+            @Param("academicYearId") UUID academicYearId,
+            @Param("fromDate") LocalDate fromDate,
+            @Param("toDate") LocalDate toDate
     );
 }

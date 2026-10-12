@@ -46,4 +46,41 @@ public final class SecurityUtils {
 
         return Optional.empty();
     }
+
+    /**
+     * Checks if the currently authenticated user has the specified authority.
+     *
+     * @param authority authority or permission name to check
+     * @return true if authenticated and has authority, false otherwise
+     */
+    public static boolean hasAuthority(String authority) {
+        if (authority == null) {
+            return false;
+        }
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return false;
+        }
+        return authentication.getAuthorities().stream()
+                .anyMatch(granted -> authority.equals(granted.getAuthority()));
+    }
+
+    /**
+     * Checks if the currently authenticated user has any of the specified authorities.
+     *
+     * @param authorities array of authorities to check
+     * @return true if authenticated and has at least one matching authority, false otherwise
+     */
+    public static boolean hasAnyAuthority(String... authorities) {
+        if (authorities == null || authorities.length == 0) {
+            return false;
+        }
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return false;
+        }
+        java.util.Set<String> authSet = new java.util.HashSet<>(java.util.Arrays.asList(authorities));
+        return authentication.getAuthorities().stream()
+                .anyMatch(granted -> authSet.contains(granted.getAuthority()));
+    }
 }

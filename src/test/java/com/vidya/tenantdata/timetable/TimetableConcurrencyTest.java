@@ -126,6 +126,9 @@ class TimetableConcurrencyTest {
     @Spy
     private com.vidya.tenantdata.timetable.mapper.TimetableSubstitutionMapper timetableSubstitutionMapper = new com.vidya.tenantdata.timetable.mapper.TimetableSubstitutionMapper();
 
+    @Mock
+    private com.vidya.tenantdata.calendar.service.CalendarService calendarService;
+
     private TimetableMapper timetableMapper;
     private TimetableServiceImpl timetableService;
 
@@ -153,7 +156,7 @@ class TimetableConcurrencyTest {
                 academicYearRepository, academicClassRepository, sectionRepository, subjectRepository,
                 staffRepository, roomRepository, teacherSubjectAssignmentRepository, classSubjectAssignmentRepository,
                 conflictValidator, timetableMapper, timetableEntryMapper,
-                timetableSubstitutionRepository, timetableSubstitutionMapper
+                timetableSubstitutionRepository, timetableSubstitutionMapper, calendarService
         );
 
         timetableId = UUID.randomUUID();

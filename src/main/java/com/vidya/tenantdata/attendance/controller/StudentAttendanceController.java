@@ -223,6 +223,23 @@ public class StudentAttendanceController {
                 page.getContent(), page));
     }
 
+    // ── Missing attendance gaps report ────────────────────────────────────────
+
+    @GetMapping("/missing")
+    @PreAuthorize("hasAuthority('ATTENDANCE_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN') or hasRole('TEACHER')")
+    @Operation(summary = "Get missing attendance dates for a section",
+               description = "Returns working dates in range (max 92 days) on which no attendance was recorded for any student in the section")
+    public ResponseEntity<ApiResponse<List<LocalDate>>> getMissingAttendance(
+            @RequestParam UUID sectionId,
+            @RequestParam UUID academicYearId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
+        log.info("REST: Missing attendance dates for section [{}] from [{}] to [{}]", sectionId, from, to);
+        List<LocalDate> missingDates = attendanceService.getMissingAttendanceDates(sectionId, academicYearId, from, to);
+        return ResponseEntity.ok(ApiResponse.success("MISSING_ATTENDANCE_DATES_RETRIEVED",
+                "Missing attendance dates retrieved successfully", missingDates));
+    }
+
     // ── Helper ────────────────────────────────────────────────────────────────
 
     /**

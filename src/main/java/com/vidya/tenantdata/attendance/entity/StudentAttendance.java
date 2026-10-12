@@ -92,6 +92,12 @@ public class StudentAttendance {
     @Column(name = "marked_at")
     private Instant markedAt;
 
+    @Column(name = "non_working_day_override", nullable = false)
+    private boolean nonWorkingDayOverride = false;
+
+    @Column(name = "override_reason", length = 255)
+    private String overrideReason;
+
     @Column(name = "deleted_at")
     private Instant deletedAt;
 
@@ -120,6 +126,20 @@ public class StudentAttendance {
                              AttendanceStatus status,
                              String remarks,
                              Staff markedByStaff) {
+        this(attendanceCode, student, academicYear, academicClass, section, attendanceDate, status, remarks, markedByStaff, false, null);
+    }
+
+    public StudentAttendance(String attendanceCode,
+                             Student student,
+                             AcademicYear academicYear,
+                             AcademicClass academicClass,
+                             Section section,
+                             LocalDate attendanceDate,
+                             AttendanceStatus status,
+                             String remarks,
+                             Staff markedByStaff,
+                             boolean nonWorkingDayOverride,
+                             String overrideReason) {
         this.attendanceCode = attendanceCode;
         this.student = student;
         this.academicYear = academicYear;
@@ -130,6 +150,8 @@ public class StudentAttendance {
         this.remarks = remarks != null ? remarks.trim() : null;
         this.markedByStaff = markedByStaff;
         this.markedAt = Instant.now();
+        this.nonWorkingDayOverride = nonWorkingDayOverride;
+        this.overrideReason = overrideReason != null ? overrideReason.trim() : null;
     }
 
     /**
@@ -157,6 +179,16 @@ public class StudentAttendance {
             this.markedByStaff = correctedBy;
         }
         this.markedAt = Instant.now();
+    }
+
+    /**
+     * Correct this record with override details.
+     */
+    public void correct(AttendanceStatus newStatus, String remarks, Staff correctedBy,
+                        boolean nonWorkingDayOverride, String overrideReason) {
+        correct(newStatus, remarks, correctedBy);
+        this.nonWorkingDayOverride = nonWorkingDayOverride;
+        this.overrideReason = overrideReason != null ? overrideReason.trim() : null;
     }
 
     public boolean isDeleted() {

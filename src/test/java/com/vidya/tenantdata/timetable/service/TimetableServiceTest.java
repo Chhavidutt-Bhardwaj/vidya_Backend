@@ -135,6 +135,9 @@ class TimetableServiceTest {
     @Spy
     private com.vidya.tenantdata.timetable.mapper.TimetableSubstitutionMapper timetableSubstitutionMapper = new com.vidya.tenantdata.timetable.mapper.TimetableSubstitutionMapper();
 
+    @Mock
+    private com.vidya.tenantdata.calendar.service.CalendarService calendarService;
+
     private TimetableMapper timetableMapper;
     private TimetableServiceImpl timetableService;
 
@@ -180,8 +183,14 @@ class TimetableServiceTest {
                 timetableMapper,
                 timetableEntryMapper,
                 timetableSubstitutionRepository,
-                timetableSubstitutionMapper
+                timetableSubstitutionMapper,
+                calendarService
         );
+
+        org.mockito.Mockito.lenient().when(calendarService.getDayStatus(any()))
+                .thenReturn(new com.vidya.tenantdata.calendar.dto.DayStatusResponse(
+                        LocalDate.of(2026, 10, 5), DayOfWeek.MONDAY, com.vidya.tenantdata.calendar.enums.DayStatus.WORKING
+                ));
 
         timetableId = UUID.randomUUID();
         yearId = UUID.randomUUID();
@@ -346,6 +355,30 @@ class TimetableServiceTest {
     @DisplayName("Publish timetable alias")
     void publishTimetable_success() {
         publishTimetable_valid_success();
+    }
+
+    @Test
+    @DisplayName("Publish timetable succeeds when validation contains only WARNING severity conflicts")
+    void publishTimetable_withOnlyWarnings_succeeds() {
+        TimetableEntry activeEntry = new TimetableEntry("TTE-1", testTimetable, testAcademicYear, testPeriod, DayOfWeek.SUNDAY, testClass, testSection, testSubject, testTeacherAssignment, testTeacher, null, testRoom, TimetableEntryType.REGULAR);
+        ScheduleConflictResponse warningConflict = new ScheduleConflictResponse(
+                ScheduleConflictType.NON_WORKING_DAY,
+                ConflictSeverity.WARNING,
+                "scheduled on SUNDAY, a weekly off for this academic year",
+                null, null, periodId, DayOfWeek.SUNDAY, null
+        );
+
+        when(timetableRepository.findByIdAndNotDeleted(timetableId)).thenReturn(Optional.of(testTimetable));
+        when(timetableEntryRepository.findAllByTimetableIdWithDetails(timetableId)).thenReturn(List.of(activeEntry));
+        when(conflictValidator.validateTimetable(eq(testTimetable))).thenReturn(
+                new ScheduleValidationResponse(true, 1, List.of(warningConflict), 1)
+        );
+        when(timetableRepository.saveAndFlush(any(Timetable.class))).thenAnswer(i -> i.getArgument(0));
+
+        TimetableResponse response = timetableService.publishTimetable(timetableId);
+
+        assertThat(response).isNotNull();
+        assertThat(response.status()).isEqualTo(TimetableStatus.PUBLISHED);
     }
 
     @Test

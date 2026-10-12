@@ -4,6 +4,7 @@ import com.vidya.common.exception.BusinessException;
 import com.vidya.common.exception.DuplicateResourceException;
 import com.vidya.common.exception.ResourceNotFoundException;
 import com.vidya.common.util.CodeGenerator;
+import com.vidya.common.util.SecurityUtils;
 import com.vidya.tenantdata.academic.entity.AcademicClass;
 import com.vidya.tenantdata.academic.entity.AcademicYear;
 import com.vidya.tenantdata.academic.entity.Section;
@@ -30,6 +31,9 @@ import com.vidya.tenantdata.attendance.entity.StudentAttendance;
 import com.vidya.tenantdata.attendance.enums.AttendanceStatus;
 import com.vidya.tenantdata.attendance.mapper.StudentAttendanceMapper;
 import com.vidya.tenantdata.attendance.repository.StudentAttendanceRepository;
+import com.vidya.tenantdata.calendar.dto.DayStatusResponse;
+import com.vidya.tenantdata.calendar.enums.DayStatus;
+import com.vidya.tenantdata.calendar.service.CalendarService;
 import com.vidya.tenantdata.staff.entity.Staff;
 import com.vidya.tenantdata.staff.enums.EmploymentStatus;
 import com.vidya.tenantdata.staff.repository.StaffRepository;
@@ -42,6 +46,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -68,6 +73,7 @@ import java.util.stream.Collectors;
  *       for the requested year/class/section</li>
  *   <li>Attendance date must be within the academic year's date range</li>
  *   <li>Attendance date must not be in the future</li>
+ *   <li>Attendance date must be a working day unless explicitly overridden with proper authority</li>
  *   <li>At most one active attendance record per (student, academicYear, date) — enforced at DB level too</li>
  *   <li>Bulk operations are atomic — one failure rejects the entire batch</li>
  *   <li>Teacher authorization via {@link ClassTeacherAssignment} is checked for TEACHER-type staff</li>
@@ -87,6 +93,16 @@ public class StudentAttendanceServiceImpl implements StudentAttendanceService {
     private final SectionRepository sectionRepository;
     private final StaffRepository staffRepository;
     private final ClassTeacherAssignmentRepository classTeacherAssignmentRepository;
+    private final CalendarService calendarService;
+
+    private java.time.Clock clock = java.time.Clock.systemDefaultZone();
+
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    public void setClock(java.time.Clock clock) {
+        if (clock != null) {
+            this.clock = clock;
+        }
+    }
 
     // ── Mark individual attendance ─────────────────────────────────────────────
 
@@ -107,6 +123,11 @@ public class StudentAttendanceServiceImpl implements StudentAttendanceService {
 
         // Validate date
         validateAttendanceDate(request.getAttendanceDate(), academicYear);
+
+        // Validate calendar working day status vs override
+        boolean isOverride = validateCalendarStatusForDate(
+                request.getAttendanceDate(), request.getAllowNonWorkingDay(), request.getOverrideReason());
+        String effectiveOverrideReason = isOverride ? request.getOverrideReason().trim() : null;
 
         // Validate student and assignment
         Student student = resolveAndValidateStudent(request.getStudentId());
@@ -136,7 +157,8 @@ public class StudentAttendanceServiceImpl implements StudentAttendanceService {
         // Build and persist
         StudentAttendance attendance = new StudentAttendance(
                 code, student, academicYear, academicClass, section,
-                request.getAttendanceDate(), request.getStatus(), request.getRemarks(), markerStaff
+                request.getAttendanceDate(), request.getStatus(), request.getRemarks(), markerStaff,
+                isOverride, effectiveOverrideReason
         );
 
         StudentAttendance saved = attendanceRepository.save(attendance);
@@ -329,6 +351,76 @@ public class StudentAttendanceServiceImpl implements StudentAttendanceService {
                     .setScale(2, RoundingMode.HALF_UP);
         }
 
+        // Calendar-aware metrics
+        LocalDate today = LocalDate.now(clock);
+        LocalDate endDate = academicYear.getEndDate();
+        LocalDate effectiveEndDate = (endDate != null && endDate.isBefore(today)) ? endDate : today;
+
+        LocalDate startDate = academicYear.getStartDate();
+        Optional<StudentAcademicAssignment> assignmentOpt = studentAcademicAssignmentRepository
+                .findActiveAssignment(studentId, academicYearId);
+
+        LocalDate studentStart = null;
+        if (assignmentOpt.isPresent() && assignmentOpt.get().getStartDate() != null) {
+            studentStart = assignmentOpt.get().getStartDate();
+        } else if (student.getAdmissionDate() != null) {
+            studentStart = student.getAdmissionDate();
+        }
+
+        LocalDate effectiveStartDate = startDate;
+        if (studentStart != null) {
+            if (effectiveStartDate == null || studentStart.isAfter(effectiveStartDate)) {
+                effectiveStartDate = studentStart;
+            }
+        }
+
+        long workingDaysInRange = 0;
+        long unmarkedWorkingDays = 0;
+        long excludedNonWorkingDayRecords = 0;
+        BigDecimal percentageOfWorkingDays = BigDecimal.ZERO;
+
+        if (effectiveStartDate != null && !effectiveStartDate.isAfter(effectiveEndDate)) {
+            List<DayStatusResponse> dayStatuses = calendarService.getDaysStatus(effectiveStartDate, effectiveEndDate);
+            Set<LocalDate> workingDates = dayStatuses.stream()
+                    .filter(ds -> ds.status() == DayStatus.WORKING)
+                    .map(DayStatusResponse::date)
+                    .collect(Collectors.toSet());
+
+            workingDaysInRange = workingDates.size();
+
+            List<StudentAttendance> allRecords = attendanceRepository.findAllActiveByStudentAndYear(studentId, academicYearId);
+            Set<LocalDate> markedWorkingDates = new HashSet<>();
+            BigDecimal presentWeightedDays = BigDecimal.ZERO;
+
+            for (StudentAttendance sa : allRecords) {
+                boolean isWorking = workingDates.contains(sa.getAttendanceDate());
+                boolean isOverride = sa.isNonWorkingDayOverride();
+
+                if (!isWorking && !isOverride) {
+                    excludedNonWorkingDayRecords++;
+                } else {
+                    if (isWorking) {
+                        markedWorkingDates.add(sa.getAttendanceDate());
+                    }
+                    if (sa.getStatus() == AttendanceStatus.PRESENT) {
+                        presentWeightedDays = presentWeightedDays.add(BigDecimal.ONE);
+                    } else if (sa.getStatus() == AttendanceStatus.HALF_DAY) {
+                        presentWeightedDays = presentWeightedDays.add(new BigDecimal("0.5"));
+                    } else if (sa.getStatus() == AttendanceStatus.EXCUSED) {
+                        presentWeightedDays = presentWeightedDays.add(BigDecimal.ONE);
+                    }
+                }
+            }
+
+            unmarkedWorkingDays = Math.max(0, workingDaysInRange - markedWorkingDates.size());
+            if (workingDaysInRange > 0) {
+                percentageOfWorkingDays = presentWeightedDays
+                        .divide(BigDecimal.valueOf(workingDaysInRange), 4, RoundingMode.HALF_UP)
+                        .multiply(BigDecimal.valueOf(100))
+                        .setScale(2, RoundingMode.HALF_UP);
+            }
+        }
+
         String studentName = null;
         if (student.getTenantUser() != null && student.getTenantUser().getProfile() != null) {
             studentName = student.getTenantUser().getProfile().getFullName();
@@ -347,6 +439,10 @@ public class StudentAttendanceServiceImpl implements StudentAttendanceService {
                 .halfDayCount(halfDay)
                 .excusedCount(excused)
                 .attendancePercentage(percentage)
+                .workingDaysInRange(workingDaysInRange)
+                .unmarkedWorkingDays(unmarkedWorkingDays)
+                .percentageOfWorkingDays(percentageOfWorkingDays)
+                .excludedNonWorkingDayRecords(excludedNonWorkingDayRecords)
                 .build();
     }
 
@@ -371,6 +467,11 @@ public class StudentAttendanceServiceImpl implements StudentAttendanceService {
 
         // 3. Validate date
         validateAttendanceDate(request.getAttendanceDate(), academicYear);
+
+        // 3b. Validate calendar working day status vs override (looked up once per distinct date)
+        boolean isOverride = validateCalendarStatusForDate(
+                request.getAttendanceDate(), request.getAllowNonWorkingDay(), request.getOverrideReason());
+        String effectiveOverrideReason = isOverride ? request.getOverrideReason().trim() : null;
 
         // 4. Resolve marking staff and validate teacher authorization once (section-level)
         Staff markerStaff = resolveMarkerStaff(markerStaffId);
@@ -418,7 +519,7 @@ public class StudentAttendanceServiceImpl implements StudentAttendanceService {
             if (existingOpt.isPresent()) {
                 // Case B: Existing active record — UPDATE
                 StudentAttendance existing = existingOpt.get();
-                existing.correct(record.getStatus(), record.getRemarks(), markerStaff);
+                existing.correct(record.getStatus(), record.getRemarks(), markerStaff, isOverride, effectiveOverrideReason);
                 toSave.add(existing);
                 updatedCount++;
 
@@ -435,7 +536,8 @@ public class StudentAttendanceServiceImpl implements StudentAttendanceService {
                 String code = generateUniqueAttendanceCode();
                 StudentAttendance newAttendance = new StudentAttendance(
                         code, student, academicYear, academicClass, section,
-                        request.getAttendanceDate(), record.getStatus(), record.getRemarks(), markerStaff
+                        request.getAttendanceDate(), record.getStatus(), record.getRemarks(), markerStaff,
+                        isOverride, effectiveOverrideReason
                 );
                 toSave.add(newAttendance);
                 createdCount++;
@@ -578,7 +680,7 @@ public class StudentAttendanceServiceImpl implements StudentAttendanceService {
             throw new BusinessException("attendanceDate must not be null");
         }
 
-        LocalDate today = LocalDate.now();
+        LocalDate today = LocalDate.now(clock);
         if (attendanceDate.isAfter(today)) {
             throw new BusinessException(
                     "Cannot mark attendance for a future date: " + attendanceDate
@@ -663,5 +765,94 @@ public class StudentAttendanceServiceImpl implements StudentAttendanceService {
             throw new DuplicateResourceException("StudentAttendance", "attendanceCode", code);
         }
         return code;
+    }
+
+    // ── Gaps report ───────────────────────────────────────────────────────────
+
+    @Override
+    @Transactional(transactionManager = "tenantTransactionManager", readOnly = true)
+    public List<LocalDate> getMissingAttendanceDates(UUID sectionId, UUID academicYearId, LocalDate fromDate, LocalDate toDate) {
+        if (sectionId == null) {
+            throw new BusinessException("sectionId must not be null");
+        }
+        if (academicYearId == null) {
+            throw new BusinessException("academicYearId must not be null");
+        }
+        if (fromDate == null || toDate == null) {
+            throw new BusinessException("fromDate and toDate must not be null");
+        }
+        if (fromDate.isAfter(toDate)) {
+            throw new BusinessException("fromDate must not be after toDate");
+        }
+        long days = java.time.temporal.ChronoUnit.DAYS.between(fromDate, toDate) + 1;
+        if (days > 92) {
+            throw new BusinessException("Date range must not exceed 92 days. Requested: " + days + " days.");
+        }
+
+        // Verify section and year exist
+        sectionRepository.findByIdAndNotDeleted(sectionId)
+                .orElseThrow(() -> new ResourceNotFoundException("Section", sectionId));
+        academicYearRepository.findByIdAndNotDeleted(academicYearId)
+                .orElseThrow(() -> new ResourceNotFoundException("AcademicYear", academicYearId));
+
+        List<DayStatusResponse> dayStatuses = calendarService.getDaysStatus(fromDate, toDate);
+        List<LocalDate> workingDates = dayStatuses.stream()
+                .filter(ds -> ds.status() == DayStatus.WORKING)
+                .map(DayStatusResponse::date)
+                .sorted()
+                .toList();
+
+        Set<LocalDate> markedDates = attendanceRepository.findDistinctAttendanceDatesBySectionAndYearAndRange(
+                sectionId, academicYearId, fromDate, toDate
+        );
+
+        return workingDates.stream()
+                .filter(d -> !markedDates.contains(d))
+                .toList();
+    }
+
+    // ── Calendar validation helpers ───────────────────────────────────────────
+
+    private boolean validateCalendarStatusForDate(LocalDate date, Boolean allowNonWorkingDay, String overrideReason) {
+        DayStatusResponse dayStatus = calendarService.getDayStatus(date);
+        boolean isNonWorking = dayStatus.status() != DayStatus.WORKING;
+        boolean allowOverride = Boolean.TRUE.equals(allowNonWorkingDay);
+
+        if (isNonWorking) {
+            if (!allowOverride) {
+                if (dayStatus.status() == DayStatus.HOLIDAY) {
+                    throw new BusinessException("Cannot mark attendance on holiday: " + dayStatus.holidayName()
+                            + " (" + date + ")");
+                } else {
+                    throw new BusinessException("Cannot mark attendance on weekly off: " + date
+                            + " (" + date.getDayOfWeek() + ")");
+                }
+            }
+            validateOverrideAuthority();
+            validateOverrideReason(overrideReason);
+            return true;
+        }
+        return false;
+    }
+
+    private void validateOverrideAuthority() {
+        boolean authorized = SecurityUtils.hasAuthority("ATTENDANCE_OVERRIDE_NON_WORKING")
+                || SecurityUtils.hasAuthority("ROLE_SCHOOL_ADMIN")
+                || SecurityUtils.hasAuthority("ROLE_SCHOOL_OWNER")
+                || SecurityUtils.hasAuthority("ROLE_PLATFORM_ADMIN")
+                || SecurityUtils.hasAuthority("ROLE_PLATFORM_SUPER_ADMIN");
+        if (!authorized) {
+            throw new AccessDeniedException(
+                    "Caller does not have authority to override non-working day attendance. Required authority: ATTENDANCE_OVERRIDE_NON_WORKING");
+        }
+    }
+
+    private void validateOverrideReason(String reason) {
+        if (reason == null || reason.trim().isEmpty()) {
+            throw new BusinessException("overrideReason is required when allowNonWorkingDay is true");
+        }
+        if (reason.trim().length() > 255) {
+            throw new BusinessException("overrideReason must not exceed 255 characters");
+        }
     }
 }

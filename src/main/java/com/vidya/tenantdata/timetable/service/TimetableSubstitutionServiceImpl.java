@@ -4,6 +4,9 @@ import com.vidya.common.exception.BusinessException;
 import com.vidya.common.exception.DuplicateResourceException;
 import com.vidya.common.exception.ResourceNotFoundException;
 import com.vidya.common.util.SecurityUtils;
+import com.vidya.tenantdata.calendar.dto.DayStatusResponse;
+import com.vidya.tenantdata.calendar.enums.DayStatus;
+import com.vidya.tenantdata.calendar.service.CalendarService;
 import com.vidya.tenantdata.academic.entity.AcademicClass;
 import com.vidya.tenantdata.academic.entity.AcademicYear;
 import com.vidya.tenantdata.academic.entity.Section;
@@ -60,6 +63,7 @@ public class TimetableSubstitutionServiceImpl implements TimetableSubstitutionSe
     private final RoomRepository roomRepository;
     private final TeacherSubjectAssignmentRepository teacherSubjectAssignmentRepository;
     private final TimetableSubstitutionMapper substitutionMapper;
+    private final CalendarService calendarService;
 
     private Clock clock = Clock.systemDefaultZone();
 
@@ -79,6 +83,17 @@ public class TimetableSubstitutionServiceImpl implements TimetableSubstitutionSe
         LocalDate today = LocalDate.now(clock);
         if (request.substitutionDate().isBefore(today)) {
             throw new BusinessException("Substitution date cannot be in the past. Date requested: " + request.substitutionDate());
+        }
+
+        // Calendar check (reject non-working days and holidays)
+        if (calendarService != null) {
+            DayStatusResponse dayStatus = calendarService.getDayStatus(request.substitutionDate());
+            if (dayStatus.status() == DayStatus.WEEKLY_OFF || dayStatus.status() == DayStatus.HOLIDAY) {
+                String reason = dayStatus.status() == DayStatus.HOLIDAY
+                        ? "holiday (" + dayStatus.holidayName() + ")"
+                        : "weekly off";
+                throw new BusinessException("Cannot create substitution on non-working day: " + reason);
+            }
         }
 
         // 2. Timetable validation (must be ACTIVE)
@@ -156,6 +171,9 @@ public class TimetableSubstitutionServiceImpl implements TimetableSubstitutionSe
         Room substituteRoom = null;
 
         if (request.substitutionType() == SubstitutionType.TEACHER_SUBSTITUTE) {
+            if (request.substituteRoomId() != null) {
+                throw new BusinessException("TEACHER_SUBSTITUTE substitution must not specify substituteRoomId.");
+            }
             if (request.substituteTeacherId() == null) {
                 throw new BusinessException("TEACHER_SUBSTITUTE substitution requires substituteTeacherId.");
             }
@@ -199,6 +217,9 @@ public class TimetableSubstitutionServiceImpl implements TimetableSubstitutionSe
             }
 
         } else if (request.substitutionType() == SubstitutionType.ROOM_CHANGE) {
+            if (request.substituteTeacherId() != null) {
+                throw new BusinessException("ROOM_CHANGE substitution must not specify substituteTeacherId.");
+            }
             if (request.substituteRoomId() == null) {
                 throw new BusinessException("ROOM_CHANGE substitution requires substituteRoomId.");
             }
@@ -207,6 +228,10 @@ public class TimetableSubstitutionServiceImpl implements TimetableSubstitutionSe
 
             if (substituteRoom.getStatus() != RoomStatus.ACTIVE) {
                 throw new BusinessException("Substitute room must be in ACTIVE status.");
+            }
+
+            if (baseEntry.getRoom() != null && baseEntry.getRoom().getId().equals(substituteRoom.getId())) {
+                throw new BusinessException("Substitute room cannot be the same as the original entry's room.");
             }
 
             // Check regular entry clash
@@ -269,9 +294,10 @@ public class TimetableSubstitutionServiceImpl implements TimetableSubstitutionSe
         try {
             TimetableSubstitution saved = substitutionRepository.saveAndFlush(substitution);
             return substitutionMapper.toResponse(saved, sameSubjectQualified);
-        } catch (DataIntegrityViolationException e) {
-            log.warn("Database constraint violation during substitution creation: {}", e.getMessage());
-            throw new DuplicateResourceException("Substitution conflict detected: a substitution already exists for this slot, teacher, or room on " + request.substitutionDate());
+        } catch (Exception e) {
+            log.warn("Exception during substitution creation: {}", e.getMessage());
+            handleDataIntegrityViolation(e, request.substitutionDate());
+            return null; // unreachable
         }
     }
 
@@ -328,6 +354,9 @@ public class TimetableSubstitutionServiceImpl implements TimetableSubstitutionSe
         DayOfWeek dayOfWeek = sub.getSubstitutionDate().getDayOfWeek();
 
         if (sub.getSubstitutionType() == SubstitutionType.TEACHER_SUBSTITUTE) {
+            if (request.substituteRoomId() != null) {
+                throw new BusinessException("TEACHER_SUBSTITUTE substitution must not specify substituteRoomId.");
+            }
             if (request.substituteTeacherId() != null && (sub.getSubstituteTeacher() == null || !sub.getSubstituteTeacher().getId().equals(request.substituteTeacherId()))) {
                 Staff newTeacher = staffRepository.findByIdAndNotDeleted(request.substituteTeacherId())
                         .orElseThrow(() -> new ResourceNotFoundException("Staff", request.substituteTeacherId()));
@@ -366,12 +395,26 @@ public class TimetableSubstitutionServiceImpl implements TimetableSubstitutionSe
                 sub.setSubstituteTeacher(newTeacher);
             }
         } else if (sub.getSubstitutionType() == SubstitutionType.ROOM_CHANGE) {
+            if (request.substituteTeacherId() != null) {
+                throw new BusinessException("ROOM_CHANGE substitution must not specify substituteTeacherId.");
+            }
             if (request.substituteRoomId() != null && (sub.getSubstituteRoom() == null || !sub.getSubstituteRoom().getId().equals(request.substituteRoomId()))) {
                 Room newRoom = roomRepository.findByIdAndNotDeleted(request.substituteRoomId())
                         .orElseThrow(() -> new ResourceNotFoundException("Room", request.substituteRoomId()));
 
                 if (newRoom.getStatus() != RoomStatus.ACTIVE) {
                     throw new BusinessException("Substitute room must be in ACTIVE status.");
+                }
+
+                UUID sectionId = sub.getSection() != null ? sub.getSection().getId() : null;
+                List<TimetableEntry> matchingEntries = timetableEntryRepository.findActiveSlotEntries(
+                        sub.getTimetable().getId(), dayOfWeek, sub.getPeriod().getId(), sub.getAcademicClass().getId(), sectionId
+                );
+                if (!matchingEntries.isEmpty()) {
+                    TimetableEntry baseEntry = matchingEntries.getFirst();
+                    if (baseEntry.getRoom() != null && baseEntry.getRoom().getId().equals(newRoom.getId())) {
+                        throw new BusinessException("Substitute room cannot be the same as the original entry's room.");
+                    }
                 }
 
                 List<TimetableEntry> roomClashes = timetableEntryRepository.findRoomClashes(
@@ -413,9 +456,33 @@ public class TimetableSubstitutionServiceImpl implements TimetableSubstitutionSe
                 );
             }
             return substitutionMapper.toResponse(saved, sameSubjectQualified);
-        } catch (DataIntegrityViolationException e) {
-            throw new DuplicateResourceException("Substitution conflict detected: a substitution already exists for this slot, teacher, or room.");
+        } catch (Exception e) {
+            handleDataIntegrityViolation(e, sub.getSubstitutionDate());
+            return null; // unreachable
         }
+    }
+
+    private void handleDataIntegrityViolation(Exception e, LocalDate date) {
+        StringBuilder sb = new StringBuilder();
+        Throwable cur = e;
+        while (cur != null) {
+            if (cur.getMessage() != null) {
+                sb.append(" ").append(cur.getMessage());
+            }
+            cur = cur.getCause();
+        }
+        String msg = sb.toString();
+
+        if (msg.contains("idx_sub_slot_active")) {
+            throw new DuplicateResourceException("TimetableSubstitution", "slot", "Active substitution already exists for this slot on " + date);
+        }
+        if (msg.contains("idx_sub_teacher_active")) {
+            throw new DuplicateResourceException("TimetableSubstitution", "substituteTeacherId", "Substitute teacher already has an active substitution on " + date);
+        }
+        if (msg.contains("idx_sub_room_active")) {
+            throw new DuplicateResourceException("TimetableSubstitution", "substituteRoomId", "Substitute room is already booked for an active substitution on " + date);
+        }
+        throw new DuplicateResourceException("Substitution conflict detected: a substitution already exists for this slot, teacher, or room on " + date);
     }
 
     @Override

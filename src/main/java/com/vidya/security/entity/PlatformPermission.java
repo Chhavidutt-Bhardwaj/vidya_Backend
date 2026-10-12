@@ -162,6 +162,10 @@ public enum PlatformPermission {
     SUBSTITUTION_READ,
     SUBSTITUTION_MANAGE,
 
+    // Academic Calendar & Holiday permissions
+    CALENDAR_READ,
+    CALENDAR_MANAGE,
+
     // Audit permissions
     AUDIT_READ,
 
@@ -171,5 +175,6 @@ public enum PlatformPermission {
     ATTENDANCE_UPDATE,
     ATTENDANCE_DELETE,
     ATTENDANCE_BULK_MARK,
-    ATTENDANCE_STATUS_UPDATE
+    ATTENDANCE_STATUS_UPDATE,
+    ATTENDANCE_OVERRIDE_NON_WORKING
 }

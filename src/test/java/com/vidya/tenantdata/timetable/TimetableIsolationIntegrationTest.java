@@ -99,6 +99,9 @@ class TimetableIsolationIntegrationTest {
     @Spy
     private com.vidya.tenantdata.timetable.mapper.TimetableSubstitutionMapper timetableSubstitutionMapper = new com.vidya.tenantdata.timetable.mapper.TimetableSubstitutionMapper();
 
+    @Mock
+    private com.vidya.tenantdata.calendar.service.CalendarService calendarService;
+
     private TimetableMapper timetableMapper;
     private TimetableServiceImpl timetableService;
     private RoomServiceImpl roomService;
@@ -121,7 +124,7 @@ class TimetableIsolationIntegrationTest {
                 academicYearRepository, academicClassRepository, sectionRepository, subjectRepository,
                 staffRepository, roomRepository, teacherSubjectAssignmentRepository, classSubjectAssignmentRepository,
                 conflictValidator, timetableMapper, timetableEntryMapper,
-                timetableSubstitutionRepository, timetableSubstitutionMapper
+                timetableSubstitutionRepository, timetableSubstitutionMapper, calendarService
         );
         roomService = new RoomServiceImpl(roomRepository, timetableEntryRepository, roomMapper);
         bellScheduleService = new BellScheduleServiceImpl(bellScheduleRepository, bellSchedulePeriodRepository, timetableRepository, timetableEntryRepository, bellScheduleMapper);

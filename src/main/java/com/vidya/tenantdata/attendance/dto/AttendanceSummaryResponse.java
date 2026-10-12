@@ -57,4 +57,16 @@ public class AttendanceSummaryResponse {
 
     @Schema(description = "Attendance percentage (0.00 – 100.00)", example = "95.45")
     private BigDecimal attendancePercentage;
+
+    @Schema(description = "Count of working days in range for the academic year", example = "180")
+    private long workingDaysInRange;
+
+    @Schema(description = "Count of working days with no attendance record for the student", example = "5")
+    private long unmarkedWorkingDays;
+
+    @Schema(description = "Percentage of working days attended (present-weighted / workingDaysInRange * 100)", example = "92.50")
+    private BigDecimal percentageOfWorkingDays;
+
+    @Schema(description = "Count of records on dates that are now non-working days without override", example = "1")
+    private long excludedNonWorkingDayRecords;
 }

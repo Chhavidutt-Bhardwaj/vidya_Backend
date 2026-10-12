@@ -44,7 +44,7 @@ public class SecurityConfig {
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
 
-    @Value("${vidya.security.cors.allowed-origins:http://localhost:3000,http://localhost:5173,http://localhost:8080}")
+    @Value("${vidya.security.cors.allowed-origins:http://localhost:3000,http://localhost:5173,http://localhost:5174,http://localhost:8080}")
     private String allowedOrigins;
 
     @Bean

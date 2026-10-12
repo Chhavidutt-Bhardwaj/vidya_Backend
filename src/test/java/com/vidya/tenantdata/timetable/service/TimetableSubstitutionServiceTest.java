@@ -94,6 +94,9 @@ class TimetableSubstitutionServiceTest {
     @Mock
     private TeacherSubjectAssignmentRepository teacherSubjectAssignmentRepository;
 
+    @Mock
+    private com.vidya.tenantdata.calendar.service.CalendarService calendarService;
+
     @Spy
     private TimetableSubstitutionMapper substitutionMapper = new TimetableSubstitutionMapper();
 
@@ -121,6 +124,11 @@ class TimetableSubstitutionServiceTest {
     void setUp() {
         fixedClock = Clock.fixed(fixedToday.atStartOfDay(ZoneId.systemDefault()).toInstant(), ZoneId.systemDefault());
         substitutionService.setClock(fixedClock);
+
+        org.mockito.Mockito.lenient().when(calendarService.getDayStatus(any()))
+                .thenReturn(new com.vidya.tenantdata.calendar.dto.DayStatusResponse(
+                        fixedToday, DayOfWeek.MONDAY, com.vidya.tenantdata.calendar.enums.DayStatus.WORKING
+                ));
 
         timetableId = UUID.randomUUID();
         academicYear = new AcademicYear("AY-2026", "2026-2027", LocalDate.of(2026, 6, 1), LocalDate.of(2027, 5, 31), true, com.vidya.tenantdata.academic.enums.AcademicYearStatus.ACTIVE);
@@ -471,5 +479,161 @@ class TimetableSubstitutionServiceTest {
         assertThat(sub.isDeleted()).isTrue();
         assertThat(sub.getStatus()).isEqualTo(SubstitutionStatus.DELETED);
         verify(substitutionRepository).save(sub);
+    }
+
+    @Test
+    @DisplayName("Create Substitution — TEACHER_SUBSTITUTE with substituteRoomId throws BusinessException")
+    void createSubstitution_teacherSubstituteWithRoom_throwsBusinessException() {
+        CreateSubstitutionRequest req = new CreateSubstitutionRequest(
+                timetableId, fixedToday, period1.getId(), class10.getId(), sectionA.getId(),
+                SubstitutionType.TEACHER_SUBSTITUTE, substituteTeacher.getId(), substituteRoom.getId(), "Invalid payload"
+        );
+
+        when(timetableRepository.findByIdAndNotDeleted(timetableId)).thenReturn(Optional.of(timetable));
+        when(bellSchedulePeriodRepository.findByIdAndNotDeleted(period1.getId())).thenReturn(Optional.of(period1));
+        when(academicClassRepository.findByIdAndNotDeleted(class10.getId())).thenReturn(Optional.of(class10));
+        when(sectionRepository.findByIdAndNotDeleted(sectionA.getId())).thenReturn(Optional.of(sectionA));
+        when(timetableEntryRepository.findActiveSlotEntries(timetableId, DayOfWeek.MONDAY, period1.getId(), class10.getId(), sectionA.getId()))
+                .thenReturn(List.of(baseEntry));
+        when(substitutionRepository.findActiveSlotSubstitutions(timetableId, fixedToday, period1.getId(), class10.getId(), sectionA.getId()))
+                .thenReturn(Collections.emptyList());
+
+        assertThatThrownBy(() -> substitutionService.createSubstitution(req))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("TEACHER_SUBSTITUTE substitution must not specify substituteRoomId");
+    }
+
+    @Test
+    @DisplayName("Create Substitution — ROOM_CHANGE with substituteTeacherId throws BusinessException")
+    void createSubstitution_roomChangeWithTeacher_throwsBusinessException() {
+        CreateSubstitutionRequest req = new CreateSubstitutionRequest(
+                timetableId, fixedToday, period1.getId(), class10.getId(), sectionA.getId(),
+                SubstitutionType.ROOM_CHANGE, substituteTeacher.getId(), substituteRoom.getId(), "Invalid payload"
+        );
+
+        when(timetableRepository.findByIdAndNotDeleted(timetableId)).thenReturn(Optional.of(timetable));
+        when(bellSchedulePeriodRepository.findByIdAndNotDeleted(period1.getId())).thenReturn(Optional.of(period1));
+        when(academicClassRepository.findByIdAndNotDeleted(class10.getId())).thenReturn(Optional.of(class10));
+        when(sectionRepository.findByIdAndNotDeleted(sectionA.getId())).thenReturn(Optional.of(sectionA));
+        when(timetableEntryRepository.findActiveSlotEntries(timetableId, DayOfWeek.MONDAY, period1.getId(), class10.getId(), sectionA.getId()))
+                .thenReturn(List.of(baseEntry));
+        when(substitutionRepository.findActiveSlotSubstitutions(timetableId, fixedToday, period1.getId(), class10.getId(), sectionA.getId()))
+                .thenReturn(Collections.emptyList());
+
+        assertThatThrownBy(() -> substitutionService.createSubstitution(req))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("ROOM_CHANGE substitution must not specify substituteTeacherId");
+    }
+
+    @Test
+    @DisplayName("Create Substitution — ROOM_CHANGE to entry's current room throws BusinessException")
+    void createSubstitution_roomChangeToSameRoom_throwsBusinessException() {
+        CreateSubstitutionRequest req = new CreateSubstitutionRequest(
+                timetableId, fixedToday, period1.getId(), class10.getId(), sectionA.getId(),
+                SubstitutionType.ROOM_CHANGE, null, room101.getId(), "Same room"
+        );
+
+        when(timetableRepository.findByIdAndNotDeleted(timetableId)).thenReturn(Optional.of(timetable));
+        when(bellSchedulePeriodRepository.findByIdAndNotDeleted(period1.getId())).thenReturn(Optional.of(period1));
+        when(academicClassRepository.findByIdAndNotDeleted(class10.getId())).thenReturn(Optional.of(class10));
+        when(sectionRepository.findByIdAndNotDeleted(sectionA.getId())).thenReturn(Optional.of(sectionA));
+        when(timetableEntryRepository.findActiveSlotEntries(timetableId, DayOfWeek.MONDAY, period1.getId(), class10.getId(), sectionA.getId()))
+                .thenReturn(List.of(baseEntry));
+        when(substitutionRepository.findActiveSlotSubstitutions(timetableId, fixedToday, period1.getId(), class10.getId(), sectionA.getId()))
+                .thenReturn(Collections.emptyList());
+        when(roomRepository.findByIdAndNotDeleted(room101.getId())).thenReturn(Optional.of(room101));
+
+        assertThatThrownBy(() -> substitutionService.createSubstitution(req))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("Substitute room cannot be the same as the original entry's room");
+    }
+
+    @Test
+    @DisplayName("Create Substitution — Non-working holiday rejected with BusinessException")
+    void createSubstitution_onHoliday_throwsBusinessException() {
+        CreateSubstitutionRequest req = new CreateSubstitutionRequest(
+                timetableId, fixedToday, period1.getId(), class10.getId(), sectionA.getId(),
+                SubstitutionType.TEACHER_SUBSTITUTE, substituteTeacher.getId(), null, "Holiday request"
+        );
+
+        when(calendarService.getDayStatus(fixedToday)).thenReturn(new com.vidya.tenantdata.calendar.dto.DayStatusResponse(
+                fixedToday, DayOfWeek.MONDAY, com.vidya.tenantdata.calendar.enums.DayStatus.HOLIDAY, "Gandhi Jayanti", com.vidya.tenantdata.calendar.enums.HolidayType.PUBLIC_HOLIDAY
+        ));
+
+        assertThatThrownBy(() -> substitutionService.createSubstitution(req))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("Cannot create substitution on non-working day: holiday (Gandhi Jayanti)");
+    }
+
+    @Test
+    @DisplayName("Create Substitution — idx_sub_slot_active constraint violation maps to DuplicateResourceException")
+    void createSubstitution_slotConstraintViolation_mapsToDuplicateResourceException() {
+        CreateSubstitutionRequest req = new CreateSubstitutionRequest(
+                timetableId, fixedToday, period1.getId(), class10.getId(), sectionA.getId(),
+                SubstitutionType.TEACHER_SUBSTITUTE, substituteTeacher.getId(), null, "Valid"
+        );
+
+        when(timetableRepository.findByIdAndNotDeleted(timetableId)).thenReturn(Optional.of(timetable));
+        when(bellSchedulePeriodRepository.findByIdAndNotDeleted(period1.getId())).thenReturn(Optional.of(period1));
+        when(academicClassRepository.findByIdAndNotDeleted(class10.getId())).thenReturn(Optional.of(class10));
+        when(sectionRepository.findByIdAndNotDeleted(sectionA.getId())).thenReturn(Optional.of(sectionA));
+        when(timetableEntryRepository.findActiveSlotEntries(timetableId, DayOfWeek.MONDAY, period1.getId(), class10.getId(), sectionA.getId()))
+                .thenReturn(List.of(baseEntry));
+        when(substitutionRepository.findActiveSlotSubstitutions(timetableId, fixedToday, period1.getId(), class10.getId(), sectionA.getId()))
+                .thenReturn(Collections.emptyList());
+        when(staffRepository.findByIdAndNotDeleted(substituteTeacher.getId())).thenReturn(Optional.of(substituteTeacher));
+        when(substitutionRepository.saveAndFlush(any())).thenThrow(new org.springframework.dao.DataIntegrityViolationException("unique constraint idx_sub_slot_active"));
+
+        assertThatThrownBy(() -> substitutionService.createSubstitution(req))
+                .isInstanceOf(DuplicateResourceException.class)
+                .hasMessageContaining("Active substitution already exists for this slot");
+    }
+
+    @Test
+    @DisplayName("Create Substitution — idx_sub_teacher_active constraint violation maps to DuplicateResourceException")
+    void createSubstitution_teacherConstraintViolation_mapsToDuplicateResourceException() {
+        CreateSubstitutionRequest req = new CreateSubstitutionRequest(
+                timetableId, fixedToday, period1.getId(), class10.getId(), sectionA.getId(),
+                SubstitutionType.TEACHER_SUBSTITUTE, substituteTeacher.getId(), null, "Valid"
+        );
+
+        when(timetableRepository.findByIdAndNotDeleted(timetableId)).thenReturn(Optional.of(timetable));
+        when(bellSchedulePeriodRepository.findByIdAndNotDeleted(period1.getId())).thenReturn(Optional.of(period1));
+        when(academicClassRepository.findByIdAndNotDeleted(class10.getId())).thenReturn(Optional.of(class10));
+        when(sectionRepository.findByIdAndNotDeleted(sectionA.getId())).thenReturn(Optional.of(sectionA));
+        when(timetableEntryRepository.findActiveSlotEntries(timetableId, DayOfWeek.MONDAY, period1.getId(), class10.getId(), sectionA.getId()))
+                .thenReturn(List.of(baseEntry));
+        when(substitutionRepository.findActiveSlotSubstitutions(timetableId, fixedToday, period1.getId(), class10.getId(), sectionA.getId()))
+                .thenReturn(Collections.emptyList());
+        when(staffRepository.findByIdAndNotDeleted(substituteTeacher.getId())).thenReturn(Optional.of(substituteTeacher));
+        when(substitutionRepository.saveAndFlush(any())).thenThrow(new org.springframework.dao.DataIntegrityViolationException("unique constraint idx_sub_teacher_active"));
+
+        assertThatThrownBy(() -> substitutionService.createSubstitution(req))
+                .isInstanceOf(DuplicateResourceException.class)
+                .hasMessageContaining("Substitute teacher already has an active substitution");
+    }
+
+    @Test
+    @DisplayName("Create Substitution — idx_sub_room_active constraint violation maps to DuplicateResourceException")
+    void createSubstitution_roomConstraintViolation_mapsToDuplicateResourceException() {
+        CreateSubstitutionRequest req = new CreateSubstitutionRequest(
+                timetableId, fixedToday, period1.getId(), class10.getId(), sectionA.getId(),
+                SubstitutionType.ROOM_CHANGE, null, substituteRoom.getId(), "Valid"
+        );
+
+        when(timetableRepository.findByIdAndNotDeleted(timetableId)).thenReturn(Optional.of(timetable));
+        when(bellSchedulePeriodRepository.findByIdAndNotDeleted(period1.getId())).thenReturn(Optional.of(period1));
+        when(academicClassRepository.findByIdAndNotDeleted(class10.getId())).thenReturn(Optional.of(class10));
+        when(sectionRepository.findByIdAndNotDeleted(sectionA.getId())).thenReturn(Optional.of(sectionA));
+        when(timetableEntryRepository.findActiveSlotEntries(timetableId, DayOfWeek.MONDAY, period1.getId(), class10.getId(), sectionA.getId()))
+                .thenReturn(List.of(baseEntry));
+        when(substitutionRepository.findActiveSlotSubstitutions(timetableId, fixedToday, period1.getId(), class10.getId(), sectionA.getId()))
+                .thenReturn(Collections.emptyList());
+        when(roomRepository.findByIdAndNotDeleted(substituteRoom.getId())).thenReturn(Optional.of(substituteRoom));
+        when(substitutionRepository.saveAndFlush(any())).thenThrow(new org.springframework.dao.DataIntegrityViolationException("unique constraint idx_sub_room_active"));
+
+        assertThatThrownBy(() -> substitutionService.createSubstitution(req))
+                .isInstanceOf(DuplicateResourceException.class)
+                .hasMessageContaining("Substitute room is already booked for an active substitution");
     }
 }

@@ -77,3 +77,10 @@ logging:
     com.vidya: INFO
     org.flywaydb: INFO
     com.zaxxer.hikari: WARN
+
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+

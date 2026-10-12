@@ -65,6 +65,12 @@ public class AttendanceResponse {
     @Schema(description = "Optional remarks")
     private String remarks;
 
+    @Schema(description = "Whether this record is on a non-working day with an override")
+    private boolean nonWorkingDayOverride;
+
+    @Schema(description = "Reason for overriding non-working day")
+    private String overrideReason;
+
     @Schema(description = "UUID of staff who marked this attendance")
     private UUID markedByStaffId;
 

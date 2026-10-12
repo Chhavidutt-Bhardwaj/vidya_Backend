@@ -119,6 +119,8 @@ public enum PlatformRole {
             PlatformPermission.TIMETABLE_ENTRY_DELETE,
             PlatformPermission.SUBSTITUTION_READ,
             PlatformPermission.SUBSTITUTION_MANAGE,
+            PlatformPermission.CALENDAR_READ,
+            PlatformPermission.CALENDAR_MANAGE,
             PlatformPermission.AUDIT_READ,
             PlatformPermission.ATTENDANCE_READ,
             PlatformPermission.ATTENDANCE_CREATE,
@@ -135,7 +137,8 @@ public enum PlatformRole {
             PlatformPermission.ONBOARDING_CREATE,
             PlatformPermission.ONBOARDING_UPDATE,
             PlatformPermission.SCHOOL_READ,
-            PlatformPermission.USER_READ
+            PlatformPermission.USER_READ,
+            PlatformPermission.CALENDAR_READ
     )),
 
     COMMUNITY_MANAGER(EnumSet.of(
@@ -250,12 +253,15 @@ public enum PlatformRole {
             PlatformPermission.TIMETABLE_ENTRY_DELETE,
             PlatformPermission.SUBSTITUTION_READ,
             PlatformPermission.SUBSTITUTION_MANAGE,
+            PlatformPermission.CALENDAR_READ,
+            PlatformPermission.CALENDAR_MANAGE,
             PlatformPermission.ATTENDANCE_READ,
             PlatformPermission.ATTENDANCE_CREATE,
             PlatformPermission.ATTENDANCE_UPDATE,
             PlatformPermission.ATTENDANCE_DELETE,
             PlatformPermission.ATTENDANCE_BULK_MARK,
-            PlatformPermission.ATTENDANCE_STATUS_UPDATE
+            PlatformPermission.ATTENDANCE_STATUS_UPDATE,
+            PlatformPermission.ATTENDANCE_OVERRIDE_NON_WORKING
     )),
 
     SCHOOL_ADMIN(EnumSet.of(
@@ -352,12 +358,15 @@ public enum PlatformRole {
             PlatformPermission.TIMETABLE_ENTRY_DELETE,
             PlatformPermission.SUBSTITUTION_READ,
             PlatformPermission.SUBSTITUTION_MANAGE,
+            PlatformPermission.CALENDAR_READ,
+            PlatformPermission.CALENDAR_MANAGE,
             PlatformPermission.ATTENDANCE_READ,
             PlatformPermission.ATTENDANCE_CREATE,
             PlatformPermission.ATTENDANCE_UPDATE,
             PlatformPermission.ATTENDANCE_DELETE,
             PlatformPermission.ATTENDANCE_BULK_MARK,
-            PlatformPermission.ATTENDANCE_STATUS_UPDATE
+            PlatformPermission.ATTENDANCE_STATUS_UPDATE,
+            PlatformPermission.ATTENDANCE_OVERRIDE_NON_WORKING
     )),
 
     /**
@@ -377,7 +386,8 @@ public enum PlatformRole {
             PlatformPermission.STUDENT_ACADEMIC_ASSIGNMENT_READ,
             PlatformPermission.TIMETABLE_READ,
             PlatformPermission.TIMETABLE_ENTRY_READ,
-            PlatformPermission.SUBSTITUTION_READ
+            PlatformPermission.SUBSTITUTION_READ,
+            PlatformPermission.CALENDAR_READ
     ));
 
     private final Set<PlatformPermission> permissions;

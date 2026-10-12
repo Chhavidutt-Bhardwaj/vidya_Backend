@@ -46,6 +46,17 @@ public class BulkAttendanceRequest {
     @Schema(description = "List of student attendance records", requiredMode = Schema.RequiredMode.REQUIRED)
     private List<BulkAttendanceRecordRequest> records;
 
+    @Schema(description = "Optional flag to allow marking attendance on non-working days or holidays", defaultValue = "false")
+    private Boolean allowNonWorkingDay;
+
+    @Schema(description = "Reason for overriding non-working day attendance (required when allowNonWorkingDay is true)")
+    private String overrideReason;
+
+    public BulkAttendanceRequest(UUID academicYearId, UUID academicClassId, UUID sectionId,
+                                 LocalDate attendanceDate, List<BulkAttendanceRecordRequest> records) {
+        this(academicYearId, academicClassId, sectionId, attendanceDate, records, false, null);
+    }
+
     // ── Nested record DTO ────────────────────────────────────────────────────
 
     @Getter

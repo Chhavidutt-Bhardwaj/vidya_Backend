@@ -44,6 +44,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -79,6 +80,9 @@ class TimetableConflictValidatorTest {
 
     @Mock
     private ClassSubjectAssignmentRepository classSubjectAssignmentRepository;
+
+    @Mock
+    private com.vidya.tenantdata.calendar.service.CalendarService calendarService;
 
     @InjectMocks
     private TimetableConflictValidatorImpl validator;
@@ -130,6 +134,9 @@ class TimetableConflictValidatorTest {
 
         timetable = new Timetable("TTB-1", academicYear, bellSchedule, "Main Timetable", null, null, null);
         timetable.setId(timetableId);
+
+        org.mockito.Mockito.lenient().when(calendarService.getEverWorkingWeekdays(any()))
+                .thenReturn(java.util.Set.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY, DayOfWeek.SATURDAY));
     }
 
     @Test
@@ -263,5 +270,52 @@ class TimetableConflictValidatorTest {
 
         assertThat(response.valid()).isFalse();
         assertThat(response.conflicts().stream().anyMatch(c -> c.type() == ScheduleConflictType.PERIOD_CONFLICT)).isTrue();
+    }
+
+    @Test
+    @DisplayName("Entry scheduled on weekly off (e.g. SUNDAY) emits WARNING and valid remains true")
+    void validateEntry_nonWorkingDay_emitsWarning_validIsTrue() {
+        CreateTimetableEntryRequest request = new CreateTimetableEntryRequest(
+                periodId, DayOfWeek.SUNDAY, classId, sectionId, null, null, teacherId, null, roomId, TimetableEntryType.REGULAR
+        );
+
+        when(timetableRepository.findByIdAndNotDeleted(timetableId)).thenReturn(Optional.of(timetable));
+        when(bellSchedulePeriodRepository.findByIdAndNotDeleted(periodId)).thenReturn(Optional.of(period1));
+        when(academicClassRepository.findByIdAndNotDeleted(classId)).thenReturn(Optional.of(class8));
+        when(sectionRepository.findByIdAndNotDeleted(sectionId)).thenReturn(Optional.of(sectionA));
+        when(roomRepository.findByIdAndNotDeleted(roomId)).thenReturn(Optional.of(room101));
+        when(timetableEntryRepository.findTeacherClashes(timetableId, teacherId, DayOfWeek.SUNDAY, periodId, null))
+                .thenReturn(List.of());
+        when(timetableEntryRepository.findClassClashes(timetableId, classId, sectionId, DayOfWeek.SUNDAY, periodId, null))
+                .thenReturn(List.of());
+        when(timetableEntryRepository.findRoomClashes(timetableId, roomId, DayOfWeek.SUNDAY, periodId, null))
+                .thenReturn(List.of());
+
+        ScheduleValidationResponse response = validator.validateEntry(timetableId, request, null);
+
+        assertThat(response.valid()).isTrue();
+        assertThat(response.totalConflicts()).isEqualTo(1);
+        assertThat(response.conflicts().getFirst().type()).isEqualTo(ScheduleConflictType.NON_WORKING_DAY);
+        assertThat(response.conflicts().getFirst().severity()).isEqualTo(com.vidya.tenantdata.timetable.enums.ConflictSeverity.WARNING);
+        assertThat(response.conflicts().getFirst().message()).contains("scheduled on SUNDAY, a weekly off for this academic year");
+    }
+
+    @Test
+    @DisplayName("Validate timetable with non-working day entry emits WARNING and validation is valid")
+    void validateTimetable_nonWorkingDayEntry_emitsWarning_validIsTrue() {
+        TimetableEntry sundayEntry = new TimetableEntry(
+                "TTE-SUN", timetable, academicYear, period1, DayOfWeek.SUNDAY, class8, sectionA, null, null, teacherA, null, room101, TimetableEntryType.REGULAR
+        );
+        sundayEntry.setId(UUID.randomUUID());
+
+        when(timetableRepository.findByIdAndNotDeleted(timetableId)).thenReturn(Optional.of(timetable));
+        when(timetableEntryRepository.findAllByTimetableIdWithDetails(timetableId)).thenReturn(List.of(sundayEntry));
+
+        ScheduleValidationResponse response = validator.validateTimetable(timetableId);
+
+        assertThat(response.valid()).isTrue();
+        assertThat(response.totalConflicts()).isEqualTo(1);
+        assertThat(response.conflicts().getFirst().type()).isEqualTo(ScheduleConflictType.NON_WORKING_DAY);
+        assertThat(response.conflicts().getFirst().severity()).isEqualTo(com.vidya.tenantdata.timetable.enums.ConflictSeverity.WARNING);
     }
 }

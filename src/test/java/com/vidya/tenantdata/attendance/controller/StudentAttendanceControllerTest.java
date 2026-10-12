@@ -373,4 +373,23 @@ class StudentAttendanceControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value("SECTION_ATTENDANCE_RETRIEVED"));
     }
+
+    // ── GET /attendance/missing ───────────────────────────────────────────────
+
+    @Test
+    @DisplayName("GET /attendance/missing — 200 OK")
+    void getMissingAttendanceDates_returns200() throws Exception {
+        when(service.getMissingAttendanceDates(eq(sectionId), eq(yearId), eq(TODAY.minusDays(5)), eq(TODAY)))
+                .thenReturn(List.of(TODAY.minusDays(3), TODAY.minusDays(1)));
+
+        mockMvc.perform(get("/api/v1/attendance/missing")
+                        .param("sectionId", sectionId.toString())
+                        .param("academicYearId", yearId.toString())
+                        .param("from", TODAY.minusDays(5).toString())
+                        .param("to", TODAY.toString()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value("MISSING_ATTENDANCE_DATES_RETRIEVED"))
+                .andExpect(jsonPath("$.data.length()").value(2))
+                .andExpect(jsonPath("$.data[0]").value(TODAY.minusDays(3).toString()));
+    }
 }

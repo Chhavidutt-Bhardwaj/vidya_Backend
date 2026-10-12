@@ -7,6 +7,9 @@ import com.vidya.tenantdata.assignment.repository.ClassSubjectAssignmentReposito
 import com.vidya.tenantdata.assignment.repository.TeacherSubjectAssignmentRepository;
 import com.vidya.tenantdata.staff.repository.StaffRepository;
 import com.vidya.tenantdata.subject.repository.SubjectRepository;
+import com.vidya.tenantdata.calendar.mapper.WorkingDayConfigMapper;
+import com.vidya.tenantdata.calendar.repository.SchoolHolidayRepository;
+import com.vidya.tenantdata.calendar.repository.WorkingDayConfigRepository;
 import com.vidya.tenantdata.timetable.enums.SubstitutionType;
 import com.vidya.tenantdata.timetable.enums.TimetableEntryType;
 import com.vidya.tenantdata.timetable.mapper.BellScheduleMapper;
@@ -93,6 +96,16 @@ class TimetableStatementCountPostgresIntegrationTest extends AbstractTenantPostg
         TimetableEntryMapper timetableEntryMapper = new TimetableEntryMapper();
         TimetableMapper timetableMapper = new TimetableMapper(bellScheduleMapper, timetableEntryMapper);
         TimetableSubstitutionMapper substitutionMapper = new TimetableSubstitutionMapper();
+        WorkingDayConfigRepository workingDayConfigRepo = repoFactory.getRepository(WorkingDayConfigRepository.class);
+        SchoolHolidayRepository schoolHolidayRepo = repoFactory.getRepository(SchoolHolidayRepository.class);
+        WorkingDayConfigMapper workingDayConfigMapper = new WorkingDayConfigMapper();
+        com.vidya.tenantdata.calendar.service.CalendarService calendarService = new com.vidya.tenantdata.calendar.service.CalendarServiceImpl(
+                academicYearRepo,
+                workingDayConfigRepo,
+                schoolHolidayRepo,
+                workingDayConfigMapper
+        );
+
         TimetableConflictValidator conflictValidator = new com.vidya.tenantdata.timetable.service.TimetableConflictValidatorImpl(
                 timetableRepo,
                 entryRepo,
@@ -103,7 +116,8 @@ class TimetableStatementCountPostgresIntegrationTest extends AbstractTenantPostg
                 sectionRepo,
                 subjectRepo,
                 teacherAssignmentRepo,
-                classSubjectRepo
+                classSubjectRepo,
+                calendarService
         );
 
         timetableService = new TimetableServiceImpl(
@@ -123,7 +137,8 @@ class TimetableStatementCountPostgresIntegrationTest extends AbstractTenantPostg
                 timetableMapper,
                 timetableEntryMapper,
                 substitutionRepo,
-                substitutionMapper
+                substitutionMapper,
+                calendarService
         );
     }
 
@@ -362,5 +377,85 @@ class TimetableStatementCountPostgresIntegrationTest extends AbstractTenantPostg
         assertThat(teacherDay50).isEqualTo(teacherDay5);
         assertThat(sectionGridWeekOf50).isEqualTo(sectionGridWeekOf5);
         assertThat(teacherGridWeekOf50).isEqualTo(teacherGridWeekOf5);
+    }
+
+    @Test
+    @DisplayName("Assert calendar-related queries are identical when validating 5 vs 200 timetable entries")
+    void statementCountInvariance_validation_5vs200Entries() {
+        UUID yearId = UUID.randomUUID();
+        jdbcTemplate.update(
+                "INSERT INTO academic_year (id, code, name, start_date, end_date, is_current, status) VALUES (?, ?, ?, ?, ?, false, 'ACTIVE')",
+                yearId, "AY-VAL-STMT", "Academic Year 2026-2027", LocalDate.of(2026, 6, 1), LocalDate.of(2027, 4, 30)
+        );
+
+        UUID scheduleId = UUID.randomUUID();
+        jdbcTemplate.update(
+                "INSERT INTO bell_schedule (id, schedule_code, name, is_default, status) VALUES (?, ?, ?, ?, 'ACTIVE')",
+                scheduleId, "BSC-VAL-STMT", "Schedule Val", false
+        );
+
+        UUID timetable5Id = UUID.randomUUID();
+        jdbcTemplate.update(
+                "INSERT INTO timetable (id, timetable_code, academic_year_id, bell_schedule_id, name, status, effective_from, effective_to) VALUES (?, ?, ?, ?, ?, 'DRAFT', ?, ?)",
+                timetable5Id, "TTB-VAL-5", yearId, scheduleId, "TTB 5", LocalDate.of(2026, 6, 1), LocalDate.of(2027, 4, 30)
+        );
+
+        UUID timetable200Id = UUID.randomUUID();
+        jdbcTemplate.update(
+                "INSERT INTO timetable (id, timetable_code, academic_year_id, bell_schedule_id, name, status, effective_from, effective_to) VALUES (?, ?, ?, ?, ?, 'DRAFT', ?, ?)",
+                timetable200Id, "TTB-VAL-200", yearId, scheduleId, "TTB 200", LocalDate.of(2026, 6, 1), LocalDate.of(2027, 4, 30)
+        );
+
+        UUID classId = UUID.randomUUID();
+        jdbcTemplate.update(
+                "INSERT INTO academic_class (id, code, name, sort_order) VALUES (?, ?, ?, 10)",
+                classId, "CLS-VAL-10", "Class 10"
+        );
+
+        UUID sectionId = UUID.randomUUID();
+        jdbcTemplate.update(
+                "INSERT INTO section (id, academic_year_id, academic_class_id, code, name, capacity) VALUES (?, ?, ?, ?, ?, 40)",
+                sectionId, yearId, classId, "SEC-VAL-A", "Section A"
+        );
+
+        UUID pId = UUID.randomUUID();
+        jdbcTemplate.update(
+                "INSERT INTO bell_schedule_period (id, period_code, bell_schedule_id, name, period_sequence, start_time, end_time, period_type) VALUES (?, ?, ?, ?, 1, '08:00:00', '08:45:00', 'TEACHING')",
+                pId, "PRD-VAL-01", scheduleId, "Period 1"
+        );
+
+        // Seed 5 entries for timetable 5
+        for (int i = 0; i < 5; i++) {
+            jdbcTemplate.update(
+                    "INSERT INTO timetable_entry (id, entry_code, timetable_id, academic_year_id, period_id, day_of_week, academic_class_id, section_id, entry_type) " +
+                    "VALUES (?, ?, ?, ?, ?, 'MONDAY', ?, ?, 'REGULAR')",
+                    UUID.randomUUID(), "TTE-V5-" + i, timetable5Id, yearId, pId, classId, sectionId
+            );
+        }
+
+        // Seed 200 entries for timetable 200
+        for (int i = 0; i < 200; i++) {
+            jdbcTemplate.update(
+                    "INSERT INTO timetable_entry (id, entry_code, timetable_id, academic_year_id, period_id, day_of_week, academic_class_id, section_id, entry_type) " +
+                    "VALUES (?, ?, ?, ?, ?, 'MONDAY', ?, ?, 'REGULAR')",
+                    UUID.randomUUID(), "TTE-V200-" + i, timetable200Id, yearId, pId, classId, sectionId
+            );
+        }
+
+        em.clear();
+
+        statistics.clear();
+        timetableService.validateTimetable(timetable5Id);
+        long queries5 = statistics.getPrepareStatementCount();
+
+        em.clear();
+
+        statistics.clear();
+        timetableService.validateTimetable(timetable200Id);
+        long queries200 = statistics.getPrepareStatementCount();
+
+        System.out.println("Timetable validation statement counts: 5 entries = " + queries5 + ", 200 entries = " + queries200);
+        // Calendar queries are loaded once per validateTimetable invocation (O(1) calendar queries)
+        assertThat(queries200).isEqualTo(queries5);
     }
 }
