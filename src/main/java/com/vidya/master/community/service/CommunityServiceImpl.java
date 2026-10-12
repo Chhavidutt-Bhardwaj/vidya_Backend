@@ -92,7 +92,12 @@ public class CommunityServiceImpl implements CommunityService {
     @Transactional(transactionManager = "masterTransactionManager", readOnly = true)
     public Page<CommunityResponse> getAllCommunities(Pageable pageable, CommunityStatus status, CommunityType type, String search) {
         String cleanSearch = (search != null && !search.isBlank()) ? search.trim() : null;
-        Page<Community> page = communityRepository.findWithFilters(status, type, cleanSearch, pageable);
+        Page<Community> page;
+        if (status == null && type == null && cleanSearch == null) {
+            page = communityRepository.findAll(pageable);
+        } else {
+            page = communityRepository.findWithFilters(status, type, cleanSearch, pageable);
+        }
         return page.map(c -> {
             long count = communityMemberRepository.countByCommunityId(c.getId());
             return communityMapper.toResponse(c, count);

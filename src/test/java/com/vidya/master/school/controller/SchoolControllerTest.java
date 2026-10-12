@@ -256,4 +256,20 @@ class SchoolControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", equalTo(true)));
     }
+
+    @Test
+    @DisplayName("GET /api/v1/schools/stats should return master data statistics")
+    void getMasterStats_Success() throws Exception {
+        com.vidya.master.school.dto.MasterStatsResponse stats =
+                new com.vidya.master.school.dto.MasterStatsResponse(10, 8, 1, 1, 15, 8, 8, 12);
+        when(schoolService.getMasterStats()).thenReturn(stats);
+
+        mockMvc.perform(get("/api/v1/schools/stats"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success", equalTo(true)))
+                .andExpect(jsonPath("$.data.totalSchools", equalTo(10)))
+                .andExpect(jsonPath("$.data.activeSchools", equalTo(8)))
+                .andExpect(jsonPath("$.data.totalBranches", equalTo(15)))
+                .andExpect(jsonPath("$.data.totalTenants", equalTo(8)));
+    }
 }

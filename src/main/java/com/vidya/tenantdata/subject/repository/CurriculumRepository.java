@@ -26,9 +26,9 @@ public interface CurriculumRepository extends JpaRepository<Curriculum, UUID> {
     @Query("SELECT c FROM Curriculum c WHERE c.deletedAt IS NULL " +
            "AND (:academicYearId IS NULL OR c.academicYear.id = :academicYearId) " +
            "AND (:status IS NULL OR c.status = :status) " +
-           "AND (:query IS NULL OR :query = '' OR " +
-           "     LOWER(c.name) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
-           "     LOWER(c.curriculumCode) LIKE LOWER(CONCAT('%', :query, '%')))")
+           "AND (CAST(:query AS string) IS NULL OR :query = '' OR " +
+           "     LOWER(c.name) LIKE LOWER(CONCAT('%', CAST(:query AS string), '%')) OR " +
+           "     LOWER(c.curriculumCode) LIKE LOWER(CONCAT('%', CAST(:query AS string), '%')))")
     Page<Curriculum> searchCurricula(
             @Param("academicYearId") UUID academicYearId,
             @Param("status") CurriculumStatus status,

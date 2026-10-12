@@ -2,6 +2,7 @@ package com.vidya.master.school.service;
 
 import com.vidya.master.school.dto.CreateBranchRequest;
 import com.vidya.master.school.dto.CreateSchoolRequest;
+import com.vidya.master.school.dto.MasterStatsResponse;
 import com.vidya.master.school.dto.SchoolBranchResponse;
 import com.vidya.master.school.dto.SchoolResponse;
 import com.vidya.master.school.dto.UpdateBranchRequest;
@@ -41,4 +42,6 @@ public interface SchoolService {
     Page<SchoolBranchResponse> getSchoolBranches(UUID schoolId, Pageable pageable);
 
     SchoolBranchResponse getBranchById(UUID schoolId, UUID branchId);
+ 
+    MasterStatsResponse getMasterStats();
 }

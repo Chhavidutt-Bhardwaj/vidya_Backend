@@ -27,10 +27,10 @@ public interface SubjectRepository extends JpaRepository<Subject, UUID> {
     @Query("SELECT s FROM Subject s WHERE s.deletedAt IS NULL " +
            "AND (:subjectType IS NULL OR s.subjectType = :subjectType) " +
            "AND (:status IS NULL OR s.status = :status) " +
-           "AND (:query IS NULL OR :query = '' OR " +
-           "     LOWER(s.name) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
-           "     LOWER(s.shortName) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
-           "     LOWER(s.subjectCode) LIKE LOWER(CONCAT('%', :query, '%')))")
+           "AND (CAST(:query AS string) IS NULL OR :query = '' OR " +
+           "     LOWER(s.name) LIKE LOWER(CONCAT('%', CAST(:query AS string), '%')) OR " +
+           "     LOWER(s.shortName) LIKE LOWER(CONCAT('%', CAST(:query AS string), '%')) OR " +
+           "     LOWER(s.subjectCode) LIKE LOWER(CONCAT('%', CAST(:query AS string), '%')))")
     Page<Subject> searchSubjects(
             @Param("subjectType") SubjectType subjectType,
             @Param("status") SubjectStatus status,

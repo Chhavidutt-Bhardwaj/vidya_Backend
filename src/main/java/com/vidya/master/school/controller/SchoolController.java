@@ -5,6 +5,7 @@ import com.vidya.common.api.ApiResponseCode;
 import com.vidya.common.api.PagedApiResponse;
 import com.vidya.master.school.dto.CreateBranchRequest;
 import com.vidya.master.school.dto.CreateSchoolRequest;
+import com.vidya.master.school.dto.MasterStatsResponse;
 import com.vidya.master.school.dto.SchoolBranchResponse;
 import com.vidya.master.school.dto.SchoolResponse;
 import com.vidya.master.school.dto.UpdateBranchRequest;
@@ -80,6 +81,16 @@ public class SchoolController {
         return ResponseEntity.ok(ApiResponse.success(
                 ApiResponseCode.SCHOOL_FOUND,
                 "School retrieved successfully",
+                response
+        ));
+    }
+
+    @GetMapping("/stats")
+    public ResponseEntity<ApiResponse<MasterStatsResponse>> getMasterStats() {
+        MasterStatsResponse response = schoolService.getMasterStats();
+        return ResponseEntity.ok(ApiResponse.success(
+                ApiResponseCode.SUCCESS,
+                "Master statistics retrieved successfully",
                 response
         ));
     }

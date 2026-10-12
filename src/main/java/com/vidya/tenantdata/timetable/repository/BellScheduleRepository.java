@@ -32,8 +32,8 @@ public interface BellScheduleRepository extends JpaRepository<BellSchedule, UUID
 
     @Query("SELECT b FROM BellSchedule b " +
            "WHERE b.deletedAt IS NULL " +
-           "AND (:search IS NULL OR LOWER(b.name) LIKE LOWER(CONCAT('%', :search, '%')) " +
-           "     OR LOWER(b.scheduleCode) LIKE LOWER(CONCAT('%', :search, '%'))) " +
+           "AND (CAST(:search AS string) IS NULL OR LOWER(b.name) LIKE LOWER(CONCAT('%', CAST(:search AS string), '%')) " +
+           "     OR LOWER(b.scheduleCode) LIKE LOWER(CONCAT('%', CAST(:search AS string), '%'))) " +
            "AND (:status IS NULL OR b.status = :status)")
     Page<BellSchedule> searchSchedules(
             @Param("search") String search,

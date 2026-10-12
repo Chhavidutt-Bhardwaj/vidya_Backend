@@ -32,6 +32,8 @@ public interface TenantRepository extends JpaRepository<Tenant, UUID> {
 
     boolean existsByDatabaseName(String databaseName);
 
+    long countByStatus(TenantStatus status);
+
     @Query("SELECT t FROM Tenant t WHERE t.schoolId = :schoolId AND t.status = :status")
     Optional<Tenant> findBySchoolIdAndStatus(@Param("schoolId") UUID schoolId,
                                              @Param("status") TenantStatus status);

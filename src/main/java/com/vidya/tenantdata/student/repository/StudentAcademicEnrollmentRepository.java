@@ -62,7 +62,7 @@ public interface StudentAcademicEnrollmentRepository extends JpaRepository<Stude
            "AND (:academicClassId IS NULL OR e.academicClass.id = :academicClassId) " +
            "AND (:sectionId IS NULL OR e.section.id = :sectionId) " +
            "AND (:status IS NULL OR e.enrollmentStatus = :status) " +
-           "AND (:enrollmentCode IS NULL OR LOWER(e.enrollmentCode) LIKE LOWER(CONCAT('%', :enrollmentCode, '%'))) " +
+           "AND (CAST(:enrollmentCode AS string) IS NULL OR LOWER(e.enrollmentCode) LIKE LOWER(CONCAT('%', CAST(:enrollmentCode AS string), '%'))) " +
            "AND e.deletedAt IS NULL",
            countQuery = "SELECT COUNT(e) FROM StudentAcademicEnrollment e " +
            "WHERE (:studentId IS NULL OR e.student.id = :studentId) " +
@@ -70,7 +70,7 @@ public interface StudentAcademicEnrollmentRepository extends JpaRepository<Stude
            "AND (:academicClassId IS NULL OR e.academicClass.id = :academicClassId) " +
            "AND (:sectionId IS NULL OR e.section.id = :sectionId) " +
            "AND (:status IS NULL OR e.enrollmentStatus = :status) " +
-           "AND (:enrollmentCode IS NULL OR LOWER(e.enrollmentCode) LIKE LOWER(CONCAT('%', :enrollmentCode, '%'))) " +
+           "AND (CAST(:enrollmentCode AS string) IS NULL OR LOWER(e.enrollmentCode) LIKE LOWER(CONCAT('%', CAST(:enrollmentCode AS string), '%'))) " +
            "AND e.deletedAt IS NULL")
     Page<StudentAcademicEnrollment> searchEnrollments(
             @Param("studentId") UUID studentId,
@@ -92,11 +92,11 @@ public interface StudentAcademicEnrollmentRepository extends JpaRepository<Stude
            "AND (:sectionId IS NULL OR e.section.id = :sectionId) " +
            "AND (:academicYearId IS NULL OR e.academicYear.id = :academicYearId) " +
            "AND (:status IS NULL OR e.enrollmentStatus = :status) " +
-           "AND (:searchQuery IS NULL OR LOWER(s.admissionNumber) LIKE LOWER(CONCAT('%', :searchQuery, '%')) " +
-           "     OR LOWER(s.studentCode) LIKE LOWER(CONCAT('%', :searchQuery, '%')) " +
-           "     OR LOWER(e.rollNumber) LIKE LOWER(CONCAT('%', :searchQuery, '%')) " +
-           "     OR (p.firstName IS NOT NULL AND LOWER(p.firstName) LIKE LOWER(CONCAT('%', :searchQuery, '%'))) " +
-           "     OR (p.lastName IS NOT NULL AND LOWER(p.lastName) LIKE LOWER(CONCAT('%', :searchQuery, '%')))) " +
+           "AND (CAST(:searchQuery AS string) IS NULL OR LOWER(s.admissionNumber) LIKE LOWER(CONCAT('%', CAST(:searchQuery AS string), '%')) " +
+           "     OR LOWER(s.studentCode) LIKE LOWER(CONCAT('%', CAST(:searchQuery AS string), '%')) " +
+           "     OR LOWER(e.rollNumber) LIKE LOWER(CONCAT('%', CAST(:searchQuery AS string), '%')) " +
+           "     OR (p.firstName IS NOT NULL AND LOWER(p.firstName) LIKE LOWER(CONCAT('%', CAST(:searchQuery AS string), '%'))) " +
+           "     OR (p.lastName IS NOT NULL AND LOWER(p.lastName) LIKE LOWER(CONCAT('%', CAST(:searchQuery AS string), '%')))) " +
            "AND e.deletedAt IS NULL",
            countQuery = "SELECT COUNT(e) FROM StudentAcademicEnrollment e " +
            "LEFT JOIN e.student s " +
@@ -106,11 +106,11 @@ public interface StudentAcademicEnrollmentRepository extends JpaRepository<Stude
            "AND (:sectionId IS NULL OR e.section.id = :sectionId) " +
            "AND (:academicYearId IS NULL OR e.academicYear.id = :academicYearId) " +
            "AND (:status IS NULL OR e.enrollmentStatus = :status) " +
-           "AND (:searchQuery IS NULL OR LOWER(s.admissionNumber) LIKE LOWER(CONCAT('%', :searchQuery, '%')) " +
-           "     OR LOWER(s.studentCode) LIKE LOWER(CONCAT('%', :searchQuery, '%')) " +
-           "     OR LOWER(e.rollNumber) LIKE LOWER(CONCAT('%', :searchQuery, '%')) " +
-           "     OR (p.firstName IS NOT NULL AND LOWER(p.firstName) LIKE LOWER(CONCAT('%', :searchQuery, '%'))) " +
-           "     OR (p.lastName IS NOT NULL AND LOWER(p.lastName) LIKE LOWER(CONCAT('%', :searchQuery, '%')))) " +
+           "AND (CAST(:searchQuery AS string) IS NULL OR LOWER(s.admissionNumber) LIKE LOWER(CONCAT('%', CAST(:searchQuery AS string), '%')) " +
+           "     OR LOWER(s.studentCode) LIKE LOWER(CONCAT('%', CAST(:searchQuery AS string), '%')) " +
+           "     OR LOWER(e.rollNumber) LIKE LOWER(CONCAT('%', CAST(:searchQuery AS string), '%')) " +
+           "     OR (p.firstName IS NOT NULL AND LOWER(p.firstName) LIKE LOWER(CONCAT('%', CAST(:searchQuery AS string), '%'))) " +
+           "     OR (p.lastName IS NOT NULL AND LOWER(p.lastName) LIKE LOWER(CONCAT('%', CAST(:searchQuery AS string), '%')))) " +
            "AND e.deletedAt IS NULL")
     Page<StudentAcademicEnrollment> searchClassSectionStudents(
             @Param("classId") UUID classId,

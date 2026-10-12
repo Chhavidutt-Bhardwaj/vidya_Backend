@@ -33,9 +33,9 @@ public interface CommunityRepository extends JpaRepository<Community, UUID>, Jpa
     Page<Community> findByType(CommunityType type, Pageable pageable);
 
     @Query("SELECT c FROM Community c WHERE " +
-            "(:status IS NULL OR c.status = :status) AND " +
-            "(:type IS NULL OR c.type = :type) AND " +
-            "(:search IS NULL OR LOWER(c.name) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(c.communityCode) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(c.city) LIKE LOWER(CONCAT('%', :search, '%')))")
+            "(CAST(:status AS string) IS NULL OR c.status = :status) AND " +
+            "(CAST(:type AS string) IS NULL OR c.type = :type) AND " +
+            "(CAST(:search AS string) IS NULL OR LOWER(c.name) LIKE LOWER(CONCAT('%', CAST(:search AS string), '%')) OR LOWER(c.communityCode) LIKE LOWER(CONCAT('%', CAST(:search AS string), '%')) OR LOWER(c.city) LIKE LOWER(CONCAT('%', CAST(:search AS string), '%')))")
     Page<Community> findWithFilters(
             @Param("status") CommunityStatus status,
             @Param("type") CommunityType type,

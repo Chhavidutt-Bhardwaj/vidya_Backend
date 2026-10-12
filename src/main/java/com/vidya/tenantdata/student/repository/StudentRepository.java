@@ -39,12 +39,12 @@ public interface StudentRepository extends JpaRepository<Student, UUID> {
     @Query("SELECT s FROM Student s LEFT JOIN s.tenantUser u LEFT JOIN u.profile p " +
            "WHERE s.deletedAt IS NULL " +
            "AND (:status IS NULL OR s.status = :status) " +
-           "AND (:admissionNumber IS NULL OR LOWER(s.admissionNumber) LIKE LOWER(CONCAT('%', :admissionNumber, '%'))) " +
-           "AND (:studentCode IS NULL OR LOWER(s.studentCode) LIKE LOWER(CONCAT('%', :studentCode, '%'))) " +
-           "AND (:searchQuery IS NULL OR LOWER(s.admissionNumber) LIKE LOWER(CONCAT('%', :searchQuery, '%')) " +
-           "     OR LOWER(s.studentCode) LIKE LOWER(CONCAT('%', :searchQuery, '%')) " +
-           "     OR (p.firstName IS NOT NULL AND LOWER(p.firstName) LIKE LOWER(CONCAT('%', :searchQuery, '%'))) " +
-           "     OR (p.lastName IS NOT NULL AND LOWER(p.lastName) LIKE LOWER(CONCAT('%', :searchQuery, '%'))))")
+           "AND (CAST(:admissionNumber AS string) IS NULL OR LOWER(s.admissionNumber) LIKE LOWER(CONCAT('%', CAST(:admissionNumber AS string), '%'))) " +
+           "AND (CAST(:studentCode AS string) IS NULL OR LOWER(s.studentCode) LIKE LOWER(CONCAT('%', CAST(:studentCode AS string), '%'))) " +
+           "AND (CAST(:searchQuery AS string) IS NULL OR LOWER(s.admissionNumber) LIKE LOWER(CONCAT('%', CAST(:searchQuery AS string), '%')) " +
+           "     OR LOWER(s.studentCode) LIKE LOWER(CONCAT('%', CAST(:searchQuery AS string), '%')) " +
+           "     OR (p.firstName IS NOT NULL AND LOWER(p.firstName) LIKE LOWER(CONCAT('%', CAST(:searchQuery AS string), '%'))) " +
+           "     OR (p.lastName IS NOT NULL AND LOWER(p.lastName) LIKE LOWER(CONCAT('%', CAST(:searchQuery AS string), '%'))))")
     Page<Student> searchStudents(
             @Param("status") StudentStatus status,
             @Param("admissionNumber") String admissionNumber,

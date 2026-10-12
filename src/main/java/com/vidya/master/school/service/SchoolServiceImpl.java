@@ -3,8 +3,10 @@ package com.vidya.master.school.service;
 import com.vidya.common.exception.DuplicateResourceException;
 import com.vidya.common.exception.ResourceNotFoundException;
 import com.vidya.common.util.CodeGenerator;
+import com.vidya.master.onboarding.repository.SchoolOnboardingRepository;
 import com.vidya.master.school.dto.CreateBranchRequest;
 import com.vidya.master.school.dto.CreateSchoolRequest;
+import com.vidya.master.school.dto.MasterStatsResponse;
 import com.vidya.master.school.dto.SchoolBranchResponse;
 import com.vidya.master.school.dto.SchoolResponse;
 import com.vidya.master.school.dto.UpdateBranchRequest;
@@ -16,6 +18,8 @@ import com.vidya.master.school.entity.SchoolStatus;
 import com.vidya.master.school.mapper.SchoolMapper;
 import com.vidya.master.school.repository.SchoolBranchRepository;
 import com.vidya.master.school.repository.SchoolRepository;
+import com.vidya.master.tenant.entity.TenantStatus;
+import com.vidya.master.tenant.repository.TenantRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -38,6 +42,8 @@ public class SchoolServiceImpl implements SchoolService {
     private final SchoolRepository schoolRepository;
     private final SchoolBranchRepository schoolBranchRepository;
     private final SchoolMapper schoolMapper;
+    private final TenantRepository tenantRepository;
+    private final SchoolOnboardingRepository schoolOnboardingRepository;
 
     @Override
     public SchoolResponse createSchool(CreateSchoolRequest request) {
@@ -122,7 +128,12 @@ public class SchoolServiceImpl implements SchoolService {
     @Transactional(transactionManager = "masterTransactionManager", readOnly = true)
     public Page<SchoolResponse> getAllSchools(Pageable pageable, SchoolStatus status, SchoolBoard board, String search) {
         String cleanSearch = (search != null && !search.isBlank()) ? search.trim() : null;
-        Page<School> page = schoolRepository.findWithFilters(status, board, cleanSearch, pageable);
+        Page<School> page;
+        if (status == null && board == null && cleanSearch == null) {
+            page = schoolRepository.findAll(pageable);
+        } else {
+            page = schoolRepository.findWithFilters(status, board, cleanSearch, pageable);
+        }
         return page.map(s -> {
             long count = schoolBranchRepository.countBySchoolId(s.getId());
             SchoolBranch mainBranch = schoolBranchRepository.findBySchoolIdAndMainBranchTrue(s.getId()).orElse(null);
@@ -299,5 +310,29 @@ public class SchoolServiceImpl implements SchoolService {
             }
         } while (schoolBranchRepository.findByBranchCode(code).isPresent());
         return code;
+    }
+
+    @Override
+    @Transactional(transactionManager = "masterTransactionManager", readOnly = true)
+    public MasterStatsResponse getMasterStats() {
+        long totalSchools = schoolRepository.count();
+        long activeSchools = schoolRepository.countByStatus(SchoolStatus.ACTIVE);
+        long draftSchools = schoolRepository.countByStatus(SchoolStatus.DRAFT);
+        long suspendedSchools = schoolRepository.countByStatus(SchoolStatus.SUSPENDED);
+        long totalBranches = schoolBranchRepository.count();
+        long totalTenants = tenantRepository.count();
+        long activeTenants = tenantRepository.countByStatus(TenantStatus.ACTIVE);
+        long totalOnboardings = schoolOnboardingRepository.count();
+
+        return new MasterStatsResponse(
+                totalSchools,
+                activeSchools,
+                draftSchools,
+                suspendedSchools,
+                totalBranches,
+                totalTenants,
+                activeTenants,
+                totalOnboardings
+        );
     }
 }

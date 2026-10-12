@@ -68,14 +68,14 @@ public interface StaffRepository extends JpaRepository<Staff, UUID> {
            "WHERE s.deletedAt IS NULL " +
            "AND (:status IS NULL OR s.employmentStatus = :status) " +
            "AND (:staffType IS NULL OR s.staffType = :staffType) " +
-           "AND (:department IS NULL OR LOWER(s.department) LIKE LOWER(CONCAT('%', :department, '%'))) " +
-           "AND (:designation IS NULL OR LOWER(s.designation) LIKE LOWER(CONCAT('%', :designation, '%'))) " +
-           "AND (:searchQuery IS NULL " +
-           "     OR LOWER(s.staffCode) LIKE LOWER(CONCAT('%', :searchQuery, '%')) " +
-           "     OR LOWER(s.employeeCode) LIKE LOWER(CONCAT('%', :searchQuery, '%')) " +
-           "     OR (p.firstName IS NOT NULL AND LOWER(p.firstName) LIKE LOWER(CONCAT('%', :searchQuery, '%'))) " +
-           "     OR (p.lastName IS NOT NULL AND LOWER(p.lastName) LIKE LOWER(CONCAT('%', :searchQuery, '%'))) " +
-           "     OR (u.email IS NOT NULL AND LOWER(u.email) LIKE LOWER(CONCAT('%', :searchQuery, '%'))))")
+           "AND (CAST(:department AS string) IS NULL OR LOWER(s.department) LIKE LOWER(CONCAT('%', CAST(:department AS string), '%'))) " +
+           "AND (CAST(:designation AS string) IS NULL OR LOWER(s.designation) LIKE LOWER(CONCAT('%', CAST(:designation AS string), '%'))) " +
+           "AND (CAST(:searchQuery AS string) IS NULL " +
+           "     OR LOWER(s.staffCode) LIKE LOWER(CONCAT('%', CAST(:searchQuery AS string), '%')) " +
+           "     OR LOWER(s.employeeCode) LIKE LOWER(CONCAT('%', CAST(:searchQuery AS string), '%')) " +
+           "     OR (p.firstName IS NOT NULL AND LOWER(p.firstName) LIKE LOWER(CONCAT('%', CAST(:searchQuery AS string), '%'))) " +
+           "     OR (p.lastName IS NOT NULL AND LOWER(p.lastName) LIKE LOWER(CONCAT('%', CAST(:searchQuery AS string), '%'))) " +
+           "     OR (u.email IS NOT NULL AND LOWER(u.email) LIKE LOWER(CONCAT('%', CAST(:searchQuery AS string), '%'))))")
     Page<Staff> searchStaff(
             @Param("status") EmploymentStatus status,
             @Param("staffType") StaffType staffType,

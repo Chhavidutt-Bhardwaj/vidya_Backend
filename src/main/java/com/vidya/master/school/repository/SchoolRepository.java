@@ -30,10 +30,14 @@ public interface SchoolRepository extends JpaRepository<School, UUID>, JpaSpecif
 
     boolean existsByEmailIgnoreCaseAndIdNot(String email, UUID id);
 
+    long countByStatus(SchoolStatus status);
+
+    long countByTenantIdIsNotNull();
+
     @Query("SELECT s FROM School s WHERE " +
-            "(:status IS NULL OR s.status = :status) AND " +
-            "(:board IS NULL OR s.board = :board) AND " +
-            "(:search IS NULL OR LOWER(s.schoolName) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(s.schoolCode) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(s.email) LIKE LOWER(CONCAT('%', :search, '%')))")
+            "(CAST(:status AS string) IS NULL OR s.status = :status) AND " +
+            "(CAST(:board AS string) IS NULL OR s.board = :board) AND " +
+            "(CAST(:search AS string) IS NULL OR LOWER(s.schoolName) LIKE LOWER(CONCAT('%', CAST(:search AS string), '%')) OR LOWER(s.schoolCode) LIKE LOWER(CONCAT('%', CAST(:search AS string), '%')) OR LOWER(s.email) LIKE LOWER(CONCAT('%', CAST(:search AS string), '%')))")
     Page<School> findWithFilters(
             @Param("status") SchoolStatus status,
             @Param("board") SchoolBoard board,

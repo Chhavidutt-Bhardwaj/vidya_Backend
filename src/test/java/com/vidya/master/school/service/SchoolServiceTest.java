@@ -2,8 +2,10 @@ package com.vidya.master.school.service;
 
 import com.vidya.common.exception.DuplicateResourceException;
 import com.vidya.common.exception.ResourceNotFoundException;
+import com.vidya.master.onboarding.repository.SchoolOnboardingRepository;
 import com.vidya.master.school.dto.CreateBranchRequest;
 import com.vidya.master.school.dto.CreateSchoolRequest;
+import com.vidya.master.school.dto.MasterStatsResponse;
 import com.vidya.master.school.dto.SchoolBranchResponse;
 import com.vidya.master.school.dto.SchoolResponse;
 import com.vidya.master.school.dto.UpdateBranchRequest;
@@ -17,6 +19,8 @@ import com.vidya.master.school.entity.SchoolType;
 import com.vidya.master.school.mapper.SchoolMapper;
 import com.vidya.master.school.repository.SchoolBranchRepository;
 import com.vidya.master.school.repository.SchoolRepository;
+import com.vidya.master.tenant.entity.TenantStatus;
+import com.vidya.master.tenant.repository.TenantRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -49,6 +53,12 @@ class SchoolServiceTest {
 
     @Mock
     private SchoolBranchRepository schoolBranchRepository;
+
+    @Mock
+    private TenantRepository tenantRepository;
+
+    @Mock
+    private SchoolOnboardingRepository schoolOnboardingRepository;
 
     @Spy
     private SchoolMapper schoolMapper = new SchoolMapper();
@@ -199,6 +209,47 @@ class SchoolServiceTest {
 
         assertThat(result.getContent()).hasSize(1);
         assertThat(result.getContent().get(0).schoolName()).isEqualTo("Delhi Public Academy");
+    }
+
+    @Test
+    @DisplayName("getAllSchools with no filters should use findAll")
+    void getAllSchools_NoFilters_UsesFindAll() {
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<School> page = new PageImpl<>(List.of(sampleSchool), pageable, 1);
+
+        when(schoolRepository.findAll(eq(pageable))).thenReturn(page);
+        when(schoolBranchRepository.countBySchoolId(schoolId)).thenReturn(1L);
+        when(schoolBranchRepository.findBySchoolIdAndMainBranchTrue(schoolId)).thenReturn(Optional.of(sampleBranch));
+
+        Page<SchoolResponse> result = schoolService.getAllSchools(pageable, null, null, null);
+
+        assertThat(result.getContent()).hasSize(1);
+        verify(schoolRepository).findAll(pageable);
+    }
+
+    @Test
+    @DisplayName("getMasterStats should aggregate platform statistics")
+    void getMasterStats_Success() {
+        when(schoolRepository.count()).thenReturn(20L);
+        when(schoolRepository.countByStatus(SchoolStatus.ACTIVE)).thenReturn(15L);
+        when(schoolRepository.countByStatus(SchoolStatus.DRAFT)).thenReturn(3L);
+        when(schoolRepository.countByStatus(SchoolStatus.SUSPENDED)).thenReturn(2L);
+        when(schoolBranchRepository.count()).thenReturn(25L);
+        when(tenantRepository.count()).thenReturn(15L);
+        when(tenantRepository.countByStatus(TenantStatus.ACTIVE)).thenReturn(14L);
+        when(schoolOnboardingRepository.count()).thenReturn(30L);
+
+        MasterStatsResponse stats = schoolService.getMasterStats();
+
+        assertThat(stats).isNotNull();
+        assertThat(stats.totalSchools()).isEqualTo(20L);
+        assertThat(stats.activeSchools()).isEqualTo(15L);
+        assertThat(stats.draftSchools()).isEqualTo(3L);
+        assertThat(stats.suspendedSchools()).isEqualTo(2L);
+        assertThat(stats.totalBranches()).isEqualTo(25L);
+        assertThat(stats.totalTenants()).isEqualTo(15L);
+        assertThat(stats.activeTenants()).isEqualTo(14L);
+        assertThat(stats.totalOnboardings()).isEqualTo(30L);
     }
 
     @Test

@@ -29,8 +29,8 @@ public interface TimetableRepository extends JpaRepository<Timetable, UUID> {
            "AND (:academicYearId IS NULL OR t.academicYear.id = :academicYearId) " +
            "AND (:bellScheduleId IS NULL OR t.bellSchedule.id = :bellScheduleId) " +
            "AND (:status IS NULL OR t.status = :status) " +
-           "AND (:search IS NULL OR LOWER(t.name) LIKE LOWER(CONCAT('%', :search, '%')) " +
-           "     OR LOWER(t.timetableCode) LIKE LOWER(CONCAT('%', :search, '%')))")
+           "AND (CAST(:search AS string) IS NULL OR LOWER(t.name) LIKE LOWER(CONCAT('%', CAST(:search AS string), '%')) " +
+           "     OR LOWER(t.timetableCode) LIKE LOWER(CONCAT('%', CAST(:search AS string), '%')))")
     Page<Timetable> searchTimetables(
             @Param("academicYearId") UUID academicYearId,
             @Param("bellScheduleId") UUID bellScheduleId,
