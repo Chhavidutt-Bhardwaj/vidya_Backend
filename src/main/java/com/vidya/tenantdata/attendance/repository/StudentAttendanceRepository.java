@@ -195,4 +195,27 @@ public interface StudentAttendanceRepository extends JpaRepository<StudentAttend
             @Param("fromDate") LocalDate fromDate,
             @Param("toDate") LocalDate toDate
     );
+
+    @Query("SELECT COUNT(sa) FROM StudentAttendance sa " +
+           "WHERE sa.student.id = :studentId " +
+           "AND sa.attendanceDate >= :startDate " +
+           "AND sa.attendanceDate <= :endDate " +
+           "AND sa.deletedAt IS NULL")
+    long countTotalByStudentAndDateRange(
+            @Param("studentId") UUID studentId,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate
+    );
+
+    @Query("SELECT COUNT(sa) FROM StudentAttendance sa " +
+           "WHERE sa.student.id = :studentId " +
+           "AND sa.attendanceDate >= :startDate " +
+           "AND sa.attendanceDate <= :endDate " +
+           "AND (sa.status = 'PRESENT' OR sa.status = 'HALF_DAY') " +
+           "AND sa.deletedAt IS NULL")
+    long countPresentByStudentAndDateRange(
+            @Param("studentId") UUID studentId,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate
+    );
 }

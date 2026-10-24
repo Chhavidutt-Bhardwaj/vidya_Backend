@@ -27,29 +27,44 @@ public class PlatformUserDetails implements UserDetails {
     private final String passwordHash;
     private final PlatformRole platformRole;
     private final UUID schoolId;
+    private final String tenantCode;
     private final UserStatus status;
     private final boolean accountLocked;
     private final Collection<? extends GrantedAuthority> authorities;
 
     public PlatformUserDetails(PlatformUser user) {
+        this(user, null);
+    }
+
+    public PlatformUserDetails(PlatformUser user, String tenantCode) {
         this.userId = user.getId();
         this.userCode = user.getUserCode();
         this.email = user.getEmail();
         this.passwordHash = user.getPasswordHash();
         this.platformRole = user.getPlatformRole();
         this.schoolId = user.getSchoolId();
+        this.tenantCode = tenantCode;
         this.status = user.getStatus();
         this.accountLocked = user.isAccountLocked();
 
         List<GrantedAuthority> auths = new ArrayList<>();
         // Role authority
-        auths.add(new SimpleGrantedAuthority("ROLE_" + user.getPlatformRole().name()));
+        if (user.getPlatformRole() != null) {
+            auths.add(new SimpleGrantedAuthority("ROLE_" + user.getPlatformRole().name()));
+            if (user.getPlatformRole().getPermissions() != null) {
+                for (PlatformPermission permission : user.getPlatformRole().getPermissions()) {
+                    auths.add(new SimpleGrantedAuthority(permission.name()));
+                    auths.add(new SimpleGrantedAuthority("PERMISSION_" + permission.name()));
+                }
+            }
 
-        // Permissions authorities
-        if (user.getPlatformRole() != null && user.getPlatformRole().getPermissions() != null) {
-            for (PlatformPermission permission : user.getPlatformRole().getPermissions()) {
-                auths.add(new SimpleGrantedAuthority(permission.name()));
-                auths.add(new SimpleGrantedAuthority("PERMISSION_" + permission.name()));
+            // SuperUser automatically inherits ALL platform roles (current and future)
+            if (user.getPlatformRole() == PlatformRole.PLATFORM_SUPER_ADMIN) {
+                for (PlatformRole r : PlatformRole.values()) {
+                    if (r != PlatformRole.PLATFORM_SUPER_ADMIN) {
+                        auths.add(new SimpleGrantedAuthority("ROLE_" + r.name()));
+                    }
+                }
             }
         }
         this.authorities = Collections.unmodifiableList(auths);
@@ -60,22 +75,62 @@ public class PlatformUserDetails implements UserDetails {
                                String passwordHash,
                                String platformRole,
                                Collection<? extends GrantedAuthority> authorities) {
+        this(userId, email, passwordHash, platformRole, null, null, authorities);
+    }
+
+    public PlatformUserDetails(UUID userId,
+                               String email,
+                               String passwordHash,
+                               String platformRole,
+                               UUID schoolId,
+                               String tenantCode,
+                               Collection<? extends GrantedAuthority> authorities) {
         this.userId = userId;
         this.userCode = null;
         this.email = email;
         this.passwordHash = passwordHash;
         this.platformRole = platformRole != null ? PlatformRole.valueOf(platformRole) : null;
-        this.schoolId = null;
+        this.schoolId = schoolId;
+        this.tenantCode = tenantCode;
         this.status = UserStatus.ACTIVE;
         this.accountLocked = false;
-        this.authorities = authorities != null ? authorities : List.of();
+
+        List<GrantedAuthority> resolvedAuths = new ArrayList<>();
+        if (authorities != null) {
+            resolvedAuths.addAll(authorities);
+        }
+        if (this.platformRole == PlatformRole.PLATFORM_SUPER_ADMIN) {
+            for (PlatformRole r : PlatformRole.values()) {
+                SimpleGrantedAuthority roleAuth = new SimpleGrantedAuthority("ROLE_" + r.name());
+                if (!resolvedAuths.contains(roleAuth)) {
+                    resolvedAuths.add(roleAuth);
+                }
+            }
+            for (PlatformPermission p : PlatformPermission.values()) {
+                SimpleGrantedAuthority permAuth = new SimpleGrantedAuthority(p.name());
+                SimpleGrantedAuthority permPrefixAuth = new SimpleGrantedAuthority("PERMISSION_" + p.name());
+                if (!resolvedAuths.contains(permAuth)) {
+                    resolvedAuths.add(permAuth);
+                }
+                if (!resolvedAuths.contains(permPrefixAuth)) {
+                    resolvedAuths.add(permPrefixAuth);
+                }
+            }
+        }
+        this.authorities = Collections.unmodifiableList(resolvedAuths);
     }
 
     public boolean hasPermission(PlatformPermission permission) {
+        if (this.platformRole == PlatformRole.PLATFORM_SUPER_ADMIN) {
+            return true;
+        }
         return platformRole != null && platformRole.hasPermission(permission);
     }
 
     public boolean hasRole(PlatformRole role) {
+        if (this.platformRole == PlatformRole.PLATFORM_SUPER_ADMIN) {
+            return true;
+        }
         return this.platformRole == role;
     }
 

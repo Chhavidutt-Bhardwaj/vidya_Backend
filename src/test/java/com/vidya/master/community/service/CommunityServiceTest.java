@@ -51,6 +51,9 @@ class CommunityServiceTest {
     @Mock
     private CommunityMemberRepository communityMemberRepository;
 
+    @Mock
+    private com.vidya.master.community.repository.CommunityRoleDefinitionRepository roleDefinitionRepository;
+
     @Spy
     private CommunityMapper communityMapper = new CommunityMapper();
 
@@ -68,15 +71,7 @@ class CommunityServiceTest {
                 "EduPartners Agency",
                 "Agency description",
                 CommunityType.FIELD_AGENCY,
-                CommunityStatus.ACTIVE,
-                "contact@edupartners.org",
-                "+919876543210",
-                "123 Street",
-                "Near Tower",
-                "New Delhi",
-                "Delhi",
-                "110001",
-                "India"
+                CommunityStatus.ACTIVE
         );
         sampleCommunity.setId(communityId);
     }
@@ -87,15 +82,7 @@ class CommunityServiceTest {
         CreateCommunityRequest request = new CreateCommunityRequest(
                 "New Field Agency",
                 "Description",
-                CommunityType.FIELD_AGENCY,
-                "agency@vidya.io",
-                "+919999999999",
-                "Address 1",
-                "Address 2",
-                "Mumbai",
-                "Maharashtra",
-                "400001",
-                "India"
+                CommunityType.FIELD_AGENCY
         );
 
         when(communityRepository.existsByNameIgnoreCase(request.name())).thenReturn(false);
@@ -121,8 +108,7 @@ class CommunityServiceTest {
         CreateCommunityRequest request = new CreateCommunityRequest(
                 "EduPartners Agency",
                 null,
-                CommunityType.PARTNER,
-                null, null, null, null, null, null, null, null
+                CommunityType.PARTNER
         );
 
         when(communityRepository.existsByNameIgnoreCase(request.name())).thenReturn(true);
@@ -190,15 +176,7 @@ class CommunityServiceTest {
         UpdateCommunityRequest request = new UpdateCommunityRequest(
                 "Updated Agency Name",
                 "New description",
-                CommunityType.NGO,
-                "new@email.com",
-                "+919876543219",
-                "New Address",
-                null,
-                "Pune",
-                "Maharashtra",
-                "411001",
-                "India"
+                CommunityType.NGO
         );
 
         when(communityRepository.findById(communityId)).thenReturn(Optional.of(sampleCommunity));
@@ -230,10 +208,16 @@ class CommunityServiceTest {
     @DisplayName("addMember should add new member to active community")
     void addMember_Success() {
         UUID platformUserId = UUID.randomUUID();
-        AddCommunityMemberRequest request = new AddCommunityMemberRequest(platformUserId, CommunityMemberRole.FIELD_AGENT);
+        UUID customRoleId = UUID.randomUUID();
+        AddCommunityMemberRequest request = new AddCommunityMemberRequest(platformUserId, customRoleId);
+
+        com.vidya.master.community.entity.CommunityRoleDefinition customRole =
+                new com.vidya.master.community.entity.CommunityRoleDefinition(sampleCommunity, "Field Agent", "Desc", false);
+        org.springframework.test.util.ReflectionTestUtils.setField(customRole, "id", customRoleId);
 
         when(communityRepository.findById(communityId)).thenReturn(Optional.of(sampleCommunity));
         when(communityMemberRepository.existsByCommunityIdAndPlatformUserId(communityId, platformUserId)).thenReturn(false);
+        when(roleDefinitionRepository.findById(customRoleId)).thenReturn(Optional.of(customRole));
         when(communityMemberRepository.findByMemberCode(any())).thenReturn(Optional.empty());
         when(communityMemberRepository.save(any(CommunityMember.class))).thenAnswer(inv -> {
             CommunityMember m = inv.getArgument(0);
@@ -245,7 +229,7 @@ class CommunityServiceTest {
 
         assertThat(response).isNotNull();
         assertThat(response.platformUserId()).isEqualTo(platformUserId);
-        assertThat(response.role()).isEqualTo(CommunityMemberRole.FIELD_AGENT);
+        assertThat(response.roleName()).isEqualTo("Field Agent");
         assertThat(response.status()).isEqualTo(CommunityMemberStatus.ACTIVE);
     }
 
@@ -255,7 +239,7 @@ class CommunityServiceTest {
         sampleCommunity.setStatus(CommunityStatus.INACTIVE);
         when(communityRepository.findById(communityId)).thenReturn(Optional.of(sampleCommunity));
 
-        AddCommunityMemberRequest request = new AddCommunityMemberRequest(UUID.randomUUID(), CommunityMemberRole.FIELD_AGENT);
+        AddCommunityMemberRequest request = new AddCommunityMemberRequest(UUID.randomUUID(), UUID.randomUUID());
 
         assertThatThrownBy(() -> communityService.addMember(communityId, request))
                 .isInstanceOf(InvalidStateTransitionException.class);
@@ -265,7 +249,7 @@ class CommunityServiceTest {
     @DisplayName("addMember with already existing user should throw DuplicateResourceException")
     void addMember_DuplicateUser_ThrowsException() {
         UUID platformUserId = UUID.randomUUID();
-        AddCommunityMemberRequest request = new AddCommunityMemberRequest(platformUserId, CommunityMemberRole.FIELD_AGENT);
+        AddCommunityMemberRequest request = new AddCommunityMemberRequest(platformUserId, UUID.randomUUID());
 
         when(communityRepository.findById(communityId)).thenReturn(Optional.of(sampleCommunity));
         when(communityMemberRepository.existsByCommunityIdAndPlatformUserId(communityId, platformUserId)).thenReturn(true);
@@ -281,15 +265,19 @@ class CommunityServiceTest {
         CommunityMember member = new CommunityMember(sampleCommunity, UUID.randomUUID(), "MEM-12345678", CommunityMemberRole.FIELD_AGENT);
         member.setId(memberId);
 
+        UUID customRoleId = UUID.randomUUID();
+        com.vidya.master.community.entity.CommunityRoleDefinition customRole =
+                new com.vidya.master.community.entity.CommunityRoleDefinition(sampleCommunity, "Admin Role", "Desc", false);
         when(communityRepository.findById(communityId)).thenReturn(Optional.of(sampleCommunity));
         when(communityMemberRepository.findById(memberId)).thenReturn(Optional.of(member));
+        when(roleDefinitionRepository.findById(customRoleId)).thenReturn(Optional.of(customRole));
         when(communityMemberRepository.save(any(CommunityMember.class))).thenReturn(member);
 
         CommunityMemberResponse response = communityService.updateMemberRole(
-                communityId, memberId, new UpdateCommunityMemberRoleRequest(CommunityMemberRole.COMMUNITY_ADMIN));
+                communityId, memberId, new UpdateCommunityMemberRoleRequest(customRoleId));
 
         assertThat(response).isNotNull();
-        assertThat(member.getRole()).isEqualTo(CommunityMemberRole.COMMUNITY_ADMIN);
+        assertThat(member.getCustomRole()).isEqualTo(customRole);
     }
 
     @Test

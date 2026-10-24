@@ -57,8 +57,10 @@ public class TenantResolutionFilter extends OncePerRequestFilter {
             "/api/v1/auth/",
             "/api/v1/onboarding",
             "/api/v1/subscription-plans",
+            "/api/v1/school-subscriptions",
             "/api/v1/communities",
             "/api/v1/schools",
+            "/api/v1/payments",
             "/api/v1/admin",
             "/api/v1/platform",
             "/api/v1/webhooks",
@@ -88,18 +90,26 @@ public class TenantResolutionFilter extends OncePerRequestFilter {
                 return;
             }
 
-            String tenantCode = request.getHeader(TENANT_HEADER);
+            // ── Authentication check ──────────────────────────────────────────
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            PlatformUserDetails userDetails = null;
+            if (authentication != null && authentication.isAuthenticated()
+                    && authentication.getPrincipal() instanceof PlatformUserDetails pud) {
+                userDetails = pud;
+            }
 
+            // Resolve tenant code from header or authenticated user token/profile
+            final String tenantCode = resolveTenantCode(request, userDetails);
+
+            // For Community users or Platform users operating on Master DB, or unauthenticated requests,
+            // continue without setting tenant context (defaults to Master DB).
             if (tenantCode == null || tenantCode.isBlank()) {
                 filterChain.doFilter(request, response);
                 return;
             }
 
-            // ── Authentication check ──────────────────────────────────────────
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            if (authentication == null || !authentication.isAuthenticated()
-                    || !(authentication.getPrincipal() instanceof PlatformUserDetails userDetails)) {
-                // Unauthenticated request with a tenant header — cannot establish tenant context
+            // Unauthenticated request with a tenant code — cannot establish tenant context
+            if (userDetails == null) {
                 filterChain.doFilter(request, response);
                 return;
             }
@@ -156,5 +166,23 @@ public class TenantResolutionFilter extends OncePerRequestFilter {
             }
         }
         return false;
+    }
+
+    private String resolveTenantCode(HttpServletRequest request, PlatformUserDetails userDetails) {
+        String headerTenant = request.getHeader(TENANT_HEADER);
+        if (headerTenant != null && !headerTenant.isBlank()) {
+            return headerTenant.trim();
+        }
+        if (userDetails != null) {
+            if (userDetails.getTenantCode() != null && !userDetails.getTenantCode().isBlank()) {
+                return userDetails.getTenantCode().trim();
+            }
+            if (userDetails.getSchoolId() != null) {
+                return tenantRegistryService.findBySchoolId(userDetails.getSchoolId())
+                        .map(TenantRegistration::tenantCode)
+                        .orElse(null);
+            }
+        }
+        return null;
     }
 }

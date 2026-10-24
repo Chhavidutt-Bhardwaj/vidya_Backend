@@ -23,14 +23,6 @@ public class CommunityMapper {
                 entity.getDescription(),
                 entity.getType(),
                 entity.getStatus(),
-                entity.getContactEmail(),
-                entity.getContactPhone(),
-                entity.getAddressLine1(),
-                entity.getAddressLine2(),
-                entity.getCity(),
-                entity.getState(),
-                entity.getPincode(),
-                entity.getCountry(),
                 entity.getCreatedAt(),
                 entity.getUpdatedAt(),
                 memberCount
@@ -55,9 +47,11 @@ public class CommunityMapper {
                 member.getCommunity().getCommunityCode(),
                 member.getPlatformUserId(),
                 member.getMemberCode(),
-                member.getRole(),
+                member.getCustomRole() != null ? member.getCustomRole().getId() : null,
+                member.getEffectiveRoleName(),
                 member.getStatus(),
                 member.getJoinedAt(),
+                member.getLastActiveAt(),
                 member.getCreatedAt()
         );
     }

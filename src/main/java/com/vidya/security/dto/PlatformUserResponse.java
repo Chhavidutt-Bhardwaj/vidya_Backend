@@ -28,7 +28,10 @@ public class PlatformUserResponse {
     private UserStatus status;
     private PlatformRole platformRole;
     private UUID schoolId;
+    private String tenantCode;
     private Set<String> permissions;
+    /** Universal module/section code -> granted action codes matrix */
+    private java.util.Map<Integer, Set<Integer>> permissionsMatrix;
     private Instant lastLoginAt;
     private Instant createdAt;
 }

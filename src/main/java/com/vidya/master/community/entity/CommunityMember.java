@@ -1,8 +1,8 @@
 package com.vidya.master.community.entity;
 
+import com.vidya.common.audit.AuditableEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EntityListeners;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
@@ -12,28 +12,30 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import jakarta.persistence.Version;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
 import java.util.UUID;
 
 /**
- * Links a platform user to a community with a specific role.
+ * Links a platform user to a community with a specific community-defined role.
+ *
+ * <p>Members are now assigned a {@link CommunityRoleDefinition} instead of the
+ * deprecated hardcoded {@link CommunityMemberRole} enum. The legacy {@code role}
+ * field is retained as nullable to allow zero-downtime migration from existing data.
+ *
+ * <p>The effective permissions for a member are resolved at runtime from
+ * the {@code customRole} relationship and its associated {@link CommunityRolePermission} entries.
  */
 @Entity
 @Table(name = "community_member")
-@EntityListeners(AuditingEntityListener.class)
 @Getter
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class CommunityMember {
+public class CommunityMember extends AuditableEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -50,9 +52,24 @@ public class CommunityMember {
     @Column(name = "member_code", nullable = false, unique = true, length = 50, updatable = false)
     private String memberCode;
 
+    /**
+     * The custom role assigned to this member — defined and managed via the admin panel.
+     * Replaces the deprecated {@code role} enum.
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "custom_role_id")
+    private CommunityRoleDefinition customRole;
+
+    /**
+     * Legacy hardcoded role — kept for backward compatibility.
+     * New assignments use {@code customRole}; this field is nullable.
+     *
+     * @deprecated Use {@link #customRole} instead.
+     */
+    @Deprecated
     @Enumerated(EnumType.STRING)
-    @Column(name = "role", nullable = false, length = 30)
-    private CommunityMemberRole role;
+    @Column(name = "legacy_role", length = 30)
+    private CommunityMemberRole legacyRole;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 30)
@@ -61,27 +78,47 @@ public class CommunityMember {
     @Column(name = "joined_at", nullable = false)
     private Instant joinedAt = Instant.now();
 
-    @CreatedDate
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private Instant createdAt;
-
-    @LastModifiedDate
-    @Column(name = "updated_at", nullable = false)
-    private Instant updatedAt;
-
-    @Version
-    @Column(name = "version", nullable = false)
-    private Long version = 0L;
+    /** Timestamp of the member's most recent successful login. */
+    @Column(name = "last_active_at")
+    private Instant lastActiveAt;
 
     public CommunityMember(Community community,
                            UUID platformUserId,
                            String memberCode,
-                           CommunityMemberRole role) {
+                           CommunityRoleDefinition customRole) {
         this.community = community;
         this.platformUserId = platformUserId;
         this.memberCode = memberCode;
-        this.role = role != null ? role : CommunityMemberRole.FIELD_AGENT;
+        this.customRole = customRole;
         this.status = CommunityMemberStatus.ACTIVE;
         this.joinedAt = Instant.now();
+    }
+
+    public CommunityMember(Community community,
+                           UUID platformUserId,
+                           String memberCode,
+                           CommunityMemberRole legacyRole) {
+        this.community = community;
+        this.platformUserId = platformUserId;
+        this.memberCode = memberCode;
+        this.legacyRole = legacyRole;
+        this.status = CommunityMemberStatus.ACTIVE;
+        this.joinedAt = Instant.now();
+    }
+
+    public CommunityMemberRole getRole() {
+        return legacyRole;
+    }
+
+    public void setRole(CommunityMemberRole role) {
+        this.legacyRole = role;
+    }
+
+    /** Returns the effective role name for display — custom role name or legacy enum. */
+    public String getEffectiveRoleName() {
+        if (customRole != null) {
+            return customRole.getRoleName();
+        }
+        return legacyRole != null ? legacyRole.name() : "UNASSIGNED";
     }
 }

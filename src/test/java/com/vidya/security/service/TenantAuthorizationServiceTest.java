@@ -194,8 +194,7 @@ class TenantAuthorizationServiceTest {
     void fieldAgent_AssignedCommunity_AccessAllowed() {
         UUID communityId = UUID.randomUUID();
         Community community = new Community(
-                "COM-01", "Community 1", "desc", CommunityType.NGO, CommunityStatus.ACTIVE,
-                "c@c.com", "123", "add1", "add2", "City", "State", "111111", "India"
+                "COM-01", "Community 1", "desc", CommunityType.NGO, CommunityStatus.ACTIVE
         );
         community.setId(communityId);
 

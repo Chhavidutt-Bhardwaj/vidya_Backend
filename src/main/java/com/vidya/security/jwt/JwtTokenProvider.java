@@ -62,10 +62,14 @@ public class JwtTokenProvider {
     }
 
     public String generateAccessToken(UUID userId, String email, String userCode, String role) {
-        return generateAccessToken(userId, email, userCode, role, null);
+        return generateAccessToken(userId, email, userCode, role, null, null);
     }
 
     public String generateAccessToken(UUID userId, String email, String userCode, String role, UUID schoolId) {
+        return generateAccessToken(userId, email, userCode, role, schoolId, null);
+    }
+
+    public String generateAccessToken(UUID userId, String email, String userCode, String role, UUID schoolId, String tenantCode) {
         Date now = new Date();
         Date expiry = new Date(now.getTime() + accessTokenExpiryMs);
 
@@ -81,6 +85,9 @@ public class JwtTokenProvider {
 
         if (schoolId != null) {
             builder.claim("schoolId", schoolId.toString());
+        }
+        if (tenantCode != null && !tenantCode.isBlank()) {
+            builder.claim("tenantCode", tenantCode);
         }
 
         return builder.signWith(signingKey).compact();
@@ -137,6 +144,11 @@ public class JwtTokenProvider {
     public UUID getSchoolIdFromToken(String token) {
         String schoolIdStr = getClaims(token).get("schoolId", String.class);
         return schoolIdStr != null ? UUID.fromString(schoolIdStr) : null;
+    }
+
+    public String getTenantCodeFromToken(String token) {
+        Claims claims = getClaims(token);
+        return claims != null ? claims.get("tenantCode", String.class) : null;
     }
 
     public String getTokenType(String token) {

@@ -27,14 +27,18 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import com.vidya.master.tenant.entity.Tenant;
+import com.vidya.master.tenant.repository.TenantRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
 
     private final PlatformUserRepository userRepository;
@@ -42,12 +46,52 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final SecurityAuditService securityAuditService;
+    private final UserPermissionMatrixService userPermissionMatrixService;
+    private final TenantRepository tenantRepository;
+
+    @Autowired
+    public AuthServiceImpl(
+            PlatformUserRepository userRepository,
+            RefreshTokenRepository refreshTokenRepository,
+            PasswordEncoder passwordEncoder,
+            JwtTokenProvider jwtTokenProvider,
+            SecurityAuditService securityAuditService,
+            UserPermissionMatrixService userPermissionMatrixService,
+            @Autowired(required = false) TenantRepository tenantRepository) {
+        this.userRepository = userRepository;
+        this.refreshTokenRepository = refreshTokenRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtTokenProvider = jwtTokenProvider;
+        this.securityAuditService = securityAuditService;
+        this.userPermissionMatrixService = userPermissionMatrixService;
+        this.tenantRepository = tenantRepository;
+    }
+
+    public AuthServiceImpl(
+            PlatformUserRepository userRepository,
+            RefreshTokenRepository refreshTokenRepository,
+            PasswordEncoder passwordEncoder,
+            JwtTokenProvider jwtTokenProvider,
+            SecurityAuditService securityAuditService,
+            UserPermissionMatrixService userPermissionMatrixService) {
+        this(userRepository, refreshTokenRepository, passwordEncoder, jwtTokenProvider,
+                securityAuditService, userPermissionMatrixService, null);
+    }
 
     @Value("${vidya.security.login.max-failed-attempts:5}")
     private int maxFailedAttempts = 5;
 
     @Value("${vidya.security.login.lockout-minutes:15}")
     private long lockoutMinutes = 15;
+
+    private String resolveTenantCode(PlatformUser user) {
+        if (user != null && user.getSchoolId() != null && tenantRepository != null) {
+            return tenantRepository.findBySchoolId(user.getSchoolId())
+                    .map(Tenant::getTenantCode)
+                    .orElse(null);
+        }
+        return null;
+    }
 
     @Override
     @Transactional(transactionManager = "masterTransactionManager")
@@ -99,8 +143,9 @@ public class AuthServiceImpl implements AuthService {
         user.recordSuccessfulLogin();
         userRepository.save(user);
 
+        String tenantCode = resolveTenantCode(user);
         String accessToken = jwtTokenProvider.generateAccessToken(
-                user.getId(), user.getEmail(), user.getUserCode(), user.getPlatformRole().name(), user.getSchoolId());
+                user.getId(), user.getEmail(), user.getUserCode(), user.getPlatformRole().name(), user.getSchoolId(), tenantCode);
         String refreshToken = jwtTokenProvider.generateRefreshToken(user.getId(), user.getEmail());
 
         // Save hashed refresh token in database for revocability and rotation tracking
@@ -172,8 +217,9 @@ public class AuthServiceImpl implements AuthService {
         }
 
         // Issue new rotated tokens
+        String tenantCode = resolveTenantCode(user);
         String newAccessToken = jwtTokenProvider.generateAccessToken(
-                user.getId(), user.getEmail(), user.getUserCode(), user.getPlatformRole().name(), user.getSchoolId());
+                user.getId(), user.getEmail(), user.getUserCode(), user.getPlatformRole().name(), user.getSchoolId(), tenantCode);
         String newRefreshToken = jwtTokenProvider.generateRefreshToken(user.getId(), user.getEmail());
         String newRefreshTokenHash = jwtTokenProvider.hashToken(newRefreshToken);
 
@@ -261,6 +307,10 @@ public class AuthServiceImpl implements AuthService {
                     .collect(Collectors.toSet());
         }
 
+        Map<Integer, Set<Integer>> permissionsMatrix = userPermissionMatrixService != null
+                ? userPermissionMatrixService.resolvePermissionsMatrix(user)
+                : Map.of();
+
         return PlatformUserResponse.builder()
                 .id(user.getId())
                 .userCode(user.getUserCode())
@@ -272,7 +322,9 @@ public class AuthServiceImpl implements AuthService {
                 .status(user.getStatus())
                 .platformRole(user.getPlatformRole())
                 .schoolId(user.getSchoolId())
+                .tenantCode(resolveTenantCode(user))
                 .permissions(permissions)
+                .permissionsMatrix(permissionsMatrix)
                 .lastLoginAt(user.getLastLoginAt())
                 .createdAt(user.getCreatedAt())
                 .build();

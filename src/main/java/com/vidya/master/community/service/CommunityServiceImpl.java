@@ -12,11 +12,13 @@ import com.vidya.master.community.dto.UpdateCommunityMemberRoleRequest;
 import com.vidya.master.community.dto.UpdateCommunityRequest;
 import com.vidya.master.community.entity.Community;
 import com.vidya.master.community.entity.CommunityMember;
+import com.vidya.master.community.entity.CommunityRoleDefinition;
 import com.vidya.master.community.entity.CommunityStatus;
 import com.vidya.master.community.entity.CommunityType;
 import com.vidya.master.community.mapper.CommunityMapper;
 import com.vidya.master.community.repository.CommunityMemberRepository;
 import com.vidya.master.community.repository.CommunityRepository;
+import com.vidya.master.community.repository.CommunityRoleDefinitionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -38,6 +40,7 @@ public class CommunityServiceImpl implements CommunityService {
 
     private final CommunityRepository communityRepository;
     private final CommunityMemberRepository communityMemberRepository;
+    private final CommunityRoleDefinitionRepository roleDefinitionRepository;
     private final CommunityMapper communityMapper;
 
     @Override
@@ -55,15 +58,7 @@ public class CommunityServiceImpl implements CommunityService {
                 request.name().trim(),
                 request.description(),
                 request.type(),
-                CommunityStatus.ACTIVE,
-                request.contactEmail(),
-                request.contactPhone(),
-                request.addressLine1(),
-                request.addressLine2(),
-                request.city(),
-                request.state(),
-                request.pincode(),
-                request.country()
+                CommunityStatus.ACTIVE
         );
 
         Community saved = communityRepository.save(community);
@@ -116,16 +111,6 @@ public class CommunityServiceImpl implements CommunityService {
         community.setName(request.name().trim());
         community.setDescription(request.description());
         community.setType(request.type());
-        community.setContactEmail(request.contactEmail());
-        community.setContactPhone(request.contactPhone());
-        community.setAddressLine1(request.addressLine1());
-        community.setAddressLine2(request.addressLine2());
-        community.setCity(request.city());
-        community.setState(request.state());
-        community.setPincode(request.pincode());
-        if (request.country() != null && !request.country().isBlank()) {
-            community.setCountry(request.country());
-        }
 
         Community updated = communityRepository.save(community);
         long memberCount = communityMemberRepository.countByCommunityId(id);
@@ -145,7 +130,7 @@ public class CommunityServiceImpl implements CommunityService {
     @Override
     public CommunityMemberResponse addMember(UUID communityId, AddCommunityMemberRequest request) {
         log.info("Adding member [{}] to community [{}] with role [{}]",
-                request.platformUserId(), communityId, request.role());
+                request.platformUserId(), communityId, request.customRoleId());
 
         Community community = findCommunityOrThrow(communityId);
         if (community.getStatus() != CommunityStatus.ACTIVE) {
@@ -156,12 +141,23 @@ public class CommunityServiceImpl implements CommunityService {
             throw new DuplicateResourceException("CommunityMember", "platformUserId", request.platformUserId());
         }
 
+        // Validate that the custom role is appropriate for this community type
+        CommunityRoleDefinition customRole = roleDefinitionRepository
+                .findById(request.customRoleId())
+                .filter(CommunityRoleDefinition::isActive)
+                .orElseThrow(() -> new ResourceNotFoundException("CommunityRoleDefinition", request.customRoleId()));
+
+        // Ensure the role is meant for this community's type
+        if (!customRole.getCommunityType().equals(community.getType())) {
+            throw new InvalidStateTransitionException("CommunityRoleDefinition", customRole.getCommunityType().name(), community.getType().name());
+        }
+
         String memberCode = generateUniqueMemberCode();
         CommunityMember member = new CommunityMember(
                 community,
                 request.platformUserId(),
                 memberCode,
-                request.role()
+                customRole
         );
 
         CommunityMember saved = communityMemberRepository.save(member);
@@ -171,8 +167,8 @@ public class CommunityServiceImpl implements CommunityService {
 
     @Override
     public CommunityMemberResponse updateMemberRole(UUID communityId, UUID memberId, UpdateCommunityMemberRoleRequest request) {
-        log.info("Updating member [{}] in community [{}] to role [{}]", memberId, communityId, request.role());
-        findCommunityOrThrow(communityId);
+        log.info("Updating member [{}] in community [{}] to role [{}]", memberId, communityId, request.customRoleId());
+        Community community = findCommunityOrThrow(communityId);
 
         CommunityMember member = communityMemberRepository.findById(memberId)
                 .orElseThrow(() -> new ResourceNotFoundException("CommunityMember", memberId));
@@ -181,7 +177,18 @@ public class CommunityServiceImpl implements CommunityService {
             throw new ResourceNotFoundException("CommunityMember", memberId);
         }
 
-        member.setRole(request.role());
+        // Validate that the custom role is appropriate for this community type
+        CommunityRoleDefinition customRole = roleDefinitionRepository
+                .findById(request.customRoleId())
+                .filter(CommunityRoleDefinition::isActive)
+                .orElseThrow(() -> new ResourceNotFoundException("CommunityRoleDefinition", request.customRoleId()));
+
+        // Ensure the role is meant for this community's type
+        if (!customRole.getCommunityType().equals(community.getType())) {
+            throw new InvalidStateTransitionException("CommunityRoleDefinition", customRole.getCommunityType().name(), community.getType().name());
+        }
+
+        member.setCustomRole(customRole);
         CommunityMember updated = communityMemberRepository.save(member);
         return communityMapper.toMemberResponse(updated);
     }

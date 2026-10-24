@@ -127,18 +127,72 @@ public enum PlatformRole {
             PlatformPermission.ATTENDANCE_UPDATE,
             PlatformPermission.ATTENDANCE_DELETE,
             PlatformPermission.ATTENDANCE_BULK_MARK,
-            PlatformPermission.ATTENDANCE_STATUS_UPDATE
+            PlatformPermission.ATTENDANCE_STATUS_UPDATE,
+            PlatformPermission.EXAM_READ,
+            PlatformPermission.EXAM_CREATE,
+            PlatformPermission.EXAM_UPDATE,
+            PlatformPermission.EXAM_DELETE,
+            PlatformPermission.EXAM_PUBLISH,
+            PlatformPermission.MARKS_READ,
+            PlatformPermission.MARKS_ENTRY,
+            PlatformPermission.MARKS_LOCK,
+            PlatformPermission.GRADING_SCALE_READ,
+            PlatformPermission.GRADING_SCALE_MANAGE,
+            PlatformPermission.REPORT_CARD_READ,
+            PlatformPermission.REPORT_CARD_GENERATE,
+            PlatformPermission.REPORT_CARD_PUBLISH,
+            PlatformPermission.REPORT_CARD_REVOKE,
+            PlatformPermission.REPORT_CARD_REMARK_MANAGE
     )),
 
     COMMUNITY_ADMIN(EnumSet.of(
             PlatformPermission.COMMUNITY_READ,
             PlatformPermission.COMMUNITY_UPDATE,
+            PlatformPermission.COMMUNITY_ROLE_READ,
+            PlatformPermission.COMMUNITY_ROLE_CREATE,
+            PlatformPermission.COMMUNITY_ROLE_UPDATE,
+            PlatformPermission.COMMUNITY_ROLE_ASSIGN,
+            PlatformPermission.COMMUNITY_ROLE_AUDIT_READ,
+            PlatformPermission.COMMUNITY_PERSONAL_DETAILS_READ,
+            PlatformPermission.COMMUNITY_PERSONAL_DETAILS_EDIT,
+            PlatformPermission.COMMUNITY_PROFESSIONAL_DETAILS_READ,
+            PlatformPermission.COMMUNITY_PROFESSIONAL_DETAILS_EDIT,
+            PlatformPermission.COMMUNITY_ADDRESS_DETAILS_READ,
+            PlatformPermission.COMMUNITY_ADDRESS_DETAILS_EDIT,
+            PlatformPermission.COMMUNITY_BANK_DETAILS_READ,
+            PlatformPermission.COMMUNITY_BANK_DETAILS_APPROVE,
+            PlatformPermission.COMMUNITY_PAYROLL_READ,
+            PlatformPermission.COMMUNITY_PAYROLL_EDIT,
+            PlatformPermission.COMMUNITY_COMMISSION_READ,
+            PlatformPermission.COMMUNITY_LOGIN_HISTORY_READ,
             PlatformPermission.ONBOARDING_READ,
             PlatformPermission.ONBOARDING_CREATE,
             PlatformPermission.ONBOARDING_UPDATE,
             PlatformPermission.SCHOOL_READ,
             PlatformPermission.USER_READ,
             PlatformPermission.CALENDAR_READ
+    )),
+
+    /**
+     * Platform-level role manager: can create/edit/delete community role definitions
+     * and assign roles to community members on behalf of the Superuser.
+     * All actions are logged in {@code community_role_audit_log}.
+     */
+    COMMUNITY_ROLE_MANAGER(EnumSet.of(
+            PlatformPermission.COMMUNITY_READ,
+            PlatformPermission.COMMUNITY_ROLE_READ,
+            PlatformPermission.COMMUNITY_ROLE_CREATE,
+            PlatformPermission.COMMUNITY_ROLE_UPDATE,
+            PlatformPermission.COMMUNITY_ROLE_DELETE,
+            PlatformPermission.COMMUNITY_ROLE_ASSIGN,
+            PlatformPermission.COMMUNITY_ROLE_AUDIT_READ,
+            PlatformPermission.COMMUNITY_PERSONAL_DETAILS_READ,
+            PlatformPermission.COMMUNITY_PROFESSIONAL_DETAILS_READ,
+            PlatformPermission.COMMUNITY_ADDRESS_DETAILS_READ,
+            PlatformPermission.COMMUNITY_BANK_DETAILS_READ,
+            PlatformPermission.COMMUNITY_PAYROLL_READ,
+            PlatformPermission.COMMUNITY_COMMISSION_READ,
+            PlatformPermission.COMMUNITY_LOGIN_HISTORY_READ
     )),
 
     COMMUNITY_MANAGER(EnumSet.of(
@@ -261,7 +315,22 @@ public enum PlatformRole {
             PlatformPermission.ATTENDANCE_DELETE,
             PlatformPermission.ATTENDANCE_BULK_MARK,
             PlatformPermission.ATTENDANCE_STATUS_UPDATE,
-            PlatformPermission.ATTENDANCE_OVERRIDE_NON_WORKING
+            PlatformPermission.ATTENDANCE_OVERRIDE_NON_WORKING,
+            PlatformPermission.EXAM_READ,
+            PlatformPermission.EXAM_CREATE,
+            PlatformPermission.EXAM_UPDATE,
+            PlatformPermission.EXAM_DELETE,
+            PlatformPermission.EXAM_PUBLISH,
+            PlatformPermission.MARKS_READ,
+            PlatformPermission.MARKS_ENTRY,
+            PlatformPermission.MARKS_LOCK,
+            PlatformPermission.GRADING_SCALE_READ,
+            PlatformPermission.GRADING_SCALE_MANAGE,
+            PlatformPermission.REPORT_CARD_READ,
+            PlatformPermission.REPORT_CARD_GENERATE,
+            PlatformPermission.REPORT_CARD_PUBLISH,
+            PlatformPermission.REPORT_CARD_REVOKE,
+            PlatformPermission.REPORT_CARD_REMARK_MANAGE
     )),
 
     SCHOOL_ADMIN(EnumSet.of(
@@ -366,7 +435,22 @@ public enum PlatformRole {
             PlatformPermission.ATTENDANCE_DELETE,
             PlatformPermission.ATTENDANCE_BULK_MARK,
             PlatformPermission.ATTENDANCE_STATUS_UPDATE,
-            PlatformPermission.ATTENDANCE_OVERRIDE_NON_WORKING
+            PlatformPermission.ATTENDANCE_OVERRIDE_NON_WORKING,
+            PlatformPermission.EXAM_READ,
+            PlatformPermission.EXAM_CREATE,
+            PlatformPermission.EXAM_UPDATE,
+            PlatformPermission.EXAM_DELETE,
+            PlatformPermission.EXAM_PUBLISH,
+            PlatformPermission.MARKS_READ,
+            PlatformPermission.MARKS_ENTRY,
+            PlatformPermission.MARKS_LOCK,
+            PlatformPermission.GRADING_SCALE_READ,
+            PlatformPermission.GRADING_SCALE_MANAGE,
+            PlatformPermission.REPORT_CARD_READ,
+            PlatformPermission.REPORT_CARD_GENERATE,
+            PlatformPermission.REPORT_CARD_PUBLISH,
+            PlatformPermission.REPORT_CARD_REVOKE,
+            PlatformPermission.REPORT_CARD_REMARK_MANAGE
     )),
 
     /**
@@ -387,7 +471,105 @@ public enum PlatformRole {
             PlatformPermission.TIMETABLE_READ,
             PlatformPermission.TIMETABLE_ENTRY_READ,
             PlatformPermission.SUBSTITUTION_READ,
-            PlatformPermission.CALENDAR_READ
+            PlatformPermission.CALENDAR_READ,
+            PlatformPermission.EXAM_READ,
+            PlatformPermission.MARKS_READ,
+            PlatformPermission.MARKS_ENTRY,
+            PlatformPermission.GRADING_SCALE_READ,
+            PlatformPermission.REPORT_CARD_READ,
+            PlatformPermission.REPORT_CARD_REMARK_MANAGE
+    )),
+
+    PRINCIPAL(EnumSet.of(
+            PlatformPermission.SCHOOL_READ,
+            PlatformPermission.STUDENT_READ,
+            PlatformPermission.STUDENT_CREATE,
+            PlatformPermission.STUDENT_UPDATE,
+            PlatformPermission.STUDENT_ENROLL,
+            PlatformPermission.STUDENT_TRANSFER,
+            PlatformPermission.STAFF_READ,
+            PlatformPermission.STAFF_UPDATE,
+            PlatformPermission.ACADEMIC_YEAR_READ,
+            PlatformPermission.ACADEMIC_CLASS_READ,
+            PlatformPermission.SECTION_READ,
+            PlatformPermission.ATTENDANCE_READ,
+            PlatformPermission.ATTENDANCE_STATUS_UPDATE,
+            PlatformPermission.TIMETABLE_READ,
+            PlatformPermission.TIMETABLE_PUBLISH,
+            PlatformPermission.CALENDAR_READ,
+            PlatformPermission.CALENDAR_MANAGE,
+            PlatformPermission.EXAM_READ,
+            PlatformPermission.EXAM_PUBLISH,
+            PlatformPermission.MARKS_READ,
+            PlatformPermission.MARKS_LOCK,
+            PlatformPermission.REPORT_CARD_READ,
+            PlatformPermission.REPORT_CARD_GENERATE,
+            PlatformPermission.REPORT_CARD_PUBLISH,
+            PlatformPermission.PAYMENT_READ
+    )),
+
+    COORDINATOR(EnumSet.of(
+            PlatformPermission.STUDENT_READ,
+            PlatformPermission.STUDENT_UPDATE,
+            PlatformPermission.STAFF_READ,
+            PlatformPermission.ACADEMIC_YEAR_READ,
+            PlatformPermission.ACADEMIC_CLASS_READ,
+            PlatformPermission.SECTION_READ,
+            PlatformPermission.ATTENDANCE_READ,
+            PlatformPermission.ATTENDANCE_UPDATE,
+            PlatformPermission.TIMETABLE_READ,
+            PlatformPermission.TIMETABLE_UPDATE,
+            PlatformPermission.SUBSTITUTION_READ,
+            PlatformPermission.SUBSTITUTION_MANAGE,
+            PlatformPermission.CALENDAR_READ,
+            PlatformPermission.EXAM_READ,
+            PlatformPermission.MARKS_READ,
+            PlatformPermission.REPORT_CARD_READ
+    )),
+
+    SUBJECT_TEACHER(EnumSet.of(
+            PlatformPermission.STUDENT_READ,
+            PlatformPermission.SECTION_READ,
+            PlatformPermission.ACADEMIC_CLASS_READ,
+            PlatformPermission.ATTENDANCE_READ,
+            PlatformPermission.ATTENDANCE_CREATE,
+            PlatformPermission.ATTENDANCE_UPDATE,
+            PlatformPermission.TIMETABLE_READ,
+            PlatformPermission.TIMETABLE_ENTRY_READ,
+            PlatformPermission.CALENDAR_READ,
+            PlatformPermission.EXAM_READ,
+            PlatformPermission.MARKS_READ,
+            PlatformPermission.MARKS_ENTRY,
+            PlatformPermission.REPORT_CARD_READ
+    )),
+
+    ACCOUNTS(EnumSet.of(
+            PlatformPermission.STUDENT_READ,
+            PlatformPermission.PAYMENT_READ,
+            PlatformPermission.PAYMENT_CREATE,
+            PlatformPermission.PAYMENT_REFUND,
+            PlatformPermission.SUBSCRIPTION_READ,
+            PlatformPermission.AUDIT_READ
+    )),
+
+    PARENT(EnumSet.of(
+            PlatformPermission.STUDENT_READ,
+            PlatformPermission.ATTENDANCE_READ,
+            PlatformPermission.TIMETABLE_READ,
+            PlatformPermission.CALENDAR_READ,
+            PlatformPermission.MARKS_READ,
+            PlatformPermission.REPORT_CARD_READ,
+            PlatformPermission.PAYMENT_READ,
+            PlatformPermission.PAYMENT_CREATE
+    )),
+
+    STUDENT(EnumSet.of(
+            PlatformPermission.STUDENT_READ,
+            PlatformPermission.ATTENDANCE_READ,
+            PlatformPermission.TIMETABLE_READ,
+            PlatformPermission.CALENDAR_READ,
+            PlatformPermission.MARKS_READ,
+            PlatformPermission.REPORT_CARD_READ
     ));
 
     private final Set<PlatformPermission> permissions;

@@ -87,9 +87,29 @@ class TenantResolutionFilterTest {
     }
 
     @Test
-    @DisplayName("Missing X-Tenant-ID header continues without setting context")
+    @DisplayName("Missing X-Tenant-ID header continues without setting context for platform/community user")
     void missingHeader_Continues() throws Exception {
         MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/v1/academic/classes");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        filter.doFilterInternal(request, response, filterChain);
+
+        verify(filterChain).doFilter(request, response);
+        assertThat(TenantContext.getTenantCode()).isNull();
+    }
+
+    @Test
+    @DisplayName("Missing X-Tenant-ID header auto-resolves tenant from user token/profile")
+    void missingHeader_SchoolUser_ResolvesTenantFromUserDetails() throws Exception {
+        UUID schoolId = UUID.randomUUID();
+        PlatformUserDetails schoolUser = new PlatformUserDetails(user.getId(), user.getEmail(), "hash", "SCHOOL_ADMIN", schoolId, "TNT-A", userDetails.getAuthorities());
+        SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(schoolUser, null, schoolUser.getAuthorities()));
+
+        TenantRegistration reg = new TenantRegistration(UUID.randomUUID(), "TNT-A", schoolId, "ACTIVE", "HOST", 5432, "db_a", "u", "p");
+        when(tenantRegistryService.findByTenantCode("TNT-A")).thenReturn(Optional.of(reg));
+        when(tenantAuthorizationService.canAccessTenant(userId, "TNT-A")).thenReturn(true);
+
+        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/v1/students");
         MockHttpServletResponse response = new MockHttpServletResponse();
 
         filter.doFilterInternal(request, response, filterChain);

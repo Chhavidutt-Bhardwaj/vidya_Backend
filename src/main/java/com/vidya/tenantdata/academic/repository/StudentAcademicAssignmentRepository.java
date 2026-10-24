@@ -62,4 +62,14 @@ public interface StudentAcademicAssignmentRepository extends JpaRepository<Stude
     boolean existsByAcademicClassIdAndDeletedAtIsNull(UUID academicClassId);
 
     boolean existsByAcademicYearIdAndDeletedAtIsNull(UUID academicYearId);
+
+    @Query("SELECT a FROM StudentAcademicAssignment a " +
+           "WHERE a.academicClass.id = :classId " +
+           "AND (:sectionId IS NULL OR a.section.id = :sectionId) " +
+           "AND a.status = 'ACTIVE' " +
+           "AND a.deletedAt IS NULL")
+    List<StudentAcademicAssignment> findActiveByClassAndSection(
+            @Param("classId") UUID classId,
+            @Param("sectionId") UUID sectionId
+    );
 }

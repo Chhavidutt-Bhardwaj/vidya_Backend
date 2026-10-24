@@ -97,13 +97,14 @@ HTTP Request
 
 ---
 
-## 5. What Is Completed (Steps 1 – 24)
+## 5. What Is Completed (Steps 1 – 25)
 
-Vidya currently has **983 passing tests** across **24 fully implemented steps**.
+Vidya currently has **983 passing tests** across **25 fully implemented steps**.
 
 ### 5.1 Master Platform Domain (`com.vidya.master`)
 - [x] **Platform Identity & RBAC** (`V1`): Platform Super Admin, Platform Admin, role hierarchy, password hashing.
 - [x] **Community & School Directory** (`V2-V5`): Educational trusts/communities, school entities, multi-branch hierarchy.
+- [x] **Community Refactoring & Role Customization** (`V21`): Normalized community data into separate tables (personal, professional, address, bank, payroll, commission, login history) with customizable role definitions per community type and granular permission system (view, create, edit, delete, approve, export).
 - [x] **Tenant Provisioning Engine** (`V6-V7`): Tenant database provisioning, dynamic datasource registration, automated Flyway execution on new tenant creation.
 - [x] **Multi-Step School Onboarding Engine** (`V8-V10`, `V19`): State-machine driven onboarding (Basic Info, Legal Docs, Academic Setup, Verification, Approval, Tenant Provisioning).
 - [x] **SaaS Subscription & Feature Gating** (`V11-V14`): Subscription tiers (Standard, Pro, Enterprise), feature toggles, limits, school subscriptions.
@@ -139,6 +140,11 @@ Vidya currently has **983 passing tests** across **24 fully implemented steps**.
   - Fail-fast bulk upsert with clash detection.
   - Day schedule views (`/sections/{id}/day?date=` and `/teachers/{id}/day?date=`).
   - Substitution management (`POST /api/v1/timetables/{id}/substitutions`) and weekly/day schedule overlays.
+- [x] **Examination & Assessment Foundation** (`V17`, Step 25):
+  - Canonical entities: `grading_scale`, `grading_scale_tier`, `exam_term`, `exam_schedule`, `exam_subject_config`, `student_mark_entry`.
+  - Configurable grading scales & percentage bands with automatic grade point and passing threshold mapping.
+  - Class-level exam scheduling with subject exam paper configs (room, timings, max marks, passing threshold, theory/practical breakdown).
+  - Bulk marks evaluation (`POST /api/v1/exam-marks/bulk`) and evaluation locking workflow (`POST /api/v1/exam-marks/subject-configs/{id}/lock`).
 
 ---
 
@@ -152,20 +158,21 @@ gantt
     dateFormat  YYYY-MM-DD
     section Core Academic
     Timetable Engine & Substitutions (Step 24) :done, 2026-10-01, 2026-10-04
-    Examination & Assessment (Step 25)    :active, 2026-10-05, 2026-10-09
-    Grading & Report Cards (Step 26)       :2026-10-10, 2026-10-13
+    Examination & Assessment (Step 25)         :done, 2026-10-05, 2026-10-09
+    Grading Engine & Report Cards (Step 26)    :active, 2026-10-10, 2026-10-13
+    section Master Platform
+    Community Refactoring & Role System (Step 27) :done, 2026-10-17, 2026-10-17
     section Financial & Ops
-    Fee Structure & Invoicing (Step 27)    :2026-10-14, 2026-10-18
-    Fee Collection & Online Pay (Step 28)  :2026-10-19, 2026-10-22
-    Transport & Fleet Tracking (Step 29)   :2026-10-23, 2026-10-26
-    Library Management (Step 30)           :2026-10-27, 2026-10-30
+    Fee Structure & Invoicing (Step 28)        :2026-10-18, 2026-10-22
+    Fee Collection & Online Pay (Step 29)      :2026-10-23, 2026-10-26
+    Transport & Fleet Tracking (Step 30)       :2026-10-27, 2026-10-30
+    Library Management (Step 31)               :2026-10-31, 2026-11-03
     section Engagement & Portals
-    Parent & Student Portal API (Step 31)  :2026-10-31, 2026-11-03
-    Communication, SMS & Notices (Step 32) :2026-11-04, 2026-11-07
-    Staff Payroll & Leave Mgmt (Step 33)   :2026-11-08, 2026-11-11
-    Analytics & Executive Reports (Step 34):2026-11-12, 2026-11-15
+    Parent & Student Portal API (Step 32)      :2026-11-04, 2026-11-07
+    Communication, SMS & Notices (Step 33)     :2026-11-08, 2026-11-11
+    Staff Payroll & Leave Mgmt (Step 34)       :2026-11-12, 2026-11-15
+    Analytics & Executive Reports (Step 35)    :2026-11-16, 2026-11-19
 ```
-    Examination & Assessment (Step 25)    :2026-10-08, 2026-10-12
     Grading & Report Cards (Step 26)       :2026-10-13, 2026-10-16
     section Financial & Ops
     Fee Structure & Invoicing (Step 27)    :2026-10-17, 2026-10-21
@@ -184,7 +191,7 @@ gantt
 #### Step 24 — Timetable Scheduling & Substitution Engine
 - **Objective**: Manage master bell schedules, periods, room inventories, weekly timetable entries, conflict resolution, daily schedule views, and teacher substitutions.
 - **Key Tables**: `room`, `bell_schedule`, `bell_schedule_period`, `timetable`, `timetable_entry`, `timetable_substitution`.
-- **Invariants**: 
+- **Invariants**:
   - Teacher conflict: A teacher cannot be scheduled in two sections at the same weekday + period.
   - Room conflict: A room cannot host two sections at the same weekday + period.
   - Substitution conflict: A substitute teacher or substitute room cannot be assigned to multiple sections at the same period on the same date.
@@ -198,34 +205,46 @@ gantt
 - **Objective**: Compute weighted grades, CGPA/GPA, class rankings, attendance integration, and printable report card generation.
 - **Key Tables**: `grading_scale`, `student_report_card`, `report_card_remark`.
 
-#### Step 27 — Fee Structure, Categories & Invoicing
+#### Step 27 — Community Refactoring & Role Customization System ✅
+- **Objective**: Normalize community data into separate tables (personal, professional, address, bank, payroll, commission, login history) and implement customizable role definitions per community type with granular permission system.
+- **Key Tables**: `community_personal_detail`, `community_professional_detail`, `community_address`, `community_bank_detail`, `community_payroll`, `community_commission`, `community_login_history`, `community_role_definition`, `community_permission`, `community_role_permission`.
+- **Features**:
+  - Customizable roles per community type (PARTNER, FIELD_AGENCY, NGO, GOVT, OTHER)
+  - Granular permissions (view, create, edit, delete, approve, export) per permission
+  - System role protection (cannot be modified/deleted)
+  - Multiple addresses and bank accounts per community
+  - JSONB-based flexible configuration for payroll and commission
+  - Complete login history tracking with device/browser metadata
+  - Backward compatibility with legacy role enum
+
+#### Step 28 — Fee Structure, Categories & Invoicing
 - **Objective**: Define fee heads (Tuition, Transport, Lab, Annual), fee structures per class/section, discounts/concessions, and automated invoice generation per academic term.
 - **Key Tables**: `fee_head`, `fee_structure`, `fee_discount`, `student_fee_invoice`, `student_fee_item`.
 
-#### Step 28 — Fee Collection, Payment Gateway & Receipts
+#### Step 29 — Fee Collection, Payment Gateway & Receipts
 - **Objective**: Record cash, cheque, bank transfer, and Razorpay/PayU online payments, handle partial payments, overdue fines, and generate immutable fee receipts.
 - **Key Tables**: `fee_payment`, `fee_receipt`, `fee_fine_policy`.
 
-#### Step 29 — Transport & Fleet Management
+#### Step 30 — Transport & Fleet Management
 - **Objective**: Manage school buses, drivers, routes, stops, vehicle tracking metadata, and student transport assignments with fee integration.
 - **Key Tables**: `vehicle`, `driver`, `transport_route`, `transport_stop`, `student_transport_assignment`.
 
-#### Step 30 — Library Management System
+#### Step 31 — Library Management System
 - **Objective**: Book cataloging (ISBN, Dewey Decimal), book copies, barcodes, student/staff issue and return workflows, overdue fines calculation.
 - **Key Tables**: `book_catalog`, `book_copy`, `book_issue_record`, `library_fine`.
 
-#### Step 31 — Parent & Student Portal API
+#### Step 32 — Parent & Student Portal API
 - **Objective**: Dedicated endpoints for parents and students to view academic progress, daily attendance, class timetable, homework/assignments, notices, and fee ledger.
 
-#### Step 32 — Communication, Noticeboard & SMS/WhatsApp Notification Service
+#### Step 33 — Communication, Noticeboard & SMS/WhatsApp Notification Service
 - **Objective**: Broadcast circulars, school events, emergency closures, attendance SMS alerts to parents, and integrated notification templates.
 - **Key Tables**: `notice_announcement`, `notification_template`, `notification_log`.
 
-#### Step 33 — Staff Payroll, Attendance & Leave Management
+#### Step 34 — Staff Payroll, Attendance & Leave Management
 - **Objective**: Teacher/staff biometric/manual attendance, leave quotas and approval workflows, salary structures, payslip generation, and deductions.
 - **Key Tables**: `staff_leave_policy`, `staff_leave_application`, `staff_salary_structure`, `staff_payroll_run`.
 
-#### Step 34 — Comprehensive Analytics & Executive Dashboards
+#### Step 35 — Comprehensive Analytics & Executive Dashboards
 - **Objective**: School Principal & Platform Admin dashboards: student retention metrics, attendance heatmaps, fee collection realization percentages, and teacher workload analytics.
 
 ---
@@ -254,6 +273,15 @@ When implementing any feature in Vidya, the following architectural invariants *
 - **Soft Deletion**: Include `@Column(name = "deleted_at") private Instant deletedAt;`.
 - **Optimistic Locking**: Always include `@Version @Column(name = "version") private Long version;`.
 - **Constructors & Factory Methods**: Protected default constructor for JPA (`@NoArgsConstructor(access = AccessLevel.PROTECTED)`), explicit domain constructor for creation.
+- **Data Normalization**: For complex entities with multiple concerns (e.g., Community), separate into related detail tables (personal, professional, address, bank, payroll, commission) for modularity and granular RBAC.
+
+### 7.2.1 Community Role Customization System
+- **Role Definitions**: Each community type (PARTNER, FIELD_AGENCY, NGO, GOVT, OTHER) can define custom roles via `CommunityRoleDefinition` entity.
+- **Granular Permissions**: Permissions are defined in `CommunityPermission` entity with action-level control (view, create, edit, delete, approve, export).
+- **Role-Permission Mapping**: `CommunityRolePermission` entity maps roles to permissions with granular action flags.
+- **System Role Protection**: System roles (marked with `isSystemRole = true`) cannot be modified or deleted.
+- **Backward Compatibility**: Legacy role enums are preserved as `legacy_role` column for migration compatibility.
+- **Flexible Configuration**: Use JSONB columns for complex configurations (e.g., payroll salary structures, commission tier configs).
 
 ### 7.3 Service & Transaction Standards
 - **Explicit Transaction Manager**:
@@ -295,7 +323,12 @@ com.vidya
 ├── config/                  # Master & Tenant DataSource configuration, Flyway config, Redis config
 ├── master/                  # Master Platform Domain (SaaS Operations)
 │   ├── audit/               # Platform-wide audit logs
-│   ├── community/           # Multi-school community networks
+│   ├── community/           # Multi-school community networks with role customization
+│   │   ├── entity/          # Community, CommunityMember, CommunityRoleDefinition, CommunityPermission, etc.
+│   │   ├── repository/      # Community data access
+│   │   ├── service/         # Community business logic including role/permission management
+│   │   ├── controller/      # Community REST endpoints
+│   │   └── dto/             # Community request/response DTOs
 │   ├── onboarding/          # Multi-step school onboarding state machine
 │   ├── payment/             # Master platform billing & payments
 │   ├── school/              # Schools & School Branches

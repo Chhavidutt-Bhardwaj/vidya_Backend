@@ -20,6 +20,7 @@ import com.vidya.security.repository.RefreshTokenRepository;
 import com.vidya.security.service.AuthServiceImpl;
 import com.vidya.security.service.SecurityAuditService;
 import com.vidya.security.service.TenantAuthorizationServiceImpl;
+import com.vidya.security.service.UserPermissionMatrixService;
 import com.vidya.security.user.PlatformUserDetails;
 import com.vidya.tenant.context.TenantContext;
 import com.vidya.tenant.registry.TenantRegistration;
@@ -92,6 +93,9 @@ class SecurityTenantIsolationIntegrationTest {
     @Mock
     private FilterChain filterChain;
 
+    @Mock
+    private UserPermissionMatrixService userPermissionMatrixService;
+
     private PasswordEncoder passwordEncoder;
     private JwtTokenProvider jwtTokenProvider;
     private AuthServiceImpl authService;
@@ -126,7 +130,8 @@ class SecurityTenantIsolationIntegrationTest {
                 refreshTokenRepository,
                 passwordEncoder,
                 jwtTokenProvider,
-                securityAuditService
+                securityAuditService,
+                userPermissionMatrixService
         );
 
         tenantAuthorizationService = new TenantAuthorizationServiceImpl(

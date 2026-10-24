@@ -7,6 +7,8 @@ import com.vidya.tenantdata.academic.dto.CreateAcademicYearRequest;
 import com.vidya.tenantdata.academic.dto.UpdateAcademicYearRequest;
 import com.vidya.tenantdata.academic.enums.AcademicYearStatus;
 import com.vidya.tenantdata.academic.service.AcademicYearService;
+import com.vidya.tenantdata.timetable.dto.TimetableGridResponse;
+import com.vidya.tenantdata.timetable.service.TimetableService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -41,16 +43,16 @@ import java.util.UUID;
 public class AcademicYearController {
 
     private final AcademicYearService academicYearService;
-    private final com.vidya.tenantdata.timetable.service.TimetableService timetableService;
+    private final TimetableService timetableService;
 
     @GetMapping("/{id}/sections/{sectionId}/timetable")
     @PreAuthorize("hasAuthority('TIMETABLE_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
     @Operation(summary = "Get active section timetable for academic year", description = "Retrieves the active timetable weekly grid for a section within an academic year")
-    public ResponseEntity<ApiResponse<com.vidya.tenantdata.timetable.dto.TimetableGridResponse>> getActiveSectionTimetable(
+    public ResponseEntity<ApiResponse<TimetableGridResponse>> getActiveSectionTimetable(
             @PathVariable UUID id,
             @PathVariable UUID sectionId) {
         log.info("REST: Get active section timetable for year [{}] section [{}]", id, sectionId);
-        com.vidya.tenantdata.timetable.dto.TimetableGridResponse response = timetableService.getActiveSectionTimetable(id, sectionId);
+        TimetableGridResponse response = timetableService.getActiveSectionTimetable(id, sectionId);
         return ResponseEntity.ok(ApiResponse.success("ACTIVE_TIMETABLE_GRID_RETRIEVED", "Active section timetable retrieved successfully", response));
     }
 

@@ -55,6 +55,35 @@ public final class ApiResponseCode {
     public static final String COMMUNITY_MEMBER_ADDED       = "COMMUNITY_MEMBER_ADDED";
     public static final String COMMUNITY_MEMBER_FOUND       = "COMMUNITY_MEMBER_FOUND";
     public static final String COMMUNITY_MEMBERS_FOUND      = "COMMUNITY_MEMBERS_FOUND";
+    public static final String COMMUNITY_MEMBER_REMOVED     = "COMMUNITY_MEMBER_REMOVED";
+
+    // ── Community Section Details ─────────────────────────────────────────────
+    public static final String COMMUNITY_SECTION_UPDATED    = "COMMUNITY_SECTION_UPDATED";
+    public static final String COMMUNITY_SECTION_FOUND      = "COMMUNITY_SECTION_FOUND";
+    public static final String COMMUNITY_BANK_DETAIL_VERIFIED = "COMMUNITY_BANK_DETAIL_VERIFIED";
+
+    // ── Community Role Management ─────────────────────────────────────────────
+    public static final String COMMUNITY_ROLE_CREATED       = "COMMUNITY_ROLE_CREATED";
+    public static final String COMMUNITY_ROLE_UPDATED       = "COMMUNITY_ROLE_UPDATED";
+    public static final String COMMUNITY_ROLE_DELETED       = "COMMUNITY_ROLE_DELETED";
+    public static final String COMMUNITY_ROLE_FOUND         = "COMMUNITY_ROLE_FOUND";
+    public static final String COMMUNITY_ROLES_FOUND        = "COMMUNITY_ROLES_FOUND";
+    public static final String COMMUNITY_ROLE_ASSIGNED      = "COMMUNITY_ROLE_ASSIGNED";
+    public static final String COMMUNITY_PERMISSIONS_FOUND  = "COMMUNITY_PERMISSIONS_FOUND";
+    public static final String COMMUNITY_PERMISSIONS_UPDATED = "COMMUNITY_PERMISSIONS_UPDATED";
+    public static final String COMMUNITY_ROLE_AUDIT_FOUND   = "COMMUNITY_ROLE_AUDIT_FOUND";
+
+    // ── Community Login History ───────────────────────────────────────────────
+    public static final String COMMUNITY_LOGIN_HISTORY_FOUND = "COMMUNITY_LOGIN_HISTORY_FOUND";
+
+    // ── Community Payroll ─────────────────────────────────────────────────────
+    public static final String COMMUNITY_PAYROLL_FOUND      = "COMMUNITY_PAYROLL_FOUND";
+    public static final String COMMUNITY_PAYROLL_UPDATED    = "COMMUNITY_PAYROLL_UPDATED";
+
+    // ── Community Commission ──────────────────────────────────────────────────
+    public static final String COMMUNITY_COMMISSION_FOUND   = "COMMUNITY_COMMISSION_FOUND";
+    public static final String COMMUNITY_COMMISSION_CREATED = "COMMUNITY_COMMISSION_CREATED";
+    public static final String COMMUNITY_COMMISSION_UPDATED = "COMMUNITY_COMMISSION_UPDATED";
 
     // ── School ───────────────────────────────────────────────────────────────
     public static final String SCHOOL_FOUND                 = "SCHOOL_FOUND";

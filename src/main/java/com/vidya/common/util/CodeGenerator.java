@@ -246,4 +246,60 @@ public final class CodeGenerator {
     public static String attendanceCode() {
         return "ATT-" + generate(8);
     }
+
+    /**
+     * Generates an exam term code with prefix.
+     * Example: {@code TRM-A1B2C3D4}
+     */
+    public static String examTermCode() {
+        return "TRM-" + generate(8);
+    }
+
+    /**
+     * Generates a grading scale code with prefix.
+     * Example: {@code GSC-A1B2C3D4}
+     */
+    public static String gradingScaleCode() {
+        return "GSC-" + generate(8);
+    }
+
+    /**
+     * Generates an exam schedule code with prefix.
+     * Example: {@code EXS-A1B2C3D4}
+     */
+    public static String examScheduleCode() {
+        return "EXS-" + generate(8);
+    }
+
+    /**
+     * Generates an exam subject config code with prefix.
+     * Example: {@code ESC-A1B2C3D4}
+     */
+    public static String examSubjectConfigCode() {
+        return "ESC-" + generate(8);
+    }
+
+    /**
+     * Generates a student mark entry code with prefix.
+     * Example: {@code MRK-A1B2C3D4}
+     */
+    public static String studentMarkEntryCode() {
+        return "MRK-" + generate(8);
+    }
+
+    /**
+     * Generates a student report card code with prefix.
+     * Example: {@code RPC-A1B2C3D4}
+     */
+    public static String reportCardCode() {
+        return "RPC-" + generate(8);
+    }
+
+    /**
+     * Generates a report card remark code with prefix.
+     * Example: {@code RPR-A1B2C3D4}
+     */
+    public static String reportCardRemarkCode() {
+        return "RPR-" + generate(8);
+    }
 }

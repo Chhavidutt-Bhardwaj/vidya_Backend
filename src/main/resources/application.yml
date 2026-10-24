@@ -28,7 +28,7 @@ spring:
 
   # Flyway disabled globally — we control it programmatically
   flyway:
-    enabled: false
+    enabled: true
 
   # Session via Redis
   session:

@@ -2,9 +2,12 @@ package com.vidya.config.database;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import jakarta.persistence.EntityManagerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
@@ -116,6 +119,7 @@ public class MasterDataSourceConfig {
     // -------------------------------------------------------------------------
 
     @Primary
+    @DependsOn("masterFlyway")
     @Bean(name = "masterEntityManagerFactory")
     public LocalContainerEntityManagerFactoryBean masterEntityManagerFactory() {
         LocalContainerEntityManagerFactoryBean factory = new LocalContainerEntityManagerFactoryBean();
@@ -153,10 +157,9 @@ public class MasterDataSourceConfig {
 
     @Primary
     @Bean(name = "masterTransactionManager")
-    public PlatformTransactionManager masterTransactionManager() {
-        JpaTransactionManager txManager = new JpaTransactionManager();
-        txManager.setEntityManagerFactory(masterEntityManagerFactory().getObject());
-        return txManager;
+    public PlatformTransactionManager masterTransactionManager(
+            @Qualifier("masterEntityManagerFactory") EntityManagerFactory entityManagerFactory) {
+        return new JpaTransactionManager(entityManagerFactory);
     }
 
     // -------------------------------------------------------------------------

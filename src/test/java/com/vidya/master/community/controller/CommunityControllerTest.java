@@ -81,14 +81,6 @@ class CommunityControllerTest {
                 "Agency description",
                 CommunityType.FIELD_AGENCY,
                 CommunityStatus.ACTIVE,
-                "contact@edupartners.org",
-                "+919876543210",
-                "123 Street",
-                "Near Tower",
-                "New Delhi",
-                "Delhi",
-                "110001",
-                "India",
                 Instant.now(),
                 Instant.now(),
                 2L
@@ -101,15 +93,7 @@ class CommunityControllerTest {
         CreateCommunityRequest request = new CreateCommunityRequest(
                 "EduPartners Agency",
                 "Agency description",
-                CommunityType.FIELD_AGENCY,
-                "contact@edupartners.org",
-                "+919876543210",
-                "123 Street",
-                "Near Tower",
-                "New Delhi",
-                "Delhi",
-                "110001",
-                "India"
+                CommunityType.FIELD_AGENCY
         );
 
         when(communityService.createCommunity(any(CreateCommunityRequest.class))).thenReturn(sampleCommunityResponse);
@@ -131,9 +115,7 @@ class CommunityControllerTest {
         CreateCommunityRequest invalidRequest = new CreateCommunityRequest(
                 "",
                 null,
-                null,
-                "invalid-email",
-                null, null, null, null, null, null, null
+                null
         );
 
         mockMvc.perform(post("/api/v1/communities")
@@ -150,8 +132,7 @@ class CommunityControllerTest {
         CreateCommunityRequest request = new CreateCommunityRequest(
                 "EduPartners Agency",
                 null,
-                CommunityType.FIELD_AGENCY,
-                null, null, null, null, null, null, null, null
+                CommunityType.FIELD_AGENCY
         );
 
         when(communityService.createCommunity(any())).thenThrow(
@@ -210,10 +191,7 @@ class CommunityControllerTest {
         UpdateCommunityRequest request = new UpdateCommunityRequest(
                 "Updated Name",
                 "New description",
-                CommunityType.NGO,
-                "new@vidya.io",
-                "+919999999999",
-                "Address", null, "Delhi", "Delhi", "110001", "India"
+                CommunityType.NGO
         );
 
         when(communityService.updateCommunity(eq(communityId), any())).thenReturn(sampleCommunityResponse);
@@ -242,7 +220,8 @@ class CommunityControllerTest {
     @DisplayName("POST /api/v1/communities/{id}/members should return 201 on adding member")
     void addMember_Success() throws Exception {
         UUID platformUserId = UUID.randomUUID();
-        AddCommunityMemberRequest request = new AddCommunityMemberRequest(platformUserId, CommunityMemberRole.FIELD_AGENT);
+        UUID customRoleId = UUID.randomUUID();
+        AddCommunityMemberRequest request = new AddCommunityMemberRequest(platformUserId, customRoleId);
 
         CommunityMemberResponse memberResponse = new CommunityMemberResponse(
                 UUID.randomUUID(),
@@ -250,9 +229,11 @@ class CommunityControllerTest {
                 "COM-12345678",
                 platformUserId,
                 "MEM-12345678",
-                CommunityMemberRole.FIELD_AGENT,
+                customRoleId,
+                "FIELD_AGENT",
                 CommunityMemberStatus.ACTIVE,
                 Instant.now(),
+                null,
                 Instant.now()
         );
 
@@ -271,7 +252,8 @@ class CommunityControllerTest {
     @DisplayName("PATCH /api/v1/communities/{id}/members/{memberId}/role should update role")
     void updateMemberRole_Success() throws Exception {
         UUID memberId = UUID.randomUUID();
-        UpdateCommunityMemberRoleRequest request = new UpdateCommunityMemberRoleRequest(CommunityMemberRole.COMMUNITY_ADMIN);
+        UUID customRoleId = UUID.randomUUID();
+        UpdateCommunityMemberRoleRequest request = new UpdateCommunityMemberRoleRequest(customRoleId);
 
         CommunityMemberResponse memberResponse = new CommunityMemberResponse(
                 memberId,
@@ -279,9 +261,11 @@ class CommunityControllerTest {
                 "COM-12345678",
                 UUID.randomUUID(),
                 "MEM-12345678",
-                CommunityMemberRole.COMMUNITY_ADMIN,
+                null,
+                "COMMUNITY_ADMIN",
                 CommunityMemberStatus.ACTIVE,
                 Instant.now(),
+                null,
                 Instant.now()
         );
 

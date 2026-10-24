@@ -7,7 +7,9 @@ import java.time.Instant;
 import java.util.UUID;
 
 /**
- * Response payload representing a community.
+ * Response payload representing the core identity of a community.
+ * Section details (personal, address, bank, payroll, etc.) are retrieved
+ * via dedicated section endpoints governed by RBAC.
  */
 public record CommunityResponse(
         UUID id,
@@ -16,14 +18,6 @@ public record CommunityResponse(
         String description,
         CommunityType type,
         CommunityStatus status,
-        String contactEmail,
-        String contactPhone,
-        String addressLine1,
-        String addressLine2,
-        String city,
-        String state,
-        String pincode,
-        String country,
         Instant createdAt,
         Instant updatedAt,
         long memberCount

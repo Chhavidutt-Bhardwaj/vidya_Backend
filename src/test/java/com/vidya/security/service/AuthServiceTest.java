@@ -51,6 +51,9 @@ class AuthServiceTest {
     @Mock
     private SecurityAuditService securityAuditService;
 
+    @Mock
+    private UserPermissionMatrixService userPermissionMatrixService;
+
     private JwtTokenProvider jwtTokenProvider;
     private AuthServiceImpl authService;
 
@@ -70,7 +73,8 @@ class AuthServiceTest {
                 refreshTokenRepository,
                 passwordEncoder,
                 jwtTokenProvider,
-                securityAuditService
+                securityAuditService,
+                userPermissionMatrixService
         );
 
         userId = UUID.randomUUID();

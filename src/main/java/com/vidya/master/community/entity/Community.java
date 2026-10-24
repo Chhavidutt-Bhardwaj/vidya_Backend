@@ -6,10 +6,12 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -21,8 +23,11 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- * Represents a partner organization, NGO, or field agency that facilitates
- * school onboarding and field operations.
+ * Represents the core identity of a partner organization, NGO, or field agency
+ * that facilitates school onboarding and field operations.
+ *
+ * <p>Personal details, address details, bank accounts, payroll, and commission
+ * are separated into dedicated sub-tables for modularity and granular RBAC.
  */
 @Entity
 @Table(name = "community")
@@ -53,68 +58,63 @@ public class Community extends AuditableEntity {
     @Column(name = "status", nullable = false, length = 30)
     private CommunityStatus status;
 
-    @Column(name = "contact_email")
-    private String contactEmail;
-
-    @Column(name = "contact_phone", length = 20)
-    private String contactPhone;
-
-    @Column(name = "address_line1")
-    private String addressLine1;
-
-    @Column(name = "address_line2")
-    private String addressLine2;
-
-    @Column(name = "city", length = 100)
-    private String city;
-
-    @Column(name = "state", length = 100)
-    private String state;
-
-    @Column(name = "pincode", length = 20)
-    private String pincode;
-
-    @Column(name = "country", nullable = false, length = 100)
-    private String country = "India";
-
     @OneToMany(mappedBy = "community", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<CommunityMember> members = new HashSet<>();
+
+    @OneToOne(mappedBy = "community", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private CommunityPersonalDetail personalDetail;
+
+    @OneToOne(mappedBy = "community", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private CommunityProfessionalDetail professionalDetail;
+
+    @OneToMany(mappedBy = "community", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private Set<CommunityAddress> addresses = new HashSet<>();
+
+    @OneToMany(mappedBy = "community", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private Set<CommunityBankDetail> bankDetails = new HashSet<>();
+
+    @OneToMany(mappedBy = "community", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private Set<CommunityPayroll> payrolls = new HashSet<>();
+
+    @OneToMany(mappedBy = "community", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private Set<CommunityCommission> commissions = new HashSet<>();
+
+    @OneToMany(mappedBy = "community", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private Set<CommunityLoginHistory> loginHistory = new HashSet<>();
 
     public Community(String communityCode,
                      String name,
                      String description,
                      CommunityType type,
-                     CommunityStatus status,
-                     String contactEmail,
-                     String contactPhone,
-                     String addressLine1,
-                     String addressLine2,
-                     String city,
-                     String state,
-                     String pincode,
-                     String country) {
+                     CommunityStatus status) {
         this.communityCode = communityCode;
         this.name = name;
         this.description = description;
         this.type = type != null ? type : CommunityType.OTHER;
         this.status = status != null ? status : CommunityStatus.ACTIVE;
-        this.contactEmail = contactEmail;
-        this.contactPhone = contactPhone;
-        this.addressLine1 = addressLine1;
-        this.addressLine2 = addressLine2;
-        this.city = city;
-        this.state = state;
-        this.pincode = pincode;
-        this.country = country != null ? country : "India";
     }
 
     public void addMember(CommunityMember member) {
         members.add(member);
-        member.setCommunity(this);
     }
 
     public void removeMember(CommunityMember member) {
         members.remove(member);
-        member.setCommunity(null);
+    }
+
+    public void addAddress(CommunityAddress address) {
+        addresses.add(address);
+    }
+
+    public void removeAddress(CommunityAddress address) {
+        addresses.remove(address);
+    }
+
+    public void addBankDetail(CommunityBankDetail bankDetail) {
+        bankDetails.add(bankDetail);
+    }
+
+    public void removeBankDetail(CommunityBankDetail bankDetail) {
+        bankDetails.remove(bankDetail);
     }
 }
