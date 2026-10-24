@@ -1,6 +1,7 @@
 package com.vidya.master.onboarding.dto;
 
 import com.vidya.master.onboarding.entity.OnboardingSource;
+import com.vidya.master.school.entity.SchoolBoard;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -8,7 +9,8 @@ import jakarta.validation.constraints.Size;
 import java.util.UUID;
 
 /**
- * Request payload for starting a new school onboarding wizard.
+ * Request payload for initial inbound school onboarding request (Community, Referral, Website).
+ * Collects initial basic information needed for review and approval.
  */
 public record InitiateOnboardingRequest(
         OnboardingSource source,
@@ -27,5 +29,26 @@ public record InitiateOnboardingRequest(
         String email,
 
         @Size(max = 20, message = "Phone must not exceed 20 characters")
-        String phone
-) {}
+        String phone,
+
+        String contactPersonName,
+
+        String city,
+
+        String state,
+
+        SchoolBoard primaryBoard,
+
+        String referralCode,
+
+        String initialNotes
+) {
+    public InitiateOnboardingRequest(OnboardingSource source,
+                                   UUID communityId,
+                                   UUID communityMemberId,
+                                   String schoolName,
+                                   String email,
+                                   String phone) {
+        this(source, communityId, communityMemberId, schoolName, email, phone, null, null, null, null, null, null);
+    }
+}

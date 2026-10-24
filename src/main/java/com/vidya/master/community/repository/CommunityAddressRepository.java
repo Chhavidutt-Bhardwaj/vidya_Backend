@@ -17,4 +17,6 @@ public interface CommunityAddressRepository extends JpaRepository<CommunityAddre
     List<CommunityAddress> findByCommunityId(UUID communityId);
 
     Optional<CommunityAddress> findByCommunityIdAndIsPrimaryTrue(UUID communityId);
+
+    List<CommunityAddress> findByStateIgnoreCase(String state);
 }

@@ -20,6 +20,18 @@ import com.vidya.master.onboarding.mapper.OnboardingMapper;
 import com.vidya.master.onboarding.repository.OnboardingActivityRepository;
 import com.vidya.master.onboarding.repository.OnboardingStepDataRepository;
 import com.vidya.master.onboarding.repository.SchoolOnboardingRepository;
+import com.vidya.master.community.repository.CommunityRepository;
+import com.vidya.master.school.entity.BoardAffiliationLevel;
+import com.vidya.master.school.entity.BoardAffiliationStatus;
+import com.vidya.master.school.entity.BoardAffiliationType;
+import com.vidya.master.school.entity.SchoolAddress;
+import com.vidya.master.school.entity.SchoolAddressType;
+import com.vidya.master.school.entity.SchoolBoardAffiliation;
+import com.vidya.master.school.entity.SchoolContactDetail;
+import com.vidya.master.school.entity.SchoolContactType;
+import com.vidya.master.school.repository.SchoolAddressRepository;
+import com.vidya.master.school.repository.SchoolBoardAffiliationRepository;
+import com.vidya.master.school.repository.SchoolContactDetailRepository;
 import com.vidya.master.school.entity.School;
 import com.vidya.master.school.entity.SchoolStatus;
 import com.vidya.master.school.repository.SchoolRepository;
@@ -50,7 +62,20 @@ public class OnboardingServiceImpl implements OnboardingService {
     private final OnboardingStepDataRepository onboardingStepDataRepository;
     private final OnboardingActivityRepository onboardingActivityRepository;
     private final SchoolRepository schoolRepository;
+    private final CommunityRepository communityRepository;
+    private final SchoolContactDetailRepository contactDetailRepository;
+    private final SchoolAddressRepository addressRepository;
+    private final SchoolBoardAffiliationRepository boardAffiliationRepository;
     private final OnboardingMapper onboardingMapper;
+
+    public OnboardingServiceImpl(SchoolOnboardingRepository schoolOnboardingRepository,
+                                 OnboardingStepDataRepository onboardingStepDataRepository,
+                                 OnboardingActivityRepository onboardingActivityRepository,
+                                 SchoolRepository schoolRepository,
+                                 OnboardingMapper onboardingMapper) {
+        this(schoolOnboardingRepository, onboardingStepDataRepository, onboardingActivityRepository,
+             schoolRepository, null, null, null, null, onboardingMapper);
+    }
 
     @Override
     public OnboardingResponse initiateOnboarding(InitiateOnboardingRequest request) {
@@ -62,14 +87,82 @@ public class OnboardingServiceImpl implements OnboardingService {
                 request.schoolName().trim(),
                 null,
                 null,
-                null,
+                request.primaryBoard(),
                 null,
                 request.email().trim().toLowerCase(),
                 request.phone(),
                 null,
                 SchoolStatus.DRAFT
         );
+
+        if (request.communityId() != null) {
+            communityRepository.findById(request.communityId())
+                    .ifPresent(c -> {
+                        school.setOnboardingCommunity(c);
+                        school.setOnboardedAt(Instant.now());
+                    });
+        }
+
         School savedSchool = schoolRepository.save(school);
+
+        // Record initial primary contact if contact person name provided
+        if (request.contactPersonName() != null && !request.contactPersonName().isBlank()) {
+            SchoolContactDetail primaryContact = new SchoolContactDetail(
+                    savedSchool,
+                    null,
+                    SchoolContactType.PRINCIPAL,
+                    request.contactPersonName().trim(),
+                    "Inbound In-Charge",
+                    request.email().trim().toLowerCase(),
+                    request.phone() != null ? request.phone().trim() : "",
+                    null,
+                    true
+            );
+            contactDetailRepository.save(primaryContact);
+        }
+
+        // Record initial address if city or state provided
+        if ((request.city() != null && !request.city().isBlank()) || (request.state() != null && !request.state().isBlank())) {
+            SchoolAddress initialAddress = new SchoolAddress(
+                    savedSchool,
+                    null,
+                    SchoolAddressType.CAMPUS_PRIMARY,
+                    "Campus Primary Location",
+                    null,
+                    request.city() != null ? request.city().trim() : "Pending",
+                    request.state() != null ? request.state().trim() : "Pending",
+                    "000000",
+                    "India",
+                    null,
+                    null,
+                    null,
+                    true
+            );
+            addressRepository.save(initialAddress);
+        }
+
+        // Record initial board affiliation if primary board provided
+        if (request.primaryBoard() != null) {
+            BoardAffiliationType bType;
+            try {
+                bType = BoardAffiliationType.valueOf(request.primaryBoard().name());
+            } catch (Exception e) {
+                bType = BoardAffiliationType.OTHER;
+            }
+            SchoolBoardAffiliation initialAffiliation = new SchoolBoardAffiliation(
+                    savedSchool,
+                    bType,
+                    request.primaryBoard().name() + " Affiliation",
+                    "PENDING-" + CodeGenerator.generate(6),
+                    BoardAffiliationLevel.ALL_LEVELS,
+                    null,
+                    null,
+                    true,
+                    null,
+                    BoardAffiliationStatus.PROVISIONAL
+            );
+            boardAffiliationRepository.save(initialAffiliation);
+        }
 
         String onboardingCode = generateUniqueOnboardingCode();
         SchoolOnboarding onboarding = new SchoolOnboarding(
@@ -80,15 +173,23 @@ public class OnboardingServiceImpl implements OnboardingService {
                 request.communityMemberId()
         );
 
+        // Inbound requests from Community, Referral, or Website are automatically submitted for review
+        if (request.source() == OnboardingSource.COMMUNITY ||
+            request.source() == OnboardingSource.REFERRAL ||
+            request.source() == OnboardingSource.WEBSITE) {
+            onboarding.setStatus(OnboardingStatus.SUBMITTED);
+            onboarding.setSubmittedAt(Instant.now());
+        }
+
         SchoolOnboarding savedOnboarding = schoolOnboardingRepository.save(onboarding);
 
-        recordActivity(savedOnboarding, "ONBOARDING_INITIATED", null, OnboardingStatus.DRAFT.name(),
+        recordActivity(savedOnboarding, "ONBOARDING_INITIATED", null, savedOnboarding.getStatus().name(),
                 request.communityMemberId(),
                 request.communityMemberId() != null ? PerformerType.COMMUNITY_MEMBER : PerformerType.SYSTEM,
-                Map.of("schoolName", request.schoolName()));
+                Map.of("schoolName", request.schoolName(), "source", savedOnboarding.getSource().name()));
 
-        log.info("Onboarding initiated with ID: [{}] and code: [{}]",
-                savedOnboarding.getId(), savedOnboarding.getOnboardingCode());
+        log.info("Onboarding initiated with ID: [{}] and code: [{}] in status: [{}]",
+                savedOnboarding.getId(), savedOnboarding.getOnboardingCode(), savedOnboarding.getStatus());
         return onboardingMapper.toResponse(savedOnboarding);
     }
 

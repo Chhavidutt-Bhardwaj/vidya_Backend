@@ -116,4 +116,27 @@ public final class ApiResponseCode {
     public static final String PAYMENT_VERIFIED            = "PAYMENT_VERIFIED";
     public static final String PAYMENT_WEBHOOK_RECEIVED    = "PAYMENT_WEBHOOK_RECEIVED";
     public static final String PAYMENT_FAILED              = "PAYMENT_FAILED";
+
+    // ── Hub & Regional Hierarchy ─────────────────────────────────────────────
+    public static final String HUB_CREATED                 = "HUB_CREATED";
+    public static final String HUB_UPDATED                 = "HUB_UPDATED";
+    public static final String HUB_FOUND                   = "HUB_FOUND";
+    public static final String HUBS_FOUND                  = "HUBS_FOUND";
+    public static final String HUB_MANAGER_ASSIGNED        = "HUB_MANAGER_ASSIGNED";
+    public static final String HUB_COMMUNITY_ASSIGNED      = "HUB_COMMUNITY_ASSIGNED";
+    public static final String HUB_COMMUNITY_REMOVED       = "HUB_COMMUNITY_REMOVED";
+
+    // ── School Relationship Management ───────────────────────────────────────
+    public static final String SCHOOL_RM_ASSIGNED          = "SCHOOL_RM_ASSIGNED";
+    public static final String SCHOOL_RM_AUTO_ASSIGNED     = "SCHOOL_RM_AUTO_ASSIGNED";
+    public static final String SCHOOL_RM_FOUND             = "SCHOOL_RM_FOUND";
+    public static final String SCHOOL_RM_LIST_FOUND        = "SCHOOL_RM_LIST_FOUND";
+
+    // ── School Support Query & Escalation ────────────────────────────────────
+    public static final String QUERY_CREATED               = "QUERY_CREATED";
+    public static final String QUERY_ESCALATED             = "QUERY_ESCALATED";
+    public static final String QUERY_RESOLVED              = "QUERY_RESOLVED";
+    public static final String QUERY_COMMENT_ADDED         = "QUERY_COMMENT_ADDED";
+    public static final String QUERY_FOUND                 = "QUERY_FOUND";
+    public static final String QUERIES_FOUND               = "QUERIES_FOUND";
 }

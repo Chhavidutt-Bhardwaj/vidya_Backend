@@ -6,6 +6,7 @@ package com.vidya.master.school.entity;
 public enum SchoolBoard {
     CBSE,
     ICSE,
+    HBSE,
     STATE,
     IB,
     IGCSE,

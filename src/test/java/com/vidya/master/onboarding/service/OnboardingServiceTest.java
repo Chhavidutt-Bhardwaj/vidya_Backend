@@ -53,6 +53,18 @@ class OnboardingServiceTest {
     @Mock
     private SchoolRepository schoolRepository;
 
+    @Mock
+    private com.vidya.master.community.repository.CommunityRepository communityRepository;
+
+    @Mock
+    private com.vidya.master.school.repository.SchoolContactDetailRepository contactDetailRepository;
+
+    @Mock
+    private com.vidya.master.school.repository.SchoolAddressRepository addressRepository;
+
+    @Mock
+    private com.vidya.master.school.repository.SchoolBoardAffiliationRepository boardAffiliationRepository;
+
     @Spy
     private OnboardingMapper onboardingMapper = new OnboardingMapper();
 

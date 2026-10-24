@@ -1,6 +1,7 @@
 package com.vidya.master.community.entity;
 
 import com.vidya.common.audit.AuditableEntity;
+import com.vidya.master.hub.entity.Hub;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -10,6 +11,8 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
@@ -57,6 +60,19 @@ public class Community extends AuditableEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 30)
     private CommunityStatus status;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "hub_id")
+    private Hub hub;
+
+    @Column(name = "is_hub_lead", nullable = false)
+    private boolean hubLead = false;
+
+    @Column(name = "max_active_query_limit", nullable = false)
+    private int maxActiveQueryLimit = 10;
+
+    @Column(name = "max_assigned_schools_limit", nullable = false)
+    private int maxAssignedSchoolsLimit = 25;
 
     @OneToMany(mappedBy = "community", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<CommunityMember> members = new HashSet<>();

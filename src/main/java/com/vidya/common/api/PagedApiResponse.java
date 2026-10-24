@@ -37,6 +37,11 @@ public class PagedApiResponse<T> {
     }
 
     public static <T> PagedApiResponse<T> of(String code, String message,
+                                             org.springframework.data.domain.Page<T> page) {
+        return of(code, message, page.getContent(), page);
+    }
+
+    public static <T> PagedApiResponse<T> of(String code, String message,
                                              List<T> data,
                                              org.springframework.data.domain.Page<?> page) {
         return PagedApiResponse.<T>builder()

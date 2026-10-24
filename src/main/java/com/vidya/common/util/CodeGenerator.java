@@ -302,4 +302,20 @@ public final class CodeGenerator {
     public static String reportCardRemarkCode() {
         return "RPR-" + generate(8);
     }
+
+    /**
+     * Generates a hub code with prefix.
+     * Example: {@code HUB-A1B2C3D4}
+     */
+    public static String hubCode() {
+        return "HUB-" + generate(8);
+    }
+
+    /**
+     * Generates a support query / ticket code with prefix.
+     * Example: {@code TKT-A1B2C3D4}
+     */
+    public static String ticketCode() {
+        return "TKT-" + generate(8);
+    }
 }

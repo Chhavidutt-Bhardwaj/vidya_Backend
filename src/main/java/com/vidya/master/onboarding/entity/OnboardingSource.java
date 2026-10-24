@@ -7,5 +7,6 @@ public enum OnboardingSource {
     DIRECT,
     COMMUNITY,
     PARTNER,
-    REFERRAL
+    REFERRAL,
+    WEBSITE
 }

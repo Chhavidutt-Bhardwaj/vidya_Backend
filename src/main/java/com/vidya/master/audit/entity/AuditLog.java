@@ -11,6 +11,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
 import java.time.Instant;
 import java.util.UUID;
 
@@ -38,9 +41,11 @@ public class AuditLog {
     @Column(name = "action", nullable = false, length = 30)
     private String action;
 
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "old_value", columnDefinition = "jsonb")
     private String oldValue;
 
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "new_value", columnDefinition = "jsonb")
     private String newValue;
 

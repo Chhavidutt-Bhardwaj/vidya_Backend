@@ -2,12 +2,15 @@ package com.vidya.master.community.service;
 
 import com.vidya.common.exception.BusinessException;
 import com.vidya.common.exception.ResourceNotFoundException;
+import com.vidya.master.community.dto.CommissionLedgerResponse;
 import com.vidya.master.community.dto.CommunityPersonalDetailRequest;
 import com.vidya.master.community.dto.CommunityPersonalDetailResponse;
+import com.vidya.master.community.entity.CommissionType;
 import com.vidya.master.community.entity.Community;
 import com.vidya.master.community.entity.CommunityAddress;
 import com.vidya.master.community.entity.CommunityBankDetail;
 import com.vidya.master.community.entity.CommunityCommission;
+import com.vidya.master.community.entity.CommunityCommissionLedgerEntry;
 import com.vidya.master.community.entity.CommunityLoginHistory;
 import com.vidya.master.community.entity.CommunityPayroll;
 import com.vidya.master.community.entity.CommunityPersonalDetail;
@@ -16,6 +19,8 @@ import com.vidya.master.community.entity.LoginStatus;
 import com.vidya.master.community.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,6 +47,7 @@ public class CommunityDetailService {
     private final CommunityPayrollRepository payrollRepository;
     private final CommunityCommissionRepository commissionRepository;
     private final CommunityLoginHistoryRepository loginHistoryRepository;
+    private final CommunityCommissionLedgerRepository commissionLedgerRepository;
 
     // ==================== Personal Details ====================
 
@@ -305,6 +311,52 @@ public class CommunityDetailService {
     @Transactional(readOnly = true)
     public List<CommunityLoginHistory> getLoginHistory(UUID communityId) {
         return loginHistoryRepository.findByCommunityIdOrderByLoginTimeDesc(communityId);
+    }
+
+    // ==================== Commission Ledger ====================
+
+    @Transactional(readOnly = true)
+    public Page<CommissionLedgerResponse> getCommissionLedger(UUID communityId, Pageable pageable) {
+        return commissionLedgerRepository.findByCommunityId(communityId, pageable)
+                .map(l -> new CommissionLedgerResponse(
+                        l.getId(),
+                        l.getCommunity().getId(),
+                        l.getCommunity().getName(),
+                        l.getCommissionType(),
+                        l.getSchoolId(),
+                        l.getSchoolName(),
+                        l.getSupportQuery() != null ? l.getSupportQuery().getId() : null,
+                        l.getTicketNumber(),
+                        l.getAmount(),
+                        l.getCurrency(),
+                        l.getStatus(),
+                        l.getNotes(),
+                        l.getEarnedAt(),
+                        l.getPaidAt()
+                ));
+    }
+
+    @Transactional
+    public CommunityCommissionLedgerEntry recordOnboardingCommission(UUID communityId,
+                                                                    UUID schoolId,
+                                                                    String schoolName,
+                                                                    BigDecimal amount,
+                                                                    String notes) {
+        Community community = communityRepository.findById(communityId)
+                .orElseThrow(() -> new ResourceNotFoundException("Community", communityId));
+
+        CommunityCommissionLedgerEntry entry = new CommunityCommissionLedgerEntry(
+                community,
+                CommissionType.ONBOARDING,
+                schoolId,
+                schoolName,
+                null,
+                null,
+                amount != null ? amount : BigDecimal.valueOf(5000.00),
+                "INR",
+                notes != null ? notes : "Onboarding referral bounty for school " + schoolName
+        );
+        return commissionLedgerRepository.save(entry);
     }
 
     private CommunityPersonalDetailResponse mapToPersonalDetailResponse(CommunityPersonalDetail detail) {

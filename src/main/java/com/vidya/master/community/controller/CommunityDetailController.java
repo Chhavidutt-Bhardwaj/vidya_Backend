@@ -2,6 +2,8 @@ package com.vidya.master.community.controller;
 
 import com.vidya.common.api.ApiResponse;
 import com.vidya.common.api.ApiResponseCode;
+import com.vidya.common.api.PagedApiResponse;
+import com.vidya.master.community.dto.CommissionLedgerResponse;
 import com.vidya.master.community.dto.CommunityPersonalDetailRequest;
 import com.vidya.master.community.dto.CommunityPersonalDetailResponse;
 import com.vidya.master.community.entity.CommunityAddress;
@@ -16,6 +18,9 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -275,6 +280,22 @@ public class CommunityDetailController {
         return ResponseEntity.ok(ApiResponse.success(
                 "RESOURCE_FOUND",
                 "Login history retrieved successfully",
+                response
+        ));
+    }
+
+    // ==================== Commission Ledger ====================
+
+    @GetMapping("/commission-ledger")
+    @Operation(summary = "Get commission ledger", description = "Retrieve earned commissions (both Onboarding bounty and Query resolution fees) for a community")
+    public ResponseEntity<PagedApiResponse<CommissionLedgerResponse>> getCommissionLedger(
+            @Parameter(description = "Community ID")
+            @PathVariable UUID communityId,
+            @PageableDefault(size = 20) Pageable pageable) {
+        Page<CommissionLedgerResponse> response = communityDetailService.getCommissionLedger(communityId, pageable);
+        return ResponseEntity.ok(PagedApiResponse.of(
+                "COMMISSION_LEDGER_FOUND",
+                "Commission ledger entries retrieved successfully",
                 response
         ));
     }

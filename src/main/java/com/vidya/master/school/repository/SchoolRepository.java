@@ -44,4 +44,10 @@ public interface SchoolRepository extends JpaRepository<School, UUID>, JpaSpecif
             @Param("search") String search,
             Pageable pageable
     );
+
+    Page<School> findByAssignedCommunityId(UUID communityId, Pageable pageable);
+
+    long countByAssignedCommunityId(UUID communityId);
+
+    Page<School> findByHubId(UUID hubId, Pageable pageable);
 }

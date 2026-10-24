@@ -1,14 +1,19 @@
 package com.vidya.master.school.entity;
 
 import com.vidya.common.audit.AuditableEntity;
+import com.vidya.master.community.entity.Community;
+import com.vidya.master.hub.entity.Hub;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
@@ -16,6 +21,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -73,6 +79,34 @@ public class School extends AuditableEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 30)
     private SchoolStatus status = SchoolStatus.DRAFT;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "onboarding_community_id")
+    private Community onboardingCommunity;
+
+    @Column(name = "onboarded_at")
+    private Instant onboardedAt = Instant.now();
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "assigned_community_id")
+    private Community assignedCommunity;
+
+    @Column(name = "assigned_rm_member_id")
+    private UUID assignedRmMemberId;
+
+    @Column(name = "rm_member_name", length = 200)
+    private String rmMemberName;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "hub_id")
+    private Hub hub;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "rm_assignment_type", length = 30)
+    private RmAssignmentType rmAssignmentType = RmAssignmentType.NEAREST_GEO_ALLOCATION;
+
+    @Column(name = "rm_assigned_at")
+    private Instant rmAssignedAt = Instant.now();
 
     @OneToMany(mappedBy = "school", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<SchoolBranch> branches = new HashSet<>();

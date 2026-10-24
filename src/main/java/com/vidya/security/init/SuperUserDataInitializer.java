@@ -52,9 +52,13 @@ public class SuperUserDataInitializer implements ApplicationRunner {
                         user.setLockedUntil(null);
                         modified = true;
                     }
+                    if (user.getPasswordHash() == null || !passwordEncoder.matches("Password@123", user.getPasswordHash())) {
+                        user.setPasswordHash(passwordEncoder.encode("Password@123"));
+                        modified = true;
+                    }
                     if (modified) {
                         userRepository.save(user);
-                        log.info("Updated existing user [{}] to ACTIVE PLATFORM_SUPER_ADMIN", email);
+                        log.info("Updated existing user [{}] to ACTIVE PLATFORM_SUPER_ADMIN with verified password", email);
                     }
                 },
                 () -> {

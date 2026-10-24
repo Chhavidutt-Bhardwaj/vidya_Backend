@@ -16,6 +16,7 @@ import com.vidya.security.entity.UserStatus;
 import com.vidya.security.jwt.JwtTokenProvider;
 import com.vidya.security.repository.PlatformUserRepository;
 import com.vidya.security.repository.RefreshTokenRepository;
+import com.vidya.security.user.PlatformUserDetails;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
@@ -259,17 +260,27 @@ public class AuthServiceImpl implements AuthService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.isAuthenticated() && !"anonymousUser".equals(authentication.getPrincipal())) {
             email = authentication.getName();
+            if (authentication.getPrincipal() instanceof PlatformUserDetails pud) {
+                userId = pud.getUserId();
+            }
         }
 
         if (request != null && request.getRefreshToken() != null && !request.getRefreshToken().isBlank()) {
             try {
+                if (userId == null) {
+                    try {
+                        userId = jwtTokenProvider.getUserIdFromToken(request.getRefreshToken());
+                    } catch (Exception ignored) {}
+                }
                 String tokenHash = jwtTokenProvider.hashToken(request.getRefreshToken());
                 Optional<RefreshToken> storedTokenOpt = refreshTokenRepository.findByTokenHash(tokenHash);
                 if (storedTokenOpt.isPresent()) {
                     RefreshToken token = storedTokenOpt.get();
                     token.revoke("LOGOUT");
                     refreshTokenRepository.save(token);
-                    userId = token.getUserId();
+                    if (userId == null) {
+                        userId = token.getUserId();
+                    }
                 }
             } catch (Exception e) {
                 log.warn("[{}] Error revoking refresh token on logout: {}", correlationId, e.getMessage());
@@ -277,7 +288,16 @@ public class AuthServiceImpl implements AuthService {
         }
 
         if (userId == null && email != null) {
-            userRepository.findByEmailIgnoreCase(email).ifPresent(u -> refreshTokenRepository.revokeAllByUserId(u.getId(), Instant.now()));
+            Optional<PlatformUser> userOpt = userRepository.findByEmailIgnoreCase(email);
+            if (userOpt.isPresent()) {
+                PlatformUser u = userOpt.get();
+                userId = u.getId();
+                refreshTokenRepository.revokeAllByUserId(u.getId(), Instant.now());
+            }
+        }
+
+        if (email == null && userId != null) {
+            email = userRepository.findById(userId).map(PlatformUser::getEmail).orElse(null);
         }
 
         securityAuditService.logLogout(userId, email, ipAddress, correlationId);

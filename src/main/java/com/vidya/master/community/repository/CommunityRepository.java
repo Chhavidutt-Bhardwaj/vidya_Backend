@@ -42,4 +42,10 @@ public interface CommunityRepository extends JpaRepository<Community, UUID>, Jpa
             @Param("search") String search,
             Pageable pageable
     );
+
+    Page<Community> findByHubId(UUID hubId, Pageable pageable);
+
+    java.util.List<Community> findByHubIdAndStatus(UUID hubId, CommunityStatus status);
+
+    java.util.List<Community> findByStatus(CommunityStatus status);
 }
