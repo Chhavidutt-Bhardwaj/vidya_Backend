@@ -6,7 +6,13 @@ import com.vidya.common.api.PagedApiResponse;
 import com.vidya.master.subscription.dto.CreateSubscriptionPlanRequest;
 import com.vidya.master.subscription.dto.SubscriptionFeatureResponse;
 import com.vidya.master.subscription.dto.SubscriptionPlanResponse;
+import com.vidya.master.subscription.dto.CalculatePlanQuoteRequest;
+import com.vidya.master.subscription.dto.CalculatePlanQuoteResponse;
+import com.vidya.master.subscription.dto.CustomSchoolPlanRequest;
+import com.vidya.master.subscription.dto.ModuleFeatureGroupResponse;
 import com.vidya.master.subscription.entity.PlanStatus;
+import com.vidya.master.subscription.entity.PlanTier;
+import com.vidya.master.subscription.service.SubscriptionEntitlementService;
 import com.vidya.master.subscription.service.SubscriptionPlanService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -36,6 +42,61 @@ import java.util.UUID;
 public class SubscriptionPlanController {
 
     private final SubscriptionPlanService subscriptionPlanService;
+    private final SubscriptionEntitlementService entitlementService;
+
+    @GetMapping("/tiers")
+    public ResponseEntity<ApiResponse<List<PlanTier>>> getAvailableTiers() {
+        List<PlanTier> tiers = subscriptionPlanService.getAvailableTiers();
+        return ResponseEntity.ok(ApiResponse.success(
+                ApiResponseCode.TIERS_FOUND,
+                "Available plan tiers retrieved successfully",
+                tiers
+        ));
+    }
+
+    @GetMapping("/tier/{tier}")
+    public ResponseEntity<ApiResponse<List<SubscriptionPlanResponse>>> getPlansByTier(@PathVariable PlanTier tier) {
+        List<SubscriptionPlanResponse> plans = subscriptionPlanService.getPlansByTier(tier);
+        return ResponseEntity.ok(ApiResponse.success(
+                ApiResponseCode.PLANS_FOUND,
+                "Plans for tier " + tier + " retrieved successfully",
+                plans
+        ));
+    }
+
+    @GetMapping("/modules")
+    public ResponseEntity<ApiResponse<List<ModuleFeatureGroupResponse>>> getModularCatalog() {
+        List<ModuleFeatureGroupResponse> catalog = entitlementService.getModularFeatureCatalog();
+        return ResponseEntity.ok(ApiResponse.success(
+                ApiResponseCode.MODULES_FOUND,
+                "Modular and sub-feature catalog retrieved successfully",
+                catalog
+        ));
+    }
+
+    @PostMapping("/calculate-quote")
+    public ResponseEntity<ApiResponse<CalculatePlanQuoteResponse>> calculateQuote(
+            @Valid @RequestBody CalculatePlanQuoteRequest request) {
+        CalculatePlanQuoteResponse quote = entitlementService.calculatePlanQuote(request);
+        return ResponseEntity.ok(ApiResponse.success(
+                ApiResponseCode.QUOTE_CALCULATED,
+                "Subscription plan quote calculated successfully",
+                quote
+        ));
+    }
+
+    @PostMapping("/custom-plan")
+    public ResponseEntity<ApiResponse<SubscriptionPlanResponse>> createCustomSchoolPlan(
+            @Valid @RequestBody CustomSchoolPlanRequest request) {
+        SubscriptionPlanResponse plan = subscriptionPlanService.createCustomSchoolPlan(request);
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(ApiResponse.success(
+                        ApiResponseCode.PLAN_CREATED,
+                        "Custom school plan created and published successfully",
+                        plan
+                ));
+    }
 
     @GetMapping("/catalog")
     public ResponseEntity<ApiResponse<List<SubscriptionPlanResponse>>> getPublicCatalog() {

@@ -56,6 +56,9 @@ public class SubscriptionPlanServiceImpl implements SubscriptionPlanService {
                 request.basePrice(),
                 request.currency() != null ? request.currency() : "INR",
                 request.trialDays(),
+                request.tier() != null ? request.tier() : com.vidya.master.subscription.entity.PlanTier.CUSTOM,
+                Boolean.TRUE.equals(request.isCustom()),
+                request.targetSchoolId(),
                 PlanStatus.DRAFT,
                 request.effectiveFrom() != null ? request.effectiveFrom() : LocalDate.now()
         );
@@ -141,9 +144,49 @@ public class SubscriptionPlanServiceImpl implements SubscriptionPlanService {
     @Override
     @Transactional(transactionManager = "masterTransactionManager", readOnly = true)
     public List<SubscriptionFeatureResponse> getAllFeatures() {
-        return subscriptionFeatureRepository.findAll()
+        return subscriptionFeatureRepository.findAllByOrderByDisplayOrderAsc()
                 .stream()
                 .map(subscriptionMapper::toFeatureResponse)
                 .toList();
+    }
+
+    @Override
+    @Transactional(transactionManager = "masterTransactionManager", readOnly = true)
+    public List<SubscriptionPlanResponse> getPlansByTier(com.vidya.master.subscription.entity.PlanTier tier) {
+        return subscriptionPlanRepository.findByTier(tier)
+                .stream()
+                .map(subscriptionMapper::toPlanResponse)
+                .toList();
+    }
+
+    @Override
+    public SubscriptionPlanResponse createCustomSchoolPlan(com.vidya.master.subscription.dto.CustomSchoolPlanRequest request) {
+        log.info("Creating custom subscription plan for school: [{}]", request.schoolId());
+        String planCode = "CUSTOM-" + request.schoolId().toString().substring(0, 8).toUpperCase();
+
+        CreateSubscriptionPlanRequest planRequest = new CreateSubscriptionPlanRequest(
+                planCode,
+                request.planName(),
+                request.description(),
+                request.billingCycle(),
+                request.customBasePrice(),
+                "INR",
+                request.trialDays() != null ? request.trialDays() : 0,
+                LocalDate.now(),
+                com.vidya.master.subscription.entity.PlanTier.CUSTOM,
+                true,
+                request.schoolId(),
+                request.features()
+        );
+
+        SubscriptionPlanResponse response = createPlan(planRequest);
+        // Automatically publish custom school plans so they can be subscribed immediately
+        publishPlan(response.id());
+        return getPlanById(response.id());
+    }
+
+    @Override
+    public List<com.vidya.master.subscription.entity.PlanTier> getAvailableTiers() {
+        return List.of(com.vidya.master.subscription.entity.PlanTier.values());
     }
 }

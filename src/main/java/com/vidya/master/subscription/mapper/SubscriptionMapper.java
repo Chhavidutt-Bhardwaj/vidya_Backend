@@ -41,6 +41,9 @@ public class SubscriptionMapper {
                 plan.getStatus(),
                 plan.getEffectiveFrom(),
                 plan.getEffectiveTo(),
+                plan.getTier(),
+                plan.isCustom(),
+                plan.getTargetSchoolId(),
                 featureResponses
         );
     }
@@ -55,7 +58,12 @@ public class SubscriptionMapper {
                 feature.getName(),
                 feature.getDescription(),
                 feature.getCategory(),
-                feature.getStatus()
+                feature.getStatus(),
+                feature.getParentModuleCode(),
+                feature.getSubCategory(),
+                feature.getBasePrice(),
+                feature.isAddon(),
+                feature.getDisplayOrder()
         );
     }
 

@@ -24,5 +24,27 @@ public record SubscriptionPlanResponse(
         PlanStatus status,
         LocalDate effectiveFrom,
         LocalDate effectiveTo,
+        com.vidya.master.subscription.entity.PlanTier tier,
+        boolean isCustom,
+        UUID targetSchoolId,
         List<PlanFeatureResponse> features
-) {}
+) {
+    public SubscriptionPlanResponse(
+            UUID id,
+            String planCode,
+            Integer version,
+            String name,
+            String description,
+            BillingCycle billingCycle,
+            BigDecimal basePrice,
+            String currency,
+            int trialDays,
+            PlanStatus status,
+            LocalDate effectiveFrom,
+            LocalDate effectiveTo,
+            List<PlanFeatureResponse> features) {
+        this(id, planCode, version, name, description, billingCycle, basePrice, currency,
+             trialDays, status, effectiveFrom, effectiveTo,
+             com.vidya.master.subscription.entity.PlanTier.CUSTOM, false, null, features);
+    }
+}

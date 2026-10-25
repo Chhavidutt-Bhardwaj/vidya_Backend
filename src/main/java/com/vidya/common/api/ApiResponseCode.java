@@ -110,6 +110,12 @@ public final class ApiResponseCode {
     public static final String FEATURES_FOUND              = "FEATURES_FOUND";
     public static final String SUBSCRIPTION_CREATED        = "SUBSCRIPTION_CREATED";
     public static final String SUBSCRIPTION_FOUND          = "SUBSCRIPTION_FOUND";
+    public static final String QUOTE_CALCULATED            = "QUOTE_CALCULATED";
+    public static final String ENTITLEMENTS_FOUND          = "ENTITLEMENTS_FOUND";
+    public static final String FEATURE_OVERRIDDEN          = "FEATURE_OVERRIDDEN";
+    public static final String FEATURE_OVERRIDE_REMOVED    = "FEATURE_OVERRIDE_REMOVED";
+    public static final String TIERS_FOUND                 = "TIERS_FOUND";
+    public static final String MODULES_FOUND               = "MODULES_FOUND";
 
     // ── Payment ──────────────────────────────────────────────────────────────
     public static final String PAYMENT_INITIATED           = "PAYMENT_INITIATED";

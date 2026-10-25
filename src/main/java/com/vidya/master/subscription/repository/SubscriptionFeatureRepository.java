@@ -21,4 +21,10 @@ public interface SubscriptionFeatureRepository extends JpaRepository<Subscriptio
     List<SubscriptionFeature> findByStatus(FeatureStatus status);
 
     List<SubscriptionFeature> findByCategory(FeatureCategory category);
+
+    List<SubscriptionFeature> findByParentModuleCode(String parentModuleCode);
+
+    List<SubscriptionFeature> findByStatusOrderByDisplayOrderAsc(FeatureStatus status);
+
+    List<SubscriptionFeature> findAllByOrderByDisplayOrderAsc();
 }

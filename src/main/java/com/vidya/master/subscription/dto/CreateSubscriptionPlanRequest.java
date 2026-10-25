@@ -41,6 +41,35 @@ public record CreateSubscriptionPlanRequest(
 
         LocalDate effectiveFrom,
 
+        com.vidya.master.subscription.entity.PlanTier tier,
+
+        Boolean isCustom,
+
+        java.util.UUID targetSchoolId,
+
         @Valid
         List<PlanFeatureRequest> features
-) {}
+) {
+    public CreateSubscriptionPlanRequest {
+        if (tier == null) {
+            tier = com.vidya.master.subscription.entity.PlanTier.CUSTOM;
+        }
+        if (isCustom == null) {
+            isCustom = false;
+        }
+    }
+
+    public CreateSubscriptionPlanRequest(
+            String planCode,
+            String name,
+            String description,
+            BillingCycle billingCycle,
+            BigDecimal basePrice,
+            String currency,
+            int trialDays,
+            LocalDate effectiveFrom,
+            List<PlanFeatureRequest> features) {
+        this(planCode, name, description, billingCycle, basePrice, currency, trialDays,
+             effectiveFrom, com.vidya.master.subscription.entity.PlanTier.CUSTOM, false, null, features);
+    }
+}

@@ -14,5 +14,10 @@ public record SubscriptionFeatureResponse(
         String name,
         String description,
         FeatureCategory category,
-        FeatureStatus status
+        FeatureStatus status,
+        String parentModuleCode,
+        String subCategory,
+        java.math.BigDecimal basePrice,
+        boolean isAddon,
+        int displayOrder
 ) {}

@@ -35,8 +35,8 @@ import com.vidya.master.school.repository.SchoolContactDetailRepository;
 import com.vidya.master.school.entity.School;
 import com.vidya.master.school.entity.SchoolStatus;
 import com.vidya.master.school.repository.SchoolRepository;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -54,7 +54,6 @@ import java.util.UUID;
  */
 @Service
 @Slf4j
-@RequiredArgsConstructor
 @Transactional(transactionManager = "masterTransactionManager")
 public class OnboardingServiceImpl implements OnboardingService {
 
@@ -67,6 +66,27 @@ public class OnboardingServiceImpl implements OnboardingService {
     private final SchoolAddressRepository addressRepository;
     private final SchoolBoardAffiliationRepository boardAffiliationRepository;
     private final OnboardingMapper onboardingMapper;
+
+    @Autowired
+    public OnboardingServiceImpl(SchoolOnboardingRepository schoolOnboardingRepository,
+                                 OnboardingStepDataRepository onboardingStepDataRepository,
+                                 OnboardingActivityRepository onboardingActivityRepository,
+                                 SchoolRepository schoolRepository,
+                                 CommunityRepository communityRepository,
+                                 SchoolContactDetailRepository contactDetailRepository,
+                                 SchoolAddressRepository addressRepository,
+                                 SchoolBoardAffiliationRepository boardAffiliationRepository,
+                                 OnboardingMapper onboardingMapper) {
+        this.schoolOnboardingRepository = schoolOnboardingRepository;
+        this.onboardingStepDataRepository = onboardingStepDataRepository;
+        this.onboardingActivityRepository = onboardingActivityRepository;
+        this.schoolRepository = schoolRepository;
+        this.communityRepository = communityRepository;
+        this.contactDetailRepository = contactDetailRepository;
+        this.addressRepository = addressRepository;
+        this.boardAffiliationRepository = boardAffiliationRepository;
+        this.onboardingMapper = onboardingMapper;
+    }
 
     public OnboardingServiceImpl(SchoolOnboardingRepository schoolOnboardingRepository,
                                  OnboardingStepDataRepository onboardingStepDataRepository,

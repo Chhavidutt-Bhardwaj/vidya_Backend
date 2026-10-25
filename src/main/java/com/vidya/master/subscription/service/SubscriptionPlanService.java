@@ -30,4 +30,10 @@ public interface SubscriptionPlanService {
     SubscriptionPlanResponse deprecatePlan(UUID id);
 
     List<SubscriptionFeatureResponse> getAllFeatures();
+
+    List<SubscriptionPlanResponse> getPlansByTier(com.vidya.master.subscription.entity.PlanTier tier);
+
+    SubscriptionPlanResponse createCustomSchoolPlan(com.vidya.master.subscription.dto.CustomSchoolPlanRequest request);
+
+    List<com.vidya.master.subscription.entity.PlanTier> getAvailableTiers();
 }

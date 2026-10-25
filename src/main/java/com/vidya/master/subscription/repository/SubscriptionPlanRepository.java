@@ -30,8 +30,13 @@ public interface SubscriptionPlanRepository extends JpaRepository<SubscriptionPl
 
     Page<SubscriptionPlan> findByStatus(PlanStatus status, Pageable pageable);
 
+    List<SubscriptionPlan> findByTier(com.vidya.master.subscription.entity.PlanTier tier);
+
+    List<SubscriptionPlan> findByIsCustomTrueAndTargetSchoolId(UUID targetSchoolId);
+
     @Query("SELECT p FROM SubscriptionPlan p WHERE " +
             "p.status = 'ACTIVE' AND " +
+            "p.isCustom = false AND " +
             "p.effectiveFrom <= CURRENT_DATE AND " +
             "(p.effectiveTo IS NULL OR p.effectiveTo >= CURRENT_DATE)")
     List<SubscriptionPlan> findActivePublicPlans();

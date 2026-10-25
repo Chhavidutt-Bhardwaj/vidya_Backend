@@ -54,6 +54,21 @@ public class SubscriptionFeature {
     @Column(name = "status", nullable = false, length = 30)
     private FeatureStatus status = FeatureStatus.ACTIVE;
 
+    @Column(name = "parent_module_code", length = 50)
+    private String parentModuleCode;
+
+    @Column(name = "sub_category", length = 50)
+    private String subCategory;
+
+    @Column(name = "base_price", nullable = false, precision = 12, scale = 2)
+    private java.math.BigDecimal basePrice = java.math.BigDecimal.ZERO;
+
+    @Column(name = "is_addon", nullable = false)
+    private boolean addon = false;
+
+    @Column(name = "display_order", nullable = false)
+    private int displayOrder = 0;
+
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
@@ -67,10 +82,21 @@ public class SubscriptionFeature {
     private Long version = 0L;
 
     public SubscriptionFeature(String featureCode, String name, String description, FeatureCategory category) {
+        this(featureCode, name, description, category, null, null, java.math.BigDecimal.ZERO, false, 0);
+    }
+
+    public SubscriptionFeature(String featureCode, String name, String description, FeatureCategory category,
+                               String parentModuleCode, String subCategory, java.math.BigDecimal basePrice,
+                               boolean addon, int displayOrder) {
         this.featureCode = featureCode;
         this.name = name;
         this.description = description;
         this.category = category;
+        this.parentModuleCode = parentModuleCode;
+        this.subCategory = subCategory;
+        this.basePrice = basePrice != null ? basePrice : java.math.BigDecimal.ZERO;
+        this.addon = addon;
+        this.displayOrder = displayOrder;
         this.status = FeatureStatus.ACTIVE;
     }
 }

@@ -75,6 +75,16 @@ public class SubscriptionPlan {
     private int trialDays = 0;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "tier", nullable = false, length = 30)
+    private PlanTier tier = PlanTier.CUSTOM;
+
+    @Column(name = "is_custom", nullable = false)
+    private boolean isCustom = false;
+
+    @Column(name = "target_school_id")
+    private UUID targetSchoolId;
+
+    @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 30)
     private PlanStatus status = PlanStatus.DRAFT;
 
@@ -117,6 +127,23 @@ public class SubscriptionPlan {
                             int trialDays,
                             PlanStatus status,
                             LocalDate effectiveFrom) {
+        this(planCode, version, name, description, billingCycle, basePrice, currency, trialDays,
+             PlanTier.CUSTOM, false, null, status, effectiveFrom);
+    }
+
+    public SubscriptionPlan(String planCode,
+                            Integer version,
+                            String name,
+                            String description,
+                            BillingCycle billingCycle,
+                            BigDecimal basePrice,
+                            String currency,
+                            int trialDays,
+                            PlanTier tier,
+                            boolean isCustom,
+                            UUID targetSchoolId,
+                            PlanStatus status,
+                            LocalDate effectiveFrom) {
         this.planCode = planCode;
         this.version = version != null ? version : 1;
         this.name = name;
@@ -125,6 +152,9 @@ public class SubscriptionPlan {
         this.basePrice = basePrice;
         this.currency = currency != null ? currency : "INR";
         this.trialDays = trialDays;
+        this.tier = tier != null ? tier : PlanTier.CUSTOM;
+        this.isCustom = isCustom;
+        this.targetSchoolId = targetSchoolId;
         this.status = status != null ? status : PlanStatus.DRAFT;
         this.effectiveFrom = effectiveFrom != null ? effectiveFrom : LocalDate.now();
     }

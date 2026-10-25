@@ -25,6 +25,7 @@ Click any section below to navigate directly to its technical integration guide:
 | **13. Community Sub-Details** | [13_community_details_management_flow.md](file:///Users/chhaviduttbhardwaj/IdeaProjects/Vidya-Backend-Project/docs/frontend-api/13_community_details_management_flow.md) | Master DB | Complete personal, professional, address, bank, payroll, commission sub-details lifecycle |
 | **14. Hubs, School RM & Escalations** | [14_hub_community_school_rm_and_escalation_flow.md](file:///Users/chhaviduttbhardwaj/IdeaProjects/Vidya-Backend-Project/docs/frontend-api/14_hub_community_school_rm_and_escalation_flow.md) | Master DB | Regional Hubs, Hub Managers, School RM assignment, workload balancing, 3-tier escalation, dual commission ledger |
 | **15. School Onboarding & Sub-Details** | [15_school_onboarding_and_sub_details_lifecycle.md](file:///Users/chhaviduttbhardwaj/IdeaProjects/Vidya-Backend-Project/docs/frontend-api/15_school_onboarding_and_sub_details_lifecycle.md) | Master DB | Multi-channel onboarding (Community/Referral/Website), normalized sub-tables (Branches, Contacts, Addresses, CBSE/HBSE Boards, Documents) |
+| **16. Subscription Tiers & Entitlements** | [16_subscription_tiers_modular_pricing_and_entitlements.md](file:///Users/chhaviduttbhardwaj/IdeaProjects/Vidya-Backend-Project/docs/frontend-api/16_subscription_tiers_modular_pricing_and_entitlements.md) | Master DB | Plan tiers (Free, Starter, Pro, Max, Custom), module/sub-category catalog (e.g. Teacher Attendance vs Payroll), quote calculator, SuperUser feature overrides |
 
 ---
 

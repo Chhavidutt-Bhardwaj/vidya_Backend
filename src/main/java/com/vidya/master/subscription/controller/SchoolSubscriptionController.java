@@ -20,6 +20,15 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.vidya.master.subscription.dto.SchoolEntitlementResponse;
+import com.vidya.master.subscription.dto.SchoolFeatureOverrideRequest;
+import com.vidya.master.subscription.dto.SchoolFeatureOverrideResponse;
+import com.vidya.master.subscription.service.SubscriptionEntitlementService;
+import com.vidya.security.user.PlatformUserDetails;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+
 import java.util.UUID;
 
 /**
@@ -31,6 +40,7 @@ import java.util.UUID;
 public class SchoolSubscriptionController {
 
     private final SchoolSubscriptionService schoolSubscriptionService;
+    private final SubscriptionEntitlementService entitlementService;
 
     @PostMapping
     public ResponseEntity<ApiResponse<SchoolSubscriptionResponse>> subscribeSchool(
@@ -65,6 +75,43 @@ public class SchoolSubscriptionController {
                 ApiResponseCode.SUBSCRIPTION_FOUND,
                 "Active subscription retrieved successfully",
                 response
+        ));
+    }
+
+    @GetMapping("/entitlements")
+    public ResponseEntity<ApiResponse<SchoolEntitlementResponse>> getSchoolEntitlements(
+            @PathVariable UUID schoolId) {
+        SchoolEntitlementResponse response = entitlementService.getSchoolEntitlements(schoolId);
+        return ResponseEntity.ok(ApiResponse.success(
+                ApiResponseCode.ENTITLEMENTS_FOUND,
+                "School modular entitlements tree retrieved successfully",
+                response
+        ));
+    }
+
+    @PutMapping("/feature-overrides")
+    public ResponseEntity<ApiResponse<SchoolFeatureOverrideResponse>> overrideFeature(
+            @PathVariable UUID schoolId,
+            @Valid @RequestBody SchoolFeatureOverrideRequest request,
+            @AuthenticationPrincipal PlatformUserDetails userDetails) {
+        UUID userId = userDetails != null ? userDetails.getUserId() : null;
+        SchoolFeatureOverrideResponse response = entitlementService.overrideSchoolFeature(schoolId, request, userId);
+        return ResponseEntity.ok(ApiResponse.success(
+                ApiResponseCode.FEATURE_OVERRIDDEN,
+                "Feature override applied successfully for school",
+                response
+        ));
+    }
+
+    @DeleteMapping("/feature-overrides/{featureCode}")
+    public ResponseEntity<ApiResponse<Void>> removeFeatureOverride(
+            @PathVariable UUID schoolId,
+            @PathVariable String featureCode) {
+        entitlementService.removeSchoolFeatureOverride(schoolId, featureCode);
+        return ResponseEntity.ok(ApiResponse.success(
+                ApiResponseCode.FEATURE_OVERRIDE_REMOVED,
+                "Feature override removed and restored to plan defaults",
+                null
         ));
     }
 
