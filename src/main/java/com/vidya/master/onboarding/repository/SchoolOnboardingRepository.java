@@ -26,6 +26,10 @@ public interface SchoolOnboardingRepository extends JpaRepository<SchoolOnboardi
 
     Page<SchoolOnboarding> findByStatus(OnboardingStatus status, Pageable pageable);
 
+    long countByStatus(OnboardingStatus status);
+
+    long countByStatusIn(java.util.Collection<OnboardingStatus> statuses);
+
     List<SchoolOnboarding> findByCommunityId(UUID communityId);
 
     Page<SchoolOnboarding> findByCommunityId(UUID communityId, Pageable pageable);

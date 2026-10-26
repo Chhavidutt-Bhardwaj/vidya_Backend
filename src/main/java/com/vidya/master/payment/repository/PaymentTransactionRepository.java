@@ -26,4 +26,11 @@ public interface PaymentTransactionRepository extends JpaRepository<PaymentTrans
     List<PaymentTransaction> findByOnboardingId(UUID onboardingId);
 
     List<PaymentTransaction> findBySubscriptionId(UUID subscriptionId);
+
+    List<PaymentTransaction> findByStatus(com.vidya.master.payment.entity.PaymentStatus status);
+
+    long countByStatus(com.vidya.master.payment.entity.PaymentStatus status);
+
+    @org.springframework.data.jpa.repository.Query("SELECT COALESCE(SUM(p.amount), 0) FROM PaymentTransaction p WHERE p.status = :status")
+    java.math.BigDecimal sumAmountByStatus(@org.springframework.data.repository.query.Param("status") com.vidya.master.payment.entity.PaymentStatus status);
 }

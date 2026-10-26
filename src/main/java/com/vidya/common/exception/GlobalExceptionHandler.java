@@ -81,6 +81,15 @@ public class GlobalExceptionHandler {
                         .withCorrelationId(correlationId()));
     }
 
+    @ExceptionHandler(org.springframework.web.servlet.resource.NoResourceFoundException.class)
+    public ResponseEntity<ApiResponse<Void>> handleNoResourceFound(org.springframework.web.servlet.resource.NoResourceFoundException ex) {
+        log.warn("[{}] Static resource or endpoint not found: {}", correlationId(), ex.getResourcePath());
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(ApiResponse.<Void>error(ApiResponseCode.RESOURCE_NOT_FOUND, "Resource or endpoint not found: " + ex.getResourcePath())
+                        .withCorrelationId(correlationId()));
+    }
+
     @ExceptionHandler(DuplicateResourceException.class)
     public ResponseEntity<ApiResponse<Void>> handleDuplicate(DuplicateResourceException ex) {
         log.info("[{}] Duplicate resource: {}", correlationId(), ex.getMessage());

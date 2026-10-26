@@ -145,4 +145,9 @@ public final class ApiResponseCode {
     public static final String QUERY_COMMENT_ADDED         = "QUERY_COMMENT_ADDED";
     public static final String QUERY_FOUND                 = "QUERY_FOUND";
     public static final String QUERIES_FOUND               = "QUERIES_FOUND";
+
+    // ── Analytics & Dashboard KPIs ───────────────────────────────────────────
+    public static final String KPIS_FOUND                  = "KPIS_FOUND";
+    public static final String REVENUE_TRENDS_FOUND        = "REVENUE_TRENDS_FOUND";
+    public static final String ONBOARDING_FUNNEL_FOUND     = "ONBOARDING_FUNNEL_FOUND";
 }

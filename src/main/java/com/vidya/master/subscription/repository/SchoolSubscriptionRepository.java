@@ -31,4 +31,9 @@ public interface SchoolSubscriptionRepository extends JpaRepository<SchoolSubscr
     Page<SchoolSubscription> findBySchoolId(UUID schoolId, Pageable pageable);
 
     Page<SchoolSubscription> findByStatus(SubscriptionStatus status, Pageable pageable);
+
+    long countByStatus(SubscriptionStatus status);
+
+    @Query("SELECT s FROM SchoolSubscription s WHERE s.status IN ('TRIAL', 'ACTIVE')")
+    List<SchoolSubscription> findAllActiveSubscriptions();
 }

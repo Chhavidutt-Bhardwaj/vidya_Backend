@@ -30,6 +30,8 @@ public interface CommunityRepository extends JpaRepository<Community, UUID>, Jpa
 
     Page<Community> findByStatus(CommunityStatus status, Pageable pageable);
 
+    long countByStatus(CommunityStatus status);
+
     Page<Community> findByType(CommunityType type, Pageable pageable);
 
     @Query("SELECT c FROM Community c WHERE " +

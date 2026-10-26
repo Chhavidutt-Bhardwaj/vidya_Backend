@@ -48,4 +48,8 @@ public interface SchoolSupportQueryRepository extends JpaRepository<SchoolSuppor
                                             Pageable pageable);
 
     long countByAssignedCommunityIdAndStatusIn(UUID communityId, java.util.Collection<QueryStatus> statuses);
+
+    long countByStatus(QueryStatus status);
+
+    long countByStatusIn(java.util.Collection<QueryStatus> statuses);
 }
