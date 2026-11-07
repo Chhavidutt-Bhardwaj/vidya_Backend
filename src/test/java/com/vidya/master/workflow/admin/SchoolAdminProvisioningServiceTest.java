@@ -29,6 +29,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -152,8 +153,9 @@ class SchoolAdminProvisioningServiceTest {
     }
 
     @Test
-    @DisplayName("Should link existing platform user to school idempotently")
+    @DisplayName("I0: an existing user from elsewhere is NOT reassigned, re-roled or reactivated (409)")
     void provisionInitialAdmin_ExistingUser_LinksSchool() {
+        // Name kept for history; behaviour changed in I0 — silent re-linking was a privilege-escalation path.
         PlatformUser existingUser = new PlatformUser(
                 "USR-EXISTING",
                 "admin@greenwood.edu.in",
@@ -168,14 +170,49 @@ class SchoolAdminProvisioningServiceTest {
         when(schoolRepository.findById(schoolId)).thenReturn(Optional.of(school));
         when(onboardingRepository.findById(onboardingId)).thenReturn(Optional.of(onboarding));
         when(userRepository.findByEmailIgnoreCase("admin@greenwood.edu.in")).thenReturn(Optional.of(existingUser));
-        when(userRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+
+        assertThatThrownBy(() -> adminProvisioningService.provisionInitialAdmin(schoolId, onboardingId, null))
+                .isInstanceOf(com.vidya.common.exception.DuplicateResourceException.class);
+
+        assertThat(existingUser.getSchoolId()).isNull();
+        assertThat(existingUser.getPlatformRole()).isEqualTo(PlatformRole.COMMUNITY_MANAGER);
+        org.mockito.Mockito.verify(userRepository, org.mockito.Mockito.never()).save(any());
+    }
+
+    @Test
+    @DisplayName("I0: replaying admin creation for the same school returns the existing admin unchanged")
+    void provisionInitialAdmin_SameSchoolAdmin_IsIdempotent() {
+        PlatformUser existingAdmin = new PlatformUser(
+                "USR-ADMIN", "admin@greenwood.edu.in", "hash", "Existing", "Admin", "+919876543210",
+                PlatformRole.SCHOOL_OWNER, schoolId);
+        existingAdmin.setId(UUID.randomUUID());
+
+        when(schoolRepository.findById(schoolId)).thenReturn(Optional.of(school));
+        when(userRepository.findBySchoolId(schoolId)).thenReturn(java.util.List.of(existingAdmin));
 
         InitialSchoolAdminResponse response = adminProvisioningService.provisionInitialAdmin(schoolId, onboardingId, null);
 
-        assertThat(response).isNotNull();
-        assertThat(response.getEmail()).isEqualTo("admin@greenwood.edu.in");
-        assertThat(response.getRole()).isEqualTo(PlatformRole.SCHOOL_OWNER);
-        assertThat(response.getSchoolId()).isEqualTo(schoolId);
-        assertThat(existingUser.getSchoolId()).isEqualTo(schoolId);
+        assertThat(response.getUserId()).isEqualTo(existingAdmin.getId());
+        assertThat(response.getTemporaryPassword()).isNull();
+        org.mockito.Mockito.verify(userRepository, org.mockito.Mockito.never()).save(any());
+    }
+
+    @Test
+    @DisplayName("I0: privileged roles cannot be assigned to an initial school admin")
+    void provisionInitialAdmin_PrivilegedRole_Rejected() {
+        when(schoolRepository.findById(schoolId)).thenReturn(Optional.of(school));
+
+        for (PlatformRole role : PlatformRole.values()) {
+            if (role == PlatformRole.SCHOOL_OWNER || role == PlatformRole.SCHOOL_ADMIN) {
+                continue;
+            }
+            InitialSchoolAdminRequest request = InitialSchoolAdminRequest.builder()
+                    .email("x-" + role.name().toLowerCase() + "@greenwood.edu.in")
+                    .firstName("X").lastName("Y").role(role).build();
+            assertThatThrownBy(() -> adminProvisioningService.provisionInitialAdmin(schoolId, onboardingId, request))
+                    .as("role %s must be rejected", role)
+                    .isInstanceOf(IllegalArgumentException.class);
+        }
+        org.mockito.Mockito.verify(userRepository, org.mockito.Mockito.never()).save(any());
     }
 }

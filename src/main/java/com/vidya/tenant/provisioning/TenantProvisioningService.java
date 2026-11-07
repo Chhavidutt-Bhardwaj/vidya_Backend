@@ -168,7 +168,7 @@ public class TenantProvisioningService {
         try {
             // ── Step 1: Create Database ────────────────────────────────────────
             if (!ProvisioningStep.DATABASE_CREATING.isCompletedGiven(lastCompleted)) {
-                advanceStep(provisioning, "DATABASE_CREATING");
+                provisioning = advanceStep(provisioning, "DATABASE_CREATING");
 
                 String dbUsername = credentialResolver.resolve(tenant.getDatabaseUsernameRef());
                 String dbPassword = credentialResolver.resolve(tenant.getDatabasePasswordRef());
@@ -179,7 +179,7 @@ public class TenantProvisioningService {
                         dbPassword,
                         tenantCode);
 
-                completeStep(provisioning, "DATABASE_CREATING");
+                provisioning = completeStep(provisioning, "DATABASE_CREATING");
             } else {
                 log.info("[Provisioning][{}] DATABASE_CREATING already done — skipping", tenantCode);
             }
@@ -194,18 +194,18 @@ public class TenantProvisioningService {
             try {
                 // ── Step 2: Run Flyway ─────────────────────────────────────────
                 if (!ProvisioningStep.MIGRATION_RUNNING.isCompletedGiven(lastCompleted)) {
-                    advanceStep(provisioning, "MIGRATION_RUNNING");
+                    provisioning = advanceStep(provisioning, "MIGRATION_RUNNING");
                     migrationService.migrate(tenantDs, tenantCode);
-                    completeStep(provisioning, "MIGRATION_RUNNING");
+                    provisioning = completeStep(provisioning, "MIGRATION_RUNNING");
                 } else {
                     log.info("[Provisioning][{}] MIGRATION_RUNNING already done — skipping", tenantCode);
                 }
 
                 // ── Step 3: Initialize Seed Data ───────────────────────────────
                 if (!ProvisioningStep.INITIALIZATION_RUNNING.isCompletedGiven(lastCompleted)) {
-                    advanceStep(provisioning, "INITIALIZATION_RUNNING");
+                    provisioning = advanceStep(provisioning, "INITIALIZATION_RUNNING");
                     initializationService.initialize(tenantDs, tenantCode);
-                    completeStep(provisioning, "INITIALIZATION_RUNNING");
+                    provisioning = completeStep(provisioning, "INITIALIZATION_RUNNING");
                 } else {
                     log.info("[Provisioning][{}] INITIALIZATION_RUNNING already done — skipping", tenantCode);
                 }
@@ -283,17 +283,20 @@ public class TenantProvisioningService {
     // -------------------------------------------------------------------------
 
     @Transactional(transactionManager = "masterTransactionManager")
-    protected void advanceStep(TenantProvisioning provisioning, String step) {
+    protected TenantProvisioning advanceStep(TenantProvisioning provisioning, String step) {
         provisioning.advanceTo(step);
-        provisioningRepository.save(provisioning);
+        // Return the merged instance: it carries the incremented @Version for the next save.
+        TenantProvisioning saved = provisioningRepository.save(provisioning);
         log.info("[Provisioning][{}] → Step: {}", provisioning.getTenantId(), step);
+        return saved;
     }
 
     @Transactional(transactionManager = "masterTransactionManager")
-    protected void completeStep(TenantProvisioning provisioning, String step) {
+    protected TenantProvisioning completeStep(TenantProvisioning provisioning, String step) {
         provisioning.completeStep(step);
-        provisioningRepository.save(provisioning);
+        TenantProvisioning saved = provisioningRepository.save(provisioning);
         log.info("[Provisioning][{}] ✓ Completed: {}", provisioning.getTenantId(), step);
+        return saved;
     }
 
     @Transactional(transactionManager = "masterTransactionManager")

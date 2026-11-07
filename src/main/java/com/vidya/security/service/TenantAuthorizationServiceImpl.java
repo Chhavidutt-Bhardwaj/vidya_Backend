@@ -286,6 +286,72 @@ public class TenantAuthorizationServiceImpl implements TenantAuthorizationServic
         }
     }
 
+    @Override
+    public boolean isCommunityMember(Authentication authentication, UUID communityId) {
+        PlatformUser user = activeUser(authentication);
+        if (user == null || communityId == null) {
+            return false;
+        }
+        if (isPlatformAdminRole(user.getPlatformRole())) {
+            return true;
+        }
+        if (!isCommunityRole(user.getPlatformRole())) {
+            return false;
+        }
+        return communityMemberRepository.existsByCommunityIdAndPlatformUserId(communityId, user.getId());
+    }
+
+    @Override
+    public boolean canInitiateOnboarding(Authentication authentication, UUID communityId, UUID communityMemberId) {
+        PlatformUser user = activeUser(authentication);
+        if (user == null) {
+            return false;
+        }
+        if (isPlatformAdminRole(user.getPlatformRole())) {
+            return true;
+        }
+        if (!isCommunityRole(user.getPlatformRole())) {
+            return false;
+        }
+        if (communityId == null && communityMemberId == null) {
+            // Community users must attribute the onboarding to their own membership.
+            return false;
+        }
+        List<CommunityMember> memberships = communityMemberRepository.findByPlatformUserId(user.getId());
+        boolean memberOk = communityMemberId == null
+                || memberships.stream().anyMatch(m -> communityMemberId.equals(m.getId()));
+        boolean communityOk = communityId == null
+                || memberships.stream().anyMatch(m -> m.getCommunity() != null && communityId.equals(m.getCommunity().getId()));
+        boolean consistent = communityId == null || communityMemberId == null
+                || memberships.stream().anyMatch(m -> communityMemberId.equals(m.getId())
+                        && m.getCommunity() != null && communityId.equals(m.getCommunity().getId()));
+        if (!(memberOk && communityOk && consistent)) {
+            auditAccessDenied(user, "ONBOARDING_INITIATE:community=" + communityId + ",member=" + communityMemberId,
+                    "Community attribution does not match the user's memberships");
+            return false;
+        }
+        return true;
+    }
+
+    private PlatformUser activeUser(Authentication authentication) {
+        PlatformUserDetails principal = extractPrincipal(authentication);
+        if (principal == null || principal.getUserId() == null) {
+            return null;
+        }
+        return userRepository.findById(principal.getUserId())
+                .filter(u -> u.getStatus() == UserStatus.ACTIVE && !u.isAccountLocked())
+                .orElse(null);
+    }
+
+    private static boolean isPlatformAdminRole(PlatformRole role) {
+        return role == PlatformRole.PLATFORM_SUPER_ADMIN || role == PlatformRole.PLATFORM_ADMIN;
+    }
+
+    private static boolean isCommunityRole(PlatformRole role) {
+        return role == PlatformRole.COMMUNITY_ADMIN || role == PlatformRole.COMMUNITY_MANAGER
+                || role == PlatformRole.COMMUNITY_ROLE_MANAGER || role == PlatformRole.FIELD_AGENT;
+    }
+
     private PlatformUserDetails extractPrincipal(Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()) {
             return null;

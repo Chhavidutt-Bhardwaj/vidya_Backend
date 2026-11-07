@@ -28,6 +28,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
 import java.util.UUID;
@@ -42,6 +43,7 @@ public class SchoolDetailController {
 
     // ================= CONTACTS =================
 
+    @PreAuthorize("(hasAuthority('SCHOOL_UPDATE') or hasAuthority('ONBOARDING_UPDATE')) and @tenantAuthorizationService.canAccessSchool(authentication, #id)")
     @PostMapping("/contacts")
     @Operation(summary = "Add designated contact to school (Principal, Admin in-charge, Billing, etc.)")
     public ResponseEntity<ApiResponse<SchoolContactResponse>> addContact(
@@ -52,6 +54,7 @@ public class SchoolDetailController {
                 .body(ApiResponse.success(ApiResponseCode.SUCCESS, "Contact added successfully", response));
     }
 
+    @PreAuthorize("hasAuthority('SCHOOL_READ') and @tenantAuthorizationService.canAccessSchool(authentication, #id)")
     @GetMapping("/contacts")
     @Operation(summary = "List all contacts of a school")
     public ResponseEntity<ApiResponse<List<SchoolContactResponse>>> getContacts(@PathVariable UUID id) {
@@ -59,6 +62,7 @@ public class SchoolDetailController {
         return ResponseEntity.ok(ApiResponse.success(ApiResponseCode.SUCCESS, "Contacts retrieved successfully", response));
     }
 
+    @PreAuthorize("(hasAuthority('SCHOOL_UPDATE') or hasAuthority('ONBOARDING_UPDATE')) and @tenantAuthorizationService.canAccessSchool(authentication, #id)")
     @PutMapping("/contacts/{contactId}")
     @Operation(summary = "Update designated contact")
     public ResponseEntity<ApiResponse<SchoolContactResponse>> updateContact(
@@ -69,6 +73,7 @@ public class SchoolDetailController {
         return ResponseEntity.ok(ApiResponse.success(ApiResponseCode.SUCCESS, "Contact updated successfully", response));
     }
 
+    @PreAuthorize("(hasAuthority('SCHOOL_UPDATE') or hasAuthority('ONBOARDING_UPDATE')) and @tenantAuthorizationService.canAccessSchool(authentication, #id)")
     @DeleteMapping("/contacts/{contactId}")
     @Operation(summary = "Delete designated contact")
     public ResponseEntity<ApiResponse<Void>> deleteContact(
@@ -80,6 +85,7 @@ public class SchoolDetailController {
 
     // ================= ADDRESSES =================
 
+    @PreAuthorize("(hasAuthority('SCHOOL_UPDATE') or hasAuthority('ONBOARDING_UPDATE')) and @tenantAuthorizationService.canAccessSchool(authentication, #id)")
     @PostMapping("/addresses")
     @Operation(summary = "Add physical campus address or registered office")
     public ResponseEntity<ApiResponse<SchoolAddressResponse>> addAddress(
@@ -90,6 +96,7 @@ public class SchoolDetailController {
                 .body(ApiResponse.success(ApiResponseCode.SUCCESS, "Address added successfully", response));
     }
 
+    @PreAuthorize("hasAuthority('SCHOOL_READ') and @tenantAuthorizationService.canAccessSchool(authentication, #id)")
     @GetMapping("/addresses")
     @Operation(summary = "List all addresses of a school")
     public ResponseEntity<ApiResponse<List<SchoolAddressResponse>>> getAddresses(@PathVariable UUID id) {
@@ -97,6 +104,7 @@ public class SchoolDetailController {
         return ResponseEntity.ok(ApiResponse.success(ApiResponseCode.SUCCESS, "Addresses retrieved successfully", response));
     }
 
+    @PreAuthorize("(hasAuthority('SCHOOL_UPDATE') or hasAuthority('ONBOARDING_UPDATE')) and @tenantAuthorizationService.canAccessSchool(authentication, #id)")
     @PutMapping("/addresses/{addressId}")
     @Operation(summary = "Update address")
     public ResponseEntity<ApiResponse<SchoolAddressResponse>> updateAddress(
@@ -107,6 +115,7 @@ public class SchoolDetailController {
         return ResponseEntity.ok(ApiResponse.success(ApiResponseCode.SUCCESS, "Address updated successfully", response));
     }
 
+    @PreAuthorize("(hasAuthority('SCHOOL_UPDATE') or hasAuthority('ONBOARDING_UPDATE')) and @tenantAuthorizationService.canAccessSchool(authentication, #id)")
     @DeleteMapping("/addresses/{addressId}")
     @Operation(summary = "Delete address")
     public ResponseEntity<ApiResponse<Void>> deleteAddress(
@@ -118,6 +127,7 @@ public class SchoolDetailController {
 
     // ================= BOARD AFFILIATIONS (CBSE, HBSE, etc.) =================
 
+    @PreAuthorize("(hasAuthority('SCHOOL_UPDATE') or hasAuthority('ONBOARDING_UPDATE')) and @tenantAuthorizationService.canAccessSchool(authentication, #id)")
     @PostMapping("/boards")
     @Operation(summary = "Add educational board affiliation (CBSE, HBSE, ICSE, IB, etc.)")
     public ResponseEntity<ApiResponse<SchoolBoardAffiliationResponse>> addBoardAffiliation(
@@ -128,6 +138,7 @@ public class SchoolDetailController {
                 .body(ApiResponse.success(ApiResponseCode.SUCCESS, "Board affiliation added successfully", response));
     }
 
+    @PreAuthorize("hasAuthority('SCHOOL_READ') and @tenantAuthorizationService.canAccessSchool(authentication, #id)")
     @GetMapping("/boards")
     @Operation(summary = "List all educational board affiliations")
     public ResponseEntity<ApiResponse<List<SchoolBoardAffiliationResponse>>> getBoardAffiliations(@PathVariable UUID id) {
@@ -135,6 +146,7 @@ public class SchoolDetailController {
         return ResponseEntity.ok(ApiResponse.success(ApiResponseCode.SUCCESS, "Board affiliations retrieved successfully", response));
     }
 
+    @PreAuthorize("(hasAuthority('SCHOOL_UPDATE') or hasAuthority('ONBOARDING_UPDATE')) and @tenantAuthorizationService.canAccessSchool(authentication, #id)")
     @PutMapping("/boards/{affiliationId}")
     @Operation(summary = "Update board affiliation")
     public ResponseEntity<ApiResponse<SchoolBoardAffiliationResponse>> updateBoardAffiliation(
@@ -145,6 +157,7 @@ public class SchoolDetailController {
         return ResponseEntity.ok(ApiResponse.success(ApiResponseCode.SUCCESS, "Board affiliation updated successfully", response));
     }
 
+    @PreAuthorize("(hasAuthority('SCHOOL_UPDATE') or hasAuthority('ONBOARDING_UPDATE')) and @tenantAuthorizationService.canAccessSchool(authentication, #id)")
     @DeleteMapping("/boards/{affiliationId}")
     @Operation(summary = "Remove board affiliation")
     public ResponseEntity<ApiResponse<Void>> deleteBoardAffiliation(
@@ -156,6 +169,7 @@ public class SchoolDetailController {
 
     // ================= COMPLIANCE DOCUMENTS & CERTIFICATES =================
 
+    @PreAuthorize("(hasAuthority('SCHOOL_UPDATE') or hasAuthority('ONBOARDING_UPDATE')) and @tenantAuthorizationService.canAccessSchool(authentication, #id)")
     @PostMapping("/documents")
     @Operation(summary = "Upload / record statutory compliance document (Affiliation letter, Fire NOC, Trust Deed, etc.)")
     public ResponseEntity<ApiResponse<SchoolDocumentResponse>> addDocument(
@@ -166,6 +180,7 @@ public class SchoolDetailController {
                 .body(ApiResponse.success(ApiResponseCode.SUCCESS, "Document added successfully", response));
     }
 
+    @PreAuthorize("hasAuthority('SCHOOL_READ') and @tenantAuthorizationService.canAccessSchool(authentication, #id)")
     @GetMapping("/documents")
     @Operation(summary = "List all documents and certificates for a school")
     public ResponseEntity<ApiResponse<List<SchoolDocumentResponse>>> getDocuments(@PathVariable UUID id) {
@@ -173,6 +188,7 @@ public class SchoolDetailController {
         return ResponseEntity.ok(ApiResponse.success(ApiResponseCode.SUCCESS, "Documents retrieved successfully", response));
     }
 
+    @PreAuthorize("hasAuthority('ONBOARDING_VERIFY') and @tenantAuthorizationService.canAccessSchool(authentication, #id)")
     @PostMapping("/documents/{documentId}/verify")
     @Operation(summary = "Verify document / certificate")
     public ResponseEntity<ApiResponse<SchoolDocumentResponse>> verifyDocument(
@@ -183,6 +199,7 @@ public class SchoolDetailController {
         return ResponseEntity.ok(ApiResponse.success(ApiResponseCode.SUCCESS, "Document verified successfully", response));
     }
 
+    @PreAuthorize("hasAuthority('ONBOARDING_VERIFY') and @tenantAuthorizationService.canAccessSchool(authentication, #id)")
     @PostMapping("/documents/{documentId}/reject")
     @Operation(summary = "Reject document with reason")
     public ResponseEntity<ApiResponse<SchoolDocumentResponse>> rejectDocument(
@@ -194,6 +211,7 @@ public class SchoolDetailController {
         return ResponseEntity.ok(ApiResponse.success(ApiResponseCode.SUCCESS, "Document marked as rejected", response));
     }
 
+    @PreAuthorize("(hasAuthority('SCHOOL_UPDATE') or hasAuthority('ONBOARDING_UPDATE')) and @tenantAuthorizationService.canAccessSchool(authentication, #id)")
     @DeleteMapping("/documents/{documentId}")
     @Operation(summary = "Delete compliance document")
     public ResponseEntity<ApiResponse<Void>> deleteDocument(
@@ -205,6 +223,7 @@ public class SchoolDetailController {
 
     // ================= AGGREGATED COMPLETE 360 PROFILE =================
 
+    @PreAuthorize("hasAuthority('SCHOOL_READ') and @tenantAuthorizationService.canAccessSchool(authentication, #id)")
     @GetMapping("/complete-profile")
     @Operation(summary = "Get complete 360 aggregated profile of school (core, branches, contacts, addresses, boards, documents, RM relationship)")
     public ResponseEntity<ApiResponse<CompleteSchoolProfileResponse>> getCompleteSchoolProfile(@PathVariable UUID id) {
@@ -212,6 +231,7 @@ public class SchoolDetailController {
         return ResponseEntity.ok(ApiResponse.success(ApiResponseCode.SUCCESS, "Complete school profile retrieved successfully", response));
     }
 
+    @PreAuthorize("(hasAuthority('SCHOOL_UPDATE') or hasAuthority('ONBOARDING_UPDATE')) and @tenantAuthorizationService.canAccessSchool(authentication, #id)")
     @PutMapping("/complete-profile")
     @Operation(summary = "Submit complete post-approval school profile in one multi-facet payload")
     public ResponseEntity<ApiResponse<CompleteSchoolProfileResponse>> saveCompleteSchoolProfile(

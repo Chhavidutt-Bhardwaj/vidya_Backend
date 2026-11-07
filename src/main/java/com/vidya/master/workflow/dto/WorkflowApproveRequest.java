@@ -18,6 +18,11 @@ public class WorkflowApproveRequest {
     @Schema(description = "Approval notes or remarks", example = "All documents and initial fee payment verified successfully")
     private String notes;
 
-    @Schema(description = "UUID of approving platform administrator")
+    /**
+     * @deprecated Ignored since onboarding I0. The approver is always the authenticated user
+     * taken from the SecurityContext; client-supplied identities are never trusted for auditing.
+     */
+    @Deprecated
+    @Schema(description = "DEPRECATED — ignored. The approver is the authenticated user.", deprecated = true)
     private UUID approvedBy;
 }

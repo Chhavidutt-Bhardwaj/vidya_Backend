@@ -136,10 +136,8 @@ class SchoolOnboardingWorkflowControllerTest {
     @Test
     @DisplayName("POST /api/v1/onboarding/{id}/provision should provision tenant DB")
     void provisionTenant_Success() throws Exception {
-        WorkflowProvisionRequest request = WorkflowProvisionRequest.builder()
-                .databaseHost("localhost")
-                .databasePort(5432)
-                .build();
+        // I0: the DB host/port are server configuration; the request body carries no location.
+        WorkflowProvisionRequest request = WorkflowProvisionRequest.builder().build();
 
         WorkflowProvisionResponse response = WorkflowProvisionResponse.builder()
                 .onboardingId(onboardingId)
@@ -162,6 +160,22 @@ class SchoolOnboardingWorkflowControllerTest {
                 .andExpect(jsonPath("$.code").value("SUCCESS"))
                 .andExpect(jsonPath("$.data.tenantCode").value("gw123456"))
                 .andExpect(jsonPath("$.data.onboardingStatus").value("PROVISIONED"));
+    }
+
+    @Test
+    @DisplayName("I0: POST /provision rejects a client-supplied database host/port with 400")
+    void provisionTenant_ClientSuppliedHost_Rejected() throws Exception {
+        WorkflowProvisionRequest request = WorkflowProvisionRequest.builder()
+                .databaseHost("attacker.example.com")
+                .databasePort(6543)
+                .build();
+
+        mockMvc.perform(post("/api/v1/onboarding/{id}/provision", onboardingId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+
+        org.mockito.Mockito.verify(workflowService, org.mockito.Mockito.never()).provisionTenant(any(), any());
     }
 
     @Test

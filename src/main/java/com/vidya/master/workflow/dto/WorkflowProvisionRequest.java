@@ -13,9 +13,21 @@ import lombok.NoArgsConstructor;
 @Schema(description = "Request payload for triggering tenant database provisioning")
 public class WorkflowProvisionRequest {
 
-    @Schema(description = "Database Host override (optional, defaults to localhost)", example = "localhost")
+    /**
+     * @deprecated Since onboarding I0 the tenant database host is server configuration
+     * ({@code vidya.provisioning.tenant-db.host}). Supplying a value is rejected with HTTP 400.
+     */
+    @Deprecated
+    @jakarta.validation.constraints.Null(message = "databaseHost cannot be supplied by clients; it is server-configured")
+    @Schema(description = "DEPRECATED — must be omitted. Server-configured; any value is rejected.", deprecated = true)
     private String databaseHost;
 
-    @Schema(description = "Database Port override (optional, defaults to 5432)", example = "5432")
+    /**
+     * @deprecated Since onboarding I0 the tenant database port is server configuration
+     * ({@code vidya.provisioning.tenant-db.port}). Supplying a value is rejected with HTTP 400.
+     */
+    @Deprecated
+    @jakarta.validation.constraints.Null(message = "databasePort cannot be supplied by clients; it is server-configured")
+    @Schema(description = "DEPRECATED — must be omitted. Server-configured; any value is rejected.", deprecated = true)
     private Integer databasePort;
 }

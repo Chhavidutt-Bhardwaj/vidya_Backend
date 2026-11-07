@@ -99,6 +99,23 @@ public class GlobalExceptionHandler {
                         .withCorrelationId(correlationId()));
     }
 
+    /**
+     * Concurrent modification detected via {@code @Version} (e.g. two simultaneous approve/provision
+     * requests on the same onboarding). The client should reload and retry.
+     */
+    @ExceptionHandler({
+            org.springframework.orm.ObjectOptimisticLockingFailureException.class,
+            jakarta.persistence.OptimisticLockException.class
+    })
+    public ResponseEntity<ApiResponse<Void>> handleOptimisticLock(Exception ex) {
+        log.info("[{}] Concurrent modification conflict: {}", correlationId(), ex.getMessage());
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(ApiResponse.<Void>error("CONCURRENT_MODIFICATION",
+                                "The resource was modified concurrently. Reload it and retry the operation.")
+                        .withCorrelationId(correlationId()));
+    }
+
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<ApiResponse<Void>> handleBusiness(BusinessException ex) {
         log.info("[{}] Business rule violation [{}]: {}", correlationId(), ex.getCode(), ex.getMessage());

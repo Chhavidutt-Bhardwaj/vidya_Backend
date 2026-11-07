@@ -26,6 +26,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.access.prepost.PostAuthorize;
 
 import java.util.UUID;
 
@@ -37,6 +39,7 @@ public class PaymentController {
 
     private final PaymentService paymentService;
 
+    @PreAuthorize("hasAuthority('PAYMENT_CREATE') and @tenantAuthorizationService.canAccessSchool(authentication, #request.schoolId)")
     @PostMapping("/initiate")
     @Operation(summary = "Initiate a payment transaction with Razorpay, Cashfree, or Manual gateway")
     public ResponseEntity<ApiResponse<InitiatePaymentResponse>> initiatePayment(
@@ -46,6 +49,7 @@ public class PaymentController {
                 .body(ApiResponse.success(ApiResponseCode.PAYMENT_INITIATED, "Payment initiated successfully", response));
     }
 
+    @PreAuthorize("isAuthenticated()")
     @PostMapping("/verify")
     @Operation(summary = "Verify gateway payment completion token / signature")
     public ResponseEntity<ApiResponse<PaymentTransactionResponse>> verifyPayment(
@@ -54,6 +58,7 @@ public class PaymentController {
         return ResponseEntity.ok(ApiResponse.success(ApiResponseCode.PAYMENT_VERIFIED, "Payment verified successfully", response));
     }
 
+    @PreAuthorize("hasAuthority('PAYMENT_MANUAL_CONFIRM')")
     @PostMapping("/manual/confirm")
     @Operation(summary = "Confirm an offline or manual payment by reference / cheque / bank transfer")
     public ResponseEntity<ApiResponse<PaymentTransactionResponse>> confirmManualPayment(
@@ -62,6 +67,8 @@ public class PaymentController {
         return ResponseEntity.ok(ApiResponse.success(ApiResponseCode.PAYMENT_VERIFIED, "Manual payment confirmed successfully", response));
     }
 
+    @PreAuthorize("hasAuthority('PAYMENT_READ')")
+    @PostAuthorize("@tenantAuthorizationService.canAccessSchool(authentication, returnObject.body.data.schoolId)")
     @GetMapping("/{transactionCode}")
     @Operation(summary = "Get payment transaction details by transaction code")
     public ResponseEntity<ApiResponse<PaymentTransactionResponse>> getByTransactionCode(
@@ -70,6 +77,7 @@ public class PaymentController {
         return ResponseEntity.ok(ApiResponse.success(ApiResponseCode.SUCCESS, "Payment transaction retrieved successfully", response));
     }
 
+    @PreAuthorize("hasAuthority('PAYMENT_READ') and @tenantAuthorizationService.canAccessSchool(authentication, #schoolId)")
     @GetMapping("/school/{schoolId}")
     @Operation(summary = "Get paginated payment transaction history for a school")
     public ResponseEntity<PagedApiResponse<PaymentTransactionResponse>> getBySchool(
@@ -79,6 +87,7 @@ public class PaymentController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("hasAuthority('PAYMENT_REFUND') and (hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN'))")
     @PostMapping("/refund")
     @Operation(summary = "Process a refund for a successful payment transaction")
     public ResponseEntity<ApiResponse<PaymentRefundResponse>> refundPayment(

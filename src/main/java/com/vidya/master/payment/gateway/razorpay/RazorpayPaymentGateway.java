@@ -73,17 +73,32 @@ public class RazorpayPaymentGateway implements PaymentGatewayProvider {
     @Override
     public PaymentVerificationResult verifyPayment(PaymentVerificationRequest request) {
         log.info("Verifying Razorpay payment for transaction: {}", request.getTransactionCode());
-        if (request.getProviderSignature() != null && request.getProviderOrderId() != null && request.getProviderPaymentId() != null) {
-            String payload = request.getProviderOrderId() + "|" + request.getProviderPaymentId();
-            boolean valid = verifyHmacSha256(payload, request.getProviderSignature(), properties.getKeySecret());
-            if (!valid) {
-                return PaymentVerificationResult.builder()
-                        .successful(false)
-                        .providerOrderId(request.getProviderOrderId())
-                        .providerTransactionId(request.getProviderPaymentId())
-                        .failureReason("Razorpay signature verification failed")
-                        .build();
-            }
+        // Fail closed: a payment is only successful with a valid order|payment HMAC signature.
+        if (isBlank(request.getProviderSignature()) || isBlank(request.getProviderOrderId())
+                || isBlank(request.getProviderPaymentId())) {
+            return PaymentVerificationResult.builder()
+                    .successful(false)
+                    .providerOrderId(request.getProviderOrderId())
+                    .providerTransactionId(request.getProviderPaymentId())
+                    .failureReason("Razorpay order id, payment id and signature are required for verification")
+                    .build();
+        }
+        if (isBlank(properties.getKeySecret())) {
+            log.error("Razorpay key secret is not configured; refusing to verify payment {}", request.getTransactionCode());
+            return PaymentVerificationResult.builder()
+                    .successful(false)
+                    .providerOrderId(request.getProviderOrderId())
+                    .failureReason("Payment verification is not configured")
+                    .build();
+        }
+        String signedPayload = request.getProviderOrderId() + "|" + request.getProviderPaymentId();
+        if (!verifyHmacSha256(signedPayload, request.getProviderSignature(), properties.getKeySecret())) {
+            return PaymentVerificationResult.builder()
+                    .successful(false)
+                    .providerOrderId(request.getProviderOrderId())
+                    .providerTransactionId(request.getProviderPaymentId())
+                    .failureReason("Razorpay signature verification failed")
+                    .build();
         }
 
         PaymentMethod method = PaymentMethod.UPI;
@@ -99,7 +114,7 @@ public class RazorpayPaymentGateway implements PaymentGatewayProvider {
         return PaymentVerificationResult.builder()
                 .successful(true)
                 .providerOrderId(request.getProviderOrderId())
-                .providerTransactionId(request.getProviderPaymentId() != null ? request.getProviderPaymentId() : "pay_" + UUID.randomUUID().toString().substring(0, 10))
+                .providerTransactionId(request.getProviderPaymentId())
                 .paymentMethod(method)
                 .rawResponse(request.getRawPayload() != null ? request.getRawPayload() : Map.of("verified", true))
                 .build();
@@ -122,11 +137,14 @@ public class RazorpayPaymentGateway implements PaymentGatewayProvider {
         log.info("Received Razorpay webhook event");
         try {
             String signature = headers.getOrDefault("x-razorpay-signature", headers.get("X-Razorpay-Signature"));
-            if (signature != null && !properties.getWebhookSecret().isBlank() && !"rzp_test_webhook_secret".equals(properties.getWebhookSecret())) {
-                if (!verifyHmacSha256(payload, signature, properties.getWebhookSecret())) {
-                    log.warn("Invalid Razorpay webhook signature");
-                    return WebhookProcessingResult.builder().handled(false).failureReason("Invalid webhook signature").build();
-                }
+            // Fail closed: every webhook must carry a valid signature (no test-secret or missing-header bypass).
+            if (isBlank(signature) || isBlank(properties.getWebhookSecret())) {
+                log.warn("Rejected Razorpay webhook: missing signature or webhook secret not configured");
+                return WebhookProcessingResult.builder().handled(false).failureReason("Missing webhook signature").build();
+            }
+            if (!verifyHmacSha256(payload, signature, properties.getWebhookSecret())) {
+                log.warn("Invalid Razorpay webhook signature");
+                return WebhookProcessingResult.builder().handled(false).failureReason("Invalid webhook signature").build();
             }
 
             JsonNode root = objectMapper.readTree(payload);
@@ -162,6 +180,10 @@ public class RazorpayPaymentGateway implements PaymentGatewayProvider {
                     .failureReason("Webhook parsing failed: " + e.getMessage())
                     .build();
         }
+    }
+
+    private static boolean isBlank(String value) {
+        return value == null || value.isBlank();
     }
 
     private boolean verifyHmacSha256(String data, String expectedSignature, String secret) {

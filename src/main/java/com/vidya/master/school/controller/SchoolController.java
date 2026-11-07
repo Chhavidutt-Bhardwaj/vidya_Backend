@@ -29,6 +29,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.access.prepost.PostAuthorize;
 
 import java.util.UUID;
 
@@ -42,6 +44,7 @@ public class SchoolController {
 
     private final SchoolService schoolService;
 
+    @PreAuthorize("hasAuthority('SCHOOL_CREATE') and (hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN'))")
     @PostMapping
     public ResponseEntity<ApiResponse<SchoolResponse>> createSchool(
             @Valid @RequestBody CreateSchoolRequest request) {
@@ -55,6 +58,7 @@ public class SchoolController {
                 ));
     }
 
+    @PreAuthorize("hasAuthority('SCHOOL_READ') and @tenantAuthorizationService.canAccessSchool(authentication, #id)")
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<SchoolResponse>> getSchoolById(@PathVariable UUID id) {
         SchoolResponse response = schoolService.getSchoolById(id);
@@ -65,6 +69,8 @@ public class SchoolController {
         ));
     }
 
+    @PreAuthorize("hasAuthority('SCHOOL_READ')")
+    @PostAuthorize("@tenantAuthorizationService.canAccessSchool(authentication, returnObject.body.data.id())")
     @GetMapping("/code/{code}")
     public ResponseEntity<ApiResponse<SchoolResponse>> getSchoolByCode(@PathVariable String code) {
         SchoolResponse response = schoolService.getSchoolByCode(code);
@@ -75,6 +81,8 @@ public class SchoolController {
         ));
     }
 
+    @PreAuthorize("hasAuthority('SCHOOL_READ')")
+    @PostAuthorize("@tenantAuthorizationService.canAccessSchool(authentication, returnObject.body.data.id())")
     @GetMapping("/tenant/{tenantId}")
     public ResponseEntity<ApiResponse<SchoolResponse>> getSchoolByTenantId(@PathVariable UUID tenantId) {
         SchoolResponse response = schoolService.getSchoolByTenantId(tenantId);
@@ -85,6 +93,7 @@ public class SchoolController {
         ));
     }
 
+    @PreAuthorize("(hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN'))")
     @GetMapping("/stats")
     public ResponseEntity<ApiResponse<MasterStatsResponse>> getMasterStats() {
         MasterStatsResponse response = schoolService.getMasterStats();
@@ -95,6 +104,7 @@ public class SchoolController {
         ));
     }
 
+    @PreAuthorize("(hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN'))")
     @GetMapping
     public ResponseEntity<PagedApiResponse<SchoolResponse>> getAllSchools(
             @RequestParam(required = false) SchoolStatus status,
@@ -111,6 +121,7 @@ public class SchoolController {
         ));
     }
 
+    @PreAuthorize("hasAuthority('SCHOOL_UPDATE') and @tenantAuthorizationService.canAccessSchool(authentication, #id)")
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<SchoolResponse>> updateSchool(
             @PathVariable UUID id,
@@ -123,6 +134,7 @@ public class SchoolController {
         ));
     }
 
+    @PreAuthorize("hasAuthority('SCHOOL_UPDATE') and (hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN'))")
     @PatchMapping("/{id}/status")
     public ResponseEntity<ApiResponse<SchoolResponse>> changeSchoolStatus(
             @PathVariable UUID id,
@@ -135,6 +147,7 @@ public class SchoolController {
         ));
     }
 
+    @PreAuthorize("hasAuthority('SCHOOL_UPDATE') and @tenantAuthorizationService.canAccessSchool(authentication, #id)")
     @PostMapping("/{id}/branches")
     public ResponseEntity<ApiResponse<SchoolBranchResponse>> addBranch(
             @PathVariable UUID id,
@@ -149,6 +162,7 @@ public class SchoolController {
                 ));
     }
 
+    @PreAuthorize("hasAuthority('SCHOOL_READ') and @tenantAuthorizationService.canAccessSchool(authentication, #id)")
     @GetMapping("/{id}/branches")
     public ResponseEntity<PagedApiResponse<SchoolBranchResponse>> getSchoolBranches(
             @PathVariable UUID id,
@@ -162,6 +176,7 @@ public class SchoolController {
         ));
     }
 
+    @PreAuthorize("hasAuthority('SCHOOL_READ') and @tenantAuthorizationService.canAccessSchool(authentication, #id)")
     @GetMapping("/{id}/branches/{branchId}")
     public ResponseEntity<ApiResponse<SchoolBranchResponse>> getBranchById(
             @PathVariable UUID id,
@@ -174,6 +189,7 @@ public class SchoolController {
         ));
     }
 
+    @PreAuthorize("hasAuthority('SCHOOL_UPDATE') and @tenantAuthorizationService.canAccessSchool(authentication, #id)")
     @PutMapping("/{id}/branches/{branchId}")
     public ResponseEntity<ApiResponse<SchoolBranchResponse>> updateBranch(
             @PathVariable UUID id,

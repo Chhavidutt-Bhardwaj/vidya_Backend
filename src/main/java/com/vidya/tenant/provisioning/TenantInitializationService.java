@@ -82,7 +82,8 @@ public class TenantInitializationService {
                 "(tenant_code, schema_initialized_at, app_version) VALUES (?, ?, ?)";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, tenantCode);
-            ps.setObject(2, Instant.now());
+            // PgJDBC cannot infer a SQL type for java.time.Instant; bind as TIMESTAMPTZ via OffsetDateTime.
+            ps.setObject(2, java.time.OffsetDateTime.ofInstant(Instant.now(), java.time.ZoneOffset.UTC));
             ps.setString(3, appVersion);
             ps.executeUpdate();
             log.info("[Provisioning][{}] Inserted tenant_metadata", tenantCode);

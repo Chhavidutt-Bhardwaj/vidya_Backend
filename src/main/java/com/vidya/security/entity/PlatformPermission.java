@@ -23,6 +23,9 @@ public enum PlatformPermission {
     ONBOARDING_UPDATE,
     ONBOARDING_VERIFY,
     ONBOARDING_APPROVE,
+    ONBOARDING_ACTIVATE,          // Final school activation (go-live) — platform staff only
+    ONBOARDING_PAYMENT_WAIVE,     // Authorize skipping the onboarding fee (trial, offline contract)
+    ONBOARDING_ADMIN_CREATE,      // Create the initial school administrator account
 
     // Subscription permissions
     SUBSCRIPTION_READ,
@@ -32,6 +35,7 @@ public enum PlatformPermission {
     PAYMENT_READ,
     PAYMENT_CREATE,
     PAYMENT_REFUND,
+    PAYMENT_MANUAL_CONFIRM,       // Mark an offline (cheque/NEFT) platform payment as received
 
     // Tenant permissions
     TENANT_READ,
