@@ -66,4 +66,7 @@ public class CurriculumSubjectResponse {
 
     @Schema(description = "Last update timestamp")
     private Instant updatedAt;
+
+    @Schema(description = "Stream this subject is limited to; null = whole class")
+    private UUID streamId;
 }

@@ -39,6 +39,17 @@ public class AcademicClassServiceImpl implements AcademicClassService {
         }
 
         AcademicClass academicClass = AcademicMapper.toEntity(request);
+        if (request.getGradeLevel() != null) {
+            academicClassRepository.findByDeletedAtIsNullOrderBySortOrderAsc().stream()
+                    .filter(o -> request.getGradeLevel().equals(o.getGradeLevel())).findFirst().ifPresent(o -> {
+                        throw new com.vidya.common.exception.BusinessException(
+                                "Grade level " + request.getGradeLevel() + " is already used by class " + o.getName());
+                    });
+            academicClass.setGradeLevel(request.getGradeLevel());
+        }
+        academicClass.setStage(request.getStage() != null ? request.getStage()
+                : request.getGradeLevel() != null ? com.vidya.tenantdata.academic.enums.ClassStage.forGradeLevel(request.getGradeLevel()) : null);
+        academicClass.setHasStreams(Boolean.TRUE.equals(request.getHasStreams()));
         AcademicClass saved = academicClassRepository.save(academicClass);
 
         log.info("Created academic class ID: [{}] code: [{}]", saved.getId(), saved.getCode());

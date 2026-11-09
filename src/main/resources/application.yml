@@ -61,6 +61,19 @@ vidya:
       # Oldest active session is ended when a user logs in on one device too many.
       max-active-per-user: ${VIDYA_MAX_SESSIONS_PER_USER:10}
 
+  # External holidays / festivals for the holiday planner (suggestions only; admins confirm).
+  # auto = Calendarific when CALENDARIFIC_API_KEY is set, otherwise off. ics = VIDYA_HOLIDAY_ICS_URL feed.
+  holidays:
+    provider: ${VIDYA_HOLIDAY_PROVIDER:auto}
+    calendarific:
+      api-key: ${CALENDARIFIC_API_KEY:}
+      base-url: ${CALENDARIFIC_BASE_URL:https://calendarific.com/api/v2}
+    ics:
+      # e.g. Google "Holidays in India": https://calendar.google.com/calendar/ical/en.indian%23holiday%40group.v.calendar.google.com/public/basic.ics
+      url: ${VIDYA_HOLIDAY_ICS_URL:}
+    timeout-seconds: ${VIDYA_HOLIDAY_TIMEOUT_SECONDS:8}
+    cache-days: ${VIDYA_HOLIDAY_CACHE_DAYS:30}
+
   # Flyway migration locations
   flyway:
     master:

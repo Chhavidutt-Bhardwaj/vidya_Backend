@@ -52,6 +52,10 @@ public class Section {
     @Column(name = "name", nullable = false, length = 100)
     private String name;
 
+    /** Stream of this section (classes with streams), else null. */
+    @Column(name = "stream_id")
+    private UUID streamId;
+
     @Column(name = "capacity")
     private Integer capacity;
 

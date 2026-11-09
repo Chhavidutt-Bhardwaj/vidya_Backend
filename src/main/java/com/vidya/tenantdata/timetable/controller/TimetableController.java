@@ -57,7 +57,7 @@ public class TimetableController {
     // --- Master Timetable Endpoints ---
 
     @PostMapping
-    @PreAuthorize("hasAuthority('TIMETABLE_CREATE')")
+    @PreAuthorize("hasAuthority('TIMETABLE_CREATE') and @dataAccess.hasFullScope(authentication, 'TIMETABLE')")
     @Operation(summary = "Create timetable", description = "Creates a new master timetable in DRAFT status for an academic year")
     public ResponseEntity<ApiResponse<TimetableResponse>> createTimetable(
             @Valid @RequestBody CreateTimetableRequest request
@@ -95,7 +95,7 @@ public class TimetableController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAuthority('TIMETABLE_UPDATE')")
+    @PreAuthorize("hasAuthority('TIMETABLE_UPDATE') and @dataAccess.hasFullScope(authentication, 'TIMETABLE')")
     @Operation(summary = "Update timetable", description = "Updates timetable basic metadata and bell schedule")
     public ResponseEntity<ApiResponse<TimetableResponse>> updateTimetable(
             @PathVariable UUID id,
@@ -107,7 +107,7 @@ public class TimetableController {
     }
 
     @PatchMapping("/{id}/status")
-    @PreAuthorize("hasAuthority('TIMETABLE_UPDATE')")
+    @PreAuthorize("hasAuthority('TIMETABLE_UPDATE') and @dataAccess.hasFullScope(authentication, 'TIMETABLE')")
     @Operation(summary = "Update timetable status", description = "Transitions timetable status through its lifecycle (e.g. DRAFT -> PUBLISHED -> ACTIVE -> ARCHIVED)")
     public ResponseEntity<ApiResponse<TimetableResponse>> updateTimetableStatus(
             @PathVariable UUID id,
@@ -119,7 +119,7 @@ public class TimetableController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('TIMETABLE_DELETE')")
+    @PreAuthorize("hasAuthority('TIMETABLE_DELETE') and @dataAccess.hasFullScope(authentication, 'TIMETABLE')")
     @Operation(summary = "Delete timetable", description = "Soft deletes a timetable and all its entries")
     public ResponseEntity<ApiResponse<Void>> deleteTimetable(@PathVariable UUID id) {
         log.info("REST: Delete timetable [{}]", id);
@@ -128,7 +128,7 @@ public class TimetableController {
     }
 
     @PostMapping("/{id}/validate")
-    @PreAuthorize("hasAuthority('TIMETABLE_VALIDATE')")
+    @PreAuthorize("hasAuthority('TIMETABLE_VALIDATE') and @dataAccess.hasFullScope(authentication, 'TIMETABLE')")
     @Operation(summary = "Validate timetable", description = "Executes complete conflict detection across teachers, classes, rooms, and periods")
     public ResponseEntity<ApiResponse<ScheduleValidationResponse>> validateTimetable(@PathVariable UUID id) {
         log.info("REST: Validate timetable [{}]", id);
@@ -137,7 +137,7 @@ public class TimetableController {
     }
 
     @PostMapping("/{id}/publish")
-    @PreAuthorize("hasAuthority('TIMETABLE_PUBLISH')")
+    @PreAuthorize("hasAuthority('TIMETABLE_PUBLISH') and @dataAccess.hasFullScope(authentication, 'TIMETABLE')")
     @Operation(summary = "Publish timetable", description = "Validates the timetable and transitions it from DRAFT to PUBLISHED state")
     public ResponseEntity<ApiResponse<TimetableResponse>> publishTimetable(@PathVariable UUID id) {
         log.info("REST: Publish timetable [{}]", id);
@@ -146,7 +146,7 @@ public class TimetableController {
     }
 
     @PostMapping("/{id}/clone")
-    @PreAuthorize("hasAuthority('TIMETABLE_CREATE')")
+    @PreAuthorize("hasAuthority('TIMETABLE_CREATE') and @dataAccess.hasFullScope(authentication, 'TIMETABLE')")
     @Operation(summary = "Clone timetable", description = "Clones an existing timetable and its scheduled entries into a new draft timetable")
     public ResponseEntity<ApiResponse<CloneTimetableResponse>> cloneTimetable(
             @PathVariable UUID id,
@@ -161,7 +161,7 @@ public class TimetableController {
     // --- Timetable Entry Endpoints ---
 
     @PutMapping("/{timetableId}/sections/{sectionId}/entries")
-    @PreAuthorize("hasAuthority('TIMETABLE_ENTRY_UPDATE') or hasAuthority('TIMETABLE_ENTRY_CREATE')")
+    @PreAuthorize("(hasAuthority('TIMETABLE_ENTRY_UPDATE') or hasAuthority('TIMETABLE_ENTRY_CREATE')) and @dataAccess.hasFullScope(authentication, 'TIMETABLE')")
     @Operation(summary = "Bulk upsert section timetable entries", description = "Atomically bulk upserts timetable slot entries for a class section in a draft timetable")
     public ResponseEntity<ApiResponse<BulkUpsertEntriesResponse>> bulkUpsertSectionEntries(
             @PathVariable UUID timetableId,
@@ -174,7 +174,7 @@ public class TimetableController {
     }
 
     @PostMapping("/{timetableId}/entries")
-    @PreAuthorize("hasAuthority('TIMETABLE_ENTRY_CREATE')")
+    @PreAuthorize("hasAuthority('TIMETABLE_ENTRY_CREATE') and @dataAccess.hasFullScope(authentication, 'TIMETABLE')")
     @Operation(summary = "Create timetable entry", description = "Adds a scheduled class/subject/teacher/room slot to a timetable with real-time conflict checking")
     public ResponseEntity<ApiResponse<TimetableEntryResponse>> createEntry(
             @PathVariable UUID timetableId,
@@ -187,7 +187,7 @@ public class TimetableController {
     }
 
     @GetMapping("/{timetableId}/entries")
-    @PreAuthorize("hasAuthority('TIMETABLE_ENTRY_READ')")
+    @PreAuthorize("hasAuthority('TIMETABLE_ENTRY_READ') and @dataAccess.canQueryTimetableEntries(authentication, #sectionId, #teacherId, #academicClassId)")
     @Operation(summary = "Search timetable entries", description = "Searches entries within a timetable with class, teacher, room, and day filters")
     public ResponseEntity<PagedApiResponse<TimetableEntryResponse>> searchEntries(
             @PathVariable UUID timetableId,
@@ -205,7 +205,7 @@ public class TimetableController {
     }
 
     @GetMapping("/{timetableId}/entries/{id}")
-    @PreAuthorize("hasAuthority('TIMETABLE_ENTRY_READ')")
+    @PreAuthorize("hasAuthority('TIMETABLE_ENTRY_READ') and @dataAccess.canAccessTimetableEntry(authentication, #id)")
     @Operation(summary = "Get timetable entry by ID", description = "Fetches a specific timetable slot entry by ID")
     public ResponseEntity<ApiResponse<TimetableEntryResponse>> getEntryById(
             @PathVariable UUID timetableId,
@@ -216,7 +216,7 @@ public class TimetableController {
     }
 
     @PutMapping("/{timetableId}/entries/{id}")
-    @PreAuthorize("hasAuthority('TIMETABLE_ENTRY_UPDATE')")
+    @PreAuthorize("hasAuthority('TIMETABLE_ENTRY_UPDATE') and @dataAccess.hasFullScope(authentication, 'TIMETABLE')")
     @Operation(summary = "Update timetable entry", description = "Updates a timetable slot entry with conflict re-validation")
     public ResponseEntity<ApiResponse<TimetableEntryResponse>> updateEntry(
             @PathVariable UUID timetableId,
@@ -229,7 +229,7 @@ public class TimetableController {
     }
 
     @DeleteMapping("/{timetableId}/entries/{id}")
-    @PreAuthorize("hasAuthority('TIMETABLE_ENTRY_DELETE')")
+    @PreAuthorize("hasAuthority('TIMETABLE_ENTRY_DELETE') and @dataAccess.hasFullScope(authentication, 'TIMETABLE')")
     @Operation(summary = "Delete timetable entry", description = "Soft deletes a timetable slot entry")
     public ResponseEntity<ApiResponse<Void>> deleteEntry(
             @PathVariable UUID timetableId,
@@ -243,7 +243,7 @@ public class TimetableController {
     // --- Timetable Grid / Schedule & Occupancy Views ---
 
     @GetMapping("/{timetableId}/class/{academicClassId}")
-    @PreAuthorize("hasAuthority('TIMETABLE_READ')")
+    @PreAuthorize("hasAuthority('TIMETABLE_READ') and @dataAccess.canViewClassTimetable(authentication, #academicClassId, #sectionId)")
     @Operation(summary = "Get class weekly timetable grid", description = "Produces a day-by-period matrix view of the weekly schedule for a class and optional section")
     public ResponseEntity<ApiResponse<TimetableGridResponse>> getClassTimetableGrid(
             @PathVariable UUID timetableId,
@@ -256,7 +256,7 @@ public class TimetableController {
     }
 
     @GetMapping("/{timetableId}/sections/{sectionId}/grid")
-    @PreAuthorize("hasAuthority('TIMETABLE_READ')")
+    @PreAuthorize("hasAuthority('TIMETABLE_READ') and @dataAccess.canViewSectionTimetable(authentication, #sectionId)")
     @Operation(summary = "Get section weekly timetable grid", description = "Produces a day-by-period matrix view of the weekly schedule for a specific section, with optional weekOf substitution overlay")
     public ResponseEntity<ApiResponse<TimetableGridResponse>> getSectionTimetableGrid(
             @PathVariable UUID timetableId,
@@ -269,7 +269,7 @@ public class TimetableController {
     }
 
     @GetMapping({"/{timetableId}/teachers/{teacherId}/grid", "/{timetableId}/teacher/{teacherId}"})
-    @PreAuthorize("hasAuthority('TIMETABLE_READ')")
+    @PreAuthorize("hasAuthority('TIMETABLE_READ') and @dataAccess.canViewTeacherTimetable(authentication, #teacherId)")
     @Operation(summary = "Get teacher weekly timetable grid", description = "Produces a day-by-period matrix view of the weekly teaching schedule for a teacher, with optional weekOf substitution overlay")
     public ResponseEntity<ApiResponse<TimetableGridResponse>> getTeacherTimetableGrid(
             @PathVariable UUID timetableId,
@@ -282,7 +282,7 @@ public class TimetableController {
     }
 
     @GetMapping("/{timetableId}/sections/{sectionId}/day")
-    @PreAuthorize("hasAuthority('TIMETABLE_READ')")
+    @PreAuthorize("hasAuthority('TIMETABLE_READ') and @dataAccess.canViewSectionTimetable(authentication, #sectionId)")
     @Operation(summary = "Get section day timetable schedule", description = "Produces an effective day schedule for a section on a specific date, overlaying active substitutions")
     public ResponseEntity<ApiResponse<com.vidya.tenantdata.timetable.dto.SectionDayScheduleResponse>> getSectionDaySchedule(
             @PathVariable UUID timetableId,
@@ -294,7 +294,7 @@ public class TimetableController {
     }
 
     @GetMapping("/{timetableId}/teachers/{teacherId}/day")
-    @PreAuthorize("hasAuthority('TIMETABLE_READ')")
+    @PreAuthorize("hasAuthority('TIMETABLE_READ') and @dataAccess.canViewTeacherTimetable(authentication, #teacherId)")
     @Operation(summary = "Get teacher day timetable schedule", description = "Produces an effective day schedule for a teacher on a specific date, marking covered slots and extra substituted periods")
     public ResponseEntity<ApiResponse<com.vidya.tenantdata.timetable.dto.TeacherDayScheduleResponse>> getTeacherDaySchedule(
             @PathVariable UUID timetableId,
@@ -306,7 +306,7 @@ public class TimetableController {
     }
 
     @GetMapping({"/{timetableId}/rooms/{roomId}/grid", "/{timetableId}/room/{roomId}"})
-    @PreAuthorize("hasAuthority('TIMETABLE_READ')")
+    @PreAuthorize("hasAuthority('TIMETABLE_READ') and @dataAccess.hasFullScope(authentication, 'TIMETABLE')")
     @Operation(summary = "Get room weekly timetable grid", description = "Produces a day-by-period matrix view of the weekly occupancy schedule for a room")
     public ResponseEntity<ApiResponse<TimetableGridResponse>> getRoomTimetableGrid(
             @PathVariable UUID timetableId,
@@ -318,7 +318,7 @@ public class TimetableController {
     }
 
     @GetMapping("/{timetableId}/rooms/{roomId}/occupancy")
-    @PreAuthorize("hasAuthority('TIMETABLE_READ')")
+    @PreAuthorize("hasAuthority('TIMETABLE_READ') and @dataAccess.hasFullScope(authentication, 'TIMETABLE')")
     @Operation(summary = "Get room occupancy and utilisation", description = "Calculates occupied periods and utilisation percentage for a room across selected days")
     public ResponseEntity<ApiResponse<com.vidya.tenantdata.timetable.dto.RoomOccupancyResponse>> getRoomOccupancy(
             @PathVariable UUID timetableId,
@@ -330,7 +330,7 @@ public class TimetableController {
     }
 
     @GetMapping("/{timetableId}/teachers/{teacherId}/load")
-    @PreAuthorize("hasAuthority('TIMETABLE_READ')")
+    @PreAuthorize("hasAuthority('TIMETABLE_READ') and @dataAccess.canViewTeacherTimetable(authentication, #teacherId)")
     @Operation(summary = "Get teacher workload and free periods", description = "Calculates assigned teaching periods and free teaching slots per day and per week for a teacher")
     public ResponseEntity<ApiResponse<com.vidya.tenantdata.timetable.dto.TeacherLoadResponse>> getTeacherLoad(
             @PathVariable UUID timetableId,

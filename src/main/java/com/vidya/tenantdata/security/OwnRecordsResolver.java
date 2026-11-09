@@ -90,7 +90,32 @@ public class OwnRecordsResolver {
                         .getResultList());
             }
         }
-        return new OwnRecords(selfStudents, children, staff, sections, wholeClasses, subjectClass, taughtStudents);
+        Set<UUID> teachingClasses = new LinkedHashSet<>(wholeClasses);
+        if (!sections.isEmpty()) {
+            teachingClasses.addAll(uuids(em.createNativeQuery(
+                            "SELECT DISTINCT academic_class_id FROM section WHERE id IN (:sections)")
+                    .setParameter("sections", sections).getResultList()));
+        }
+
+        Set<UUID> linkedStudents = new LinkedHashSet<>(selfStudents);
+        linkedStudents.addAll(children);
+        Set<UUID> studentSections = linkedStudents.isEmpty() ? Set.of() : uuids(em.createNativeQuery(
+                        "SELECT DISTINCT section_id FROM student_academic_enrollment WHERE deleted_at IS NULL "
+                                + "AND enrollment_status IN " + ACTIVE_ENROLLMENT + " AND student_id IN (:students)")
+                .setParameter("students", linkedStudents).getResultList());
+
+        return OwnRecords.builder()
+                .tenantUserIds(tenantUserIds)
+                .selfStudentIds(selfStudents)
+                .childStudentIds(children)
+                .staffIds(staff)
+                .sectionIds(sections)
+                .wholeClassIds(wholeClasses)
+                .teachingClassIds(teachingClasses)
+                .subjectClassPairs(subjectClass)
+                .taughtStudentIds(taughtStudents)
+                .studentSectionIds(studentSections)
+                .build();
     }
 
     @Transactional(readOnly = true, transactionManager = "tenantTransactionManager")
@@ -126,6 +151,68 @@ public class OwnRecordsResolver {
                                 + "JOIN exam_schedule s ON s.id = c.exam_schedule_id WHERE c.id = :id")
                 .setParameter("id", configId).getResultList();
         return rows.isEmpty() ? Optional.empty() : Optional.of(uuid(rows.get(0)[0]) + ":" + uuid(rows.get(0)[1]));
+    }
+
+    @Transactional(readOnly = true, transactionManager = "tenantTransactionManager")
+    public Optional<UUID> studentIdOfEnrollment(UUID enrollmentId) {
+        return first(em.createNativeQuery("SELECT student_id FROM student_academic_enrollment WHERE id = :id")
+                .setParameter("id", enrollmentId).getResultList());
+    }
+
+    @Transactional(readOnly = true, transactionManager = "tenantTransactionManager")
+    public Optional<UUID> studentIdOfEnrollmentCode(String code) {
+        return first(em.createNativeQuery("SELECT student_id FROM student_academic_enrollment WHERE enrollment_code = :c")
+                .setParameter("c", code).getResultList());
+    }
+
+    @Transactional(readOnly = true, transactionManager = "tenantTransactionManager")
+    public Optional<UUID> staffIdByCode(String staffCode) {
+        return first(em.createNativeQuery("SELECT id FROM staff WHERE staff_code = :c AND deleted_at IS NULL")
+                .setParameter("c", staffCode).getResultList());
+    }
+
+    @Transactional(readOnly = true, transactionManager = "tenantTransactionManager")
+    public Optional<UUID> tenantUserOfStaff(UUID staffId) {
+        return first(em.createNativeQuery("SELECT tenant_user_id FROM staff WHERE id = :id")
+                .setParameter("id", staffId).getResultList());
+    }
+
+    /** [staffId, sectionId, classId] of a class-teacher assignment, by id or code. */
+    @Transactional(readOnly = true, transactionManager = "tenantTransactionManager")
+    public Optional<UUID[]> classTeacherAssignment(UUID id, String code) {
+        return triple(em.createNativeQuery("SELECT staff_id, section_id, academic_class_id FROM class_teacher_assignment WHERE "
+                        + (id != null ? "id = :k" : "assignment_code = :k"))
+                .setParameter("k", id != null ? id : code).getResultList());
+    }
+
+    /** [teacherId, sectionId (nullable), classId] of a teacher-subject assignment, by id or code. */
+    @Transactional(readOnly = true, transactionManager = "tenantTransactionManager")
+    public Optional<UUID[]> teacherSubjectAssignment(UUID id, String code) {
+        return triple(em.createNativeQuery("SELECT teacher_id, section_id, academic_class_id FROM teacher_subject_assignment WHERE "
+                        + (id != null ? "id = :k" : "assignment_code = :k"))
+                .setParameter("k", id != null ? id : code).getResultList());
+    }
+
+    /** [teacherId, sectionId, classId] of a timetable entry. */
+    @Transactional(readOnly = true, transactionManager = "tenantTransactionManager")
+    public Optional<UUID[]> timetableEntry(UUID id) {
+        return triple(em.createNativeQuery("SELECT teacher_id, section_id, academic_class_id FROM timetable_entry WHERE id = :k")
+                .setParameter("k", id).getResultList());
+    }
+
+    /** [originalTeacherId, substituteTeacherId, sectionId] of a substitution. */
+    @Transactional(readOnly = true, transactionManager = "tenantTransactionManager")
+    public Optional<UUID[]> substitution(UUID id) {
+        return triple(em.createNativeQuery("SELECT original_teacher_id, substitute_teacher_id, section_id FROM timetable_substitution WHERE id = :k")
+                .setParameter("k", id).getResultList());
+    }
+
+    private static Optional<UUID[]> triple(List<?> rows) {
+        if (rows.isEmpty()) {
+            return Optional.empty();
+        }
+        Object[] r = (Object[]) rows.get(0);
+        return Optional.of(new UUID[]{uuid(r[0]), uuid(r[1]), uuid(r[2])});
     }
 
     private static String current() {

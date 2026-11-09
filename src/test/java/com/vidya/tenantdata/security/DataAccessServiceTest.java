@@ -73,8 +73,7 @@ class DataAccessServiceTest {
     @DisplayName("parent: only linked children; never a whole section; no full student list")
     void parent_ownChildrenOnly() {
         Authentication parent = auth(PlatformRole.PARENT);
-        when(resolver.resolve(userId(parent))).thenReturn(new OwnRecords(Set.of(), Set.of(myChild), Set.of(),
-                Set.of(), Set.of(), Set.of(), Set.of()));
+        when(resolver.resolve(userId(parent))).thenReturn(OwnRecords.builder().childStudentIds(Set.of(myChild)).build());
 
         assertThat(service.canAccessStudent(parent, myChild, "STUDENT")).isTrue();
         assertThat(service.canAccessStudent(parent, otherStudent, "STUDENT")).isFalse();
@@ -90,8 +89,7 @@ class DataAccessServiceTest {
         Authentication teacher = auth(PlatformRole.TEACHER);
         UUID wholeClass = UUID.randomUUID();
         UUID sectionOfWholeClass = UUID.randomUUID();
-        when(resolver.resolve(userId(teacher))).thenReturn(new OwnRecords(Set.of(), Set.of(), Set.of(UUID.randomUUID()),
-                Set.of(mySection), Set.of(wholeClass), Set.of(), Set.of(myChild)));
+        when(resolver.resolve(userId(teacher))).thenReturn(OwnRecords.builder().staffIds(Set.of(UUID.randomUUID())).sectionIds(Set.of(mySection)).wholeClassIds(Set.of(wholeClass)).teachingClassIds(Set.of(wholeClass)).taughtStudentIds(Set.of(myChild)).build());
         when(resolver.classOfSection(sectionOfWholeClass)).thenReturn(Optional.of(wholeClass));
         when(resolver.classOfSection(otherSection)).thenReturn(Optional.of(UUID.randomUUID()));
 
@@ -106,8 +104,7 @@ class DataAccessServiceTest {
     @DisplayName("bulk operations fail if any one student is outside the user's records")
     void bulk_allOrNothing() {
         Authentication teacher = auth(PlatformRole.TEACHER);
-        when(resolver.resolve(userId(teacher))).thenReturn(new OwnRecords(Set.of(), Set.of(), Set.of(),
-                Set.of(mySection), Set.of(), Set.of(), Set.of(myChild)));
+        when(resolver.resolve(userId(teacher))).thenReturn(OwnRecords.builder().sectionIds(Set.of(mySection)).taughtStudentIds(Set.of(myChild)).build());
 
         assertThat(service.canAccessStudents(teacher, List.of(myChild), "ATTENDANCE")).isTrue();
         assertThat(service.canAccessStudents(teacher, List.of(myChild, otherStudent), "ATTENDANCE")).isFalse();
@@ -119,8 +116,7 @@ class DataAccessServiceTest {
         Authentication student = auth(PlatformRole.STUDENT);
         UUID mine = UUID.randomUUID();
         UUID theirs = UUID.randomUUID();
-        when(resolver.resolve(userId(student))).thenReturn(new OwnRecords(Set.of(myChild), Set.of(), Set.of(),
-                Set.of(), Set.of(), Set.of(), Set.of()));
+        when(resolver.resolve(userId(student))).thenReturn(OwnRecords.builder().selfStudentIds(Set.of(myChild)).build());
         when(resolver.studentIdOfAttendance(mine)).thenReturn(Optional.of(myChild));
         when(resolver.studentIdOfAttendance(theirs)).thenReturn(Optional.of(otherStudent));
         when(resolver.studentIdOfMarkEntry(theirs)).thenReturn(Optional.empty());
@@ -138,8 +134,7 @@ class DataAccessServiceTest {
         UUID clazz = UUID.randomUUID();
         UUID myPaper = UUID.randomUUID();
         UUID otherPaper = UUID.randomUUID();
-        when(resolver.resolve(userId(teacher))).thenReturn(new OwnRecords(Set.of(), Set.of(), Set.of(),
-                Set.of(), Set.of(), Set.of(subject + ":" + clazz), Set.of()));
+        when(resolver.resolve(userId(teacher))).thenReturn(OwnRecords.builder().subjectClassPairs(Set.of(subject + ":" + clazz)).build());
         when(resolver.subjectClassOfExamConfig(myPaper)).thenReturn(Optional.of(subject + ":" + clazz));
         when(resolver.subjectClassOfExamConfig(otherPaper)).thenReturn(Optional.of(UUID.randomUUID() + ":" + clazz));
 
@@ -151,8 +146,7 @@ class DataAccessServiceTest {
     @DisplayName("own records are resolved once per request")
     void cachedPerRequest() {
         Authentication parent = auth(PlatformRole.PARENT);
-        when(resolver.resolve(userId(parent))).thenReturn(new OwnRecords(Set.of(), Set.of(myChild), Set.of(),
-                Set.of(), Set.of(), Set.of(), Set.of()));
+        when(resolver.resolve(userId(parent))).thenReturn(OwnRecords.builder().childStudentIds(Set.of(myChild)).build());
 
         service.canAccessStudent(parent, myChild, "STUDENT");
         service.canAccessStudent(parent, otherStudent, "ATTENDANCE");
@@ -172,6 +166,88 @@ class DataAccessServiceTest {
     void anonymous_denied() {
         assertThat(service.canAccessStudent(null, myChild, "STUDENT")).isFalse();
         assertThat(service.hasFullScope(null, "STUDENT")).isFalse();
+    }
+
+    @Test
+    @DisplayName("timetable: teacher sees own grid and taught sections; parent sees child's section only")
+    void timetable() {
+        Authentication teacher = auth(PlatformRole.TEACHER);
+        UUID myStaff = UUID.randomUUID();
+        when(resolver.resolve(userId(teacher))).thenReturn(OwnRecords.builder().staffIds(Set.of(myStaff))
+                .sectionIds(Set.of(mySection)).build());
+
+        assertThat(service.canViewTeacherTimetable(teacher, myStaff)).isTrue();
+        assertThat(service.canViewTeacherTimetable(teacher, UUID.randomUUID())).isFalse();
+        assertThat(service.canViewSectionTimetable(teacher, mySection)).isTrue();
+        assertThat(service.canViewSectionTimetable(teacher, otherSection)).isFalse();
+        assertThat(service.canQueryTimetableEntries(teacher, null, null, null)).as("unfiltered search").isFalse();
+        assertThat(service.canQueryTimetableEntries(teacher, null, myStaff, null)).isTrue();
+        assertThat(service.hasFullScope(teacher, "TIMETABLE")).as("cannot edit the timetable").isFalse();
+
+        Authentication parent = auth(PlatformRole.PARENT);
+        when(resolver.resolve(userId(parent))).thenReturn(OwnRecords.builder().childStudentIds(Set.of(myChild))
+                .studentSectionIds(Set.of(mySection)).build());
+        assertThat(service.canViewSectionTimetable(parent, mySection)).isTrue();
+        assertThat(service.canViewSectionTimetable(parent, otherSection)).isFalse();
+        assertThat(service.canAccessSection(parent, mySection, "ATTENDANCE")).as("roster still hidden").isFalse();
+    }
+
+    @Test
+    @DisplayName("substitutions and timetable entries: visible to the teachers involved")
+    void substitutionsAndEntries() {
+        Authentication teacher = auth(PlatformRole.TEACHER);
+        UUID myStaff = UUID.randomUUID();
+        UUID mine = UUID.randomUUID();
+        UUID theirs = UUID.randomUUID();
+        when(resolver.resolve(userId(teacher))).thenReturn(OwnRecords.builder().staffIds(Set.of(myStaff)).build());
+        when(resolver.substitution(mine)).thenReturn(Optional.of(new UUID[]{UUID.randomUUID(), myStaff, otherSection}));
+        when(resolver.substitution(theirs)).thenReturn(Optional.of(new UUID[]{UUID.randomUUID(), UUID.randomUUID(), otherSection}));
+        when(resolver.timetableEntry(mine)).thenReturn(Optional.of(new UUID[]{myStaff, otherSection, null}));
+
+        assertThat(service.canAccessSubstitution(teacher, mine)).isTrue();
+        assertThat(service.canAccessSubstitution(teacher, theirs)).isFalse();
+        assertThat(service.canAccessTimetableEntry(teacher, mine)).isTrue();
+    }
+
+    @Test
+    @DisplayName("staff and assignments: OWN users see only their own; admins see all")
+    void staff() {
+        Authentication teacher = auth(PlatformRole.TEACHER);
+        UUID myStaff = UUID.randomUUID();
+        UUID myAssignment = UUID.randomUUID();
+        UUID otherAssignment = UUID.randomUUID();
+        when(resolver.resolve(userId(teacher))).thenReturn(OwnRecords.builder().staffIds(Set.of(myStaff)).build());
+        when(resolver.teacherSubjectAssignment(myAssignment, null)).thenReturn(Optional.of(new UUID[]{myStaff, null, UUID.randomUUID()}));
+        when(resolver.teacherSubjectAssignment(otherAssignment, null)).thenReturn(Optional.of(new UUID[]{UUID.randomUUID(), null, UUID.randomUUID()}));
+
+        assertThat(service.canAccessStaff(teacher, myStaff, "STAFF")).isTrue();
+        assertThat(service.canAccessStaff(teacher, UUID.randomUUID(), "STAFF")).isFalse();
+        assertThat(service.canAccessTeacherSubjectAssignment(teacher, myAssignment, null)).isTrue();
+        assertThat(service.canAccessTeacherSubjectAssignment(teacher, otherAssignment, null)).isFalse();
+        assertThat(service.canQueryAssignments(teacher, null, null, null)).isFalse();
+        assertThat(service.hasFullScope(auth(PlatformRole.SCHOOL_ADMIN), "STAFF")).isTrue();
+        assertThat(service.hasFullScope(auth(PlatformRole.COORDINATOR), "STAFF")).isTrue();
+    }
+
+    @Test
+    @DisplayName("enrollments follow the student; user accounts are own-only below admin")
+    void enrollmentsAndUsers() {
+        Authentication parent = auth(PlatformRole.PARENT);
+        UUID myTenantUser = UUID.randomUUID();
+        UUID childEnrollment = UUID.randomUUID();
+        UUID otherEnrollment = UUID.randomUUID();
+        when(resolver.resolve(userId(parent))).thenReturn(OwnRecords.builder().tenantUserIds(Set.of(myTenantUser))
+                .childStudentIds(Set.of(myChild)).build());
+        when(resolver.studentIdOfEnrollment(childEnrollment)).thenReturn(Optional.of(myChild));
+        when(resolver.studentIdOfEnrollment(otherEnrollment)).thenReturn(Optional.of(otherStudent));
+
+        assertThat(service.canAccessEnrollment(parent, childEnrollment, "STUDENT")).isTrue();
+        assertThat(service.canAccessEnrollment(parent, otherEnrollment, "STUDENT")).isFalse();
+        assertThat(service.canQueryStudents(parent, myChild, null, "STUDENT")).isTrue();
+        assertThat(service.canQueryStudents(parent, null, null, "STUDENT")).isFalse();
+        assertThat(service.canAccessTenantUser(parent, myTenantUser, "USER")).isTrue();
+        assertThat(service.canAccessTenantUser(parent, UUID.randomUUID(), "USER")).isFalse();
+        assertThat(service.hasFullScope(auth(PlatformRole.SCHOOL_ADMIN), "USER")).isTrue();
     }
 
     private Authentication auth(PlatformRole role) {

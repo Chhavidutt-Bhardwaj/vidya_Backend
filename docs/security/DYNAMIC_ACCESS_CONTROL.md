@@ -203,25 +203,28 @@ This takes effect on the user's very next request, because every request checks 
 | Permission-based | which operations are allowed | `access_permission` (+ overrides, feature gating) | `@PreAuthorize("hasAuthority('X')")` |
 | Data-level | which records the user may touch | `<DOMAIN>_SCOPE_ALL` permissions + tenant links | `@PreAuthorize("… and @dataAccess.…")` |
 
-### Data-level access (V31, tenant V19)
+### Data-level access (V31, V32, tenant V19)
 
-For each area (`STUDENT`, `ATTENDANCE`, `MARKS`; `TIMETABLE`, `STAFF`, `FEE`, `CHAT` are reported but not enforced yet), a user's scope is:
+For each area (`STUDENT`, `ATTENDANCE`, `MARKS`, `TIMETABLE`, `STAFF`, `USER`; `FEE` and `CHAT` are reported in the token, and will be enforced when those APIs exist), a user's scope is:
 
 - **ALL**: every record of their school. This applies to platform and community accounts, whose school access is checked by tenant resolution, and to school users holding `<DOMAIN>_SCOPE_ALL`.
 - **OWN**: the default for every school user, so a new custom role never sees the whole school by accident. OWN means:
   - *Student account*: their own `student` row (`student.tenant_user_id → tenant_user.master_user_id = login`).
   - *Parent account*: students whose `student_guardian.guardian_user_id` is the parent's `tenant_user`. Set it with `guardianUserId` on the guardian create/update API. Tenant V19 back-filled it by exact, unique email match.
   - *Teacher / staff*: students currently enrolled (`ADMITTED`/`ACTIVE`) in sections where they are an active class teacher or subject teacher. A subject assignment without a section covers the whole class.
+  - *Timetable*: own teacher grid / day / load, sections they teach, and the section the student (or parent's child) is enrolled in. Substitutions where they are the original or substitute teacher.
+  - *Staff*: own staff record and own class-teacher / subject assignments.
+  - *User*: own school user account.
 
 Seeded ALL holders:
 
-| Role | STUDENT | ATTENDANCE | MARKS |
-|---|---|---|---|
-| School owner / admin | ALL | ALL | ALL |
-| Principal | ALL | ALL | ALL |
-| Coordinator | ALL | ALL | ALL |
-| Accounts | ALL | own | own |
-| Teacher, subject teacher, school staff, parent, student | own | own | own |
+| Role | STUDENT | ATTENDANCE | MARKS | TIMETABLE | STAFF | USER |
+|---|---|---|---|---|---|---|
+| School owner / admin | ALL | ALL | ALL | ALL | ALL | ALL |
+| Principal | ALL | ALL | ALL | ALL | ALL | own |
+| Coordinator | ALL | ALL | ALL | ALL | ALL | own |
+| Accounts | ALL | own | own | own | own | own |
+| Teacher, subject teacher, school staff, parent, student | own | own | own | own | own | own |
 
 Give a role school-wide reach with data only, e.g. `ATTENDANCE_SCOPE_ALL` on a custom `EXAM_CELL` role.
 
@@ -236,6 +239,23 @@ What is enforced, and how:
 | `/attendance/{id}`, `/attendance/students/{studentId}[/summary]` | the record's student must be linked |
 | `/exams/marks/student/{studentId}`, `/exams/marks/{id}` | the student must be linked |
 | `/exams/marks/subject-config/{id}` (read, submit, lock), `/exams/marks/bulk` | they teach that subject in that class (+ every student linked) |
+| `/students/{id}/enrollments`, `/enrollments/{id}`, `/enrollments/code/{code}`, `/students/{id}/academic-assignments/**`, `/enrollments/{id}/subjects/**` | the enrollment's student must be linked |
+| `GET /enrollments?…` | must filter by a linked `studentId` or a taught `sectionId` |
+| `/timetables/{t}/sections/{s}/grid` and `/day`, `/academic-years/{y}/sections/{s}/timetable` | sections taught, or own / child's section |
+| `/timetables/{t}/class/{c}` | class taught or own / child's class (with `sectionId`: that section) |
+| `/timetables/{t}/teachers/{id}/grid`, `/day`, `/load` | own teacher id only |
+| `GET /timetables/{t}/entries?…`, `/entries/{id}` | filter by own `teacherId` or a visible `sectionId` / the entry is theirs or in a visible section |
+| `/timetables/{t}/rooms/**`, all timetable / entry writes | ALL only |
+| `GET /substitutions/{id}`, `GET /substitutions?…` | they are the original / substitute teacher, or a visible section |
+| substitution writes | ALL only |
+| `/staff/{id}`, `/staff/code/{code}`, `PUT /staff/{id}` | own staff record |
+| `GET /staff`, staff create / status / delete | ALL only |
+| `/class-teacher-assignments/**`, `/teacher-assignments/**` (read) | own assignments, or a section / class they teach |
+| assignment writes, `/class-teacher-assignments/academic-year/{id}` | ALL only |
+| `/tenant/users/{id}` (read, update) | own account |
+| `GET /tenant/users`, user create / status / delete | ALL only |
+
+Not scoped on purpose: school structure and reference data that everyone in the school may see (academic years, classes, sections, subjects, curricula, calendar, holidays, bell schedules, rooms, grading scales, exam terms and schedules, timetable headers). Who may *change* them is controlled by permissions.
 
 The checks live in `com.vidya.tenantdata.security.DataAccessService` (bean `dataAccess`). Own records are resolved once per request from the tenant DB. To protect a new endpoint:
 
@@ -381,3 +401,5 @@ Keep a `PERMISSIONS` constant file on the frontend that mirrors the permission c
   
   Otherwise those users will get 403 on student, attendance and marks screens. `SCHOOL_STAFF` has no scope permissions; grant `STUDENT_SCOPE_ALL` if office staff need the full student list.
 - The full student search (`GET /students`) and class lists now need STUDENT scope ALL. Portal and teacher screens should use `GET /students/mine`.
+- **V32** extends data-level access to timetables, substitutions, staff, teacher assignments, enrollments and school user accounts. It adds `USER_SCOPE_ALL` (owners/admins) and gives coordinators `STAFF_SCOPE_ALL`. Teachers, parents and students now get 403 on unfiltered timetable entry / substitution / assignment searches. The UI should pass the user's own `teacherId` / `sectionId`.
+- **V33** adds `STUDENT_PROMOTE` (school owner, school admin, principal; matrix cell Students/APPROVE) for year-end promotion (`POST /api/v1/academic-years/{id}/promotion`), which also needs STUDENT scope ALL.

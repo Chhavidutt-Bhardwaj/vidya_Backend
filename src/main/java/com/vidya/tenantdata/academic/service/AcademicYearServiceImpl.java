@@ -42,6 +42,7 @@ public class AcademicYearServiceImpl implements AcademicYearService {
         if (request.getEndDate().isBefore(request.getStartDate()) || request.getEndDate().isEqual(request.getStartDate())) {
             throw new BusinessException("Academic year end date must be strictly after start date");
         }
+        rejectOverlap(request.getStartDate(), request.getEndDate(), null);
 
         if (request.isCurrent()) {
             academicYearRepository.unsetAllCurrent();
@@ -99,6 +100,7 @@ public class AcademicYearServiceImpl implements AcademicYearService {
         if (endDate.isBefore(startDate) || endDate.isEqual(startDate)) {
             throw new BusinessException("Academic year end date must be strictly after start date");
         }
+        rejectOverlap(startDate, endDate, id);
 
         if (request.getName() != null && !request.getName().isBlank()) {
             year.setName(request.getName().trim());
@@ -183,5 +185,15 @@ public class AcademicYearServiceImpl implements AcademicYearService {
         year.softDelete();
         academicYearRepository.save(year);
         log.info("Successfully soft-deleted academic year ID: [{}]", id);
+    }
+
+    /** Two live academic years may not cover the same day (attendance, calendar and "year for date" rely on it). */
+    private void rejectOverlap(LocalDate startDate, LocalDate endDate, UUID excludeId) {
+        java.util.List<AcademicYear> overlapping = academicYearRepository.findOverlapping(startDate, endDate, excludeId != null ? excludeId : new UUID(0L, 0L));
+        if (overlapping != null && !overlapping.isEmpty()) {
+            AcademicYear other = overlapping.get(0);
+            throw new BusinessException("Dates overlap academic year " + other.getCode()
+                    + " (" + other.getStartDate() + " to " + other.getEndDate() + ")");
+        }
     }
 }

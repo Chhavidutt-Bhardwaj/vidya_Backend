@@ -41,6 +41,15 @@ public class GradingScaleServiceImpl implements GradingScaleService {
             throw new DuplicateResourceException("Grading scale with name '" + request.getName() + "' already exists");
         }
 
+        com.vidya.tenantdata.examination.grading.GradingTiers.validate(request.getTiers());
+        if (request.isDefault()) {
+            // Only one default: findDefaultScale() expects a single row.
+            gradingScaleRepository.findDefaultScale().ifPresent(curr -> {
+                curr.setDefault(false);
+                gradingScaleRepository.saveAndFlush(curr);
+            });
+        }
+
         GradingScale scale = new GradingScale(
                 CodeGenerator.gradingScaleCode(),
                 request.getName(),

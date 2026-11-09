@@ -46,7 +46,7 @@ public class StaffController {
     private final StaffService staffService;
 
     @PostMapping
-    @PreAuthorize("hasAuthority('STAFF_CREATE')")
+    @PreAuthorize("hasAuthority('STAFF_CREATE') and @dataAccess.hasFullScope(authentication, 'STAFF')")
     @Operation(summary = "Create staff member", description = "Creates a new staff record linked to an existing tenant operational user")
     public ResponseEntity<ApiResponse<StaffDetailResponse>> createStaff(
             @Valid @RequestBody CreateStaffRequest request) {
@@ -57,7 +57,7 @@ public class StaffController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAuthority('STAFF_READ')")
+    @PreAuthorize("hasAuthority('STAFF_READ') and @dataAccess.hasFullScope(authentication, 'STAFF')")
     @Operation(summary = "Search and list staff", description = "Lists staff in the current tenant database with search and pagination")
     public ResponseEntity<PagedApiResponse<StaffResponse>> listStaff(
             @RequestParam(required = false) EmploymentStatus status,
@@ -74,7 +74,7 @@ public class StaffController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('STAFF_READ')")
+    @PreAuthorize("hasAuthority('STAFF_READ') and @dataAccess.canAccessStaff(authentication, #id, 'STAFF')")
     @Operation(summary = "Get staff by UUID", description = "Retrieves staff record including operational profile")
     public ResponseEntity<ApiResponse<StaffDetailResponse>> getStaffById(
             @PathVariable UUID id) {
@@ -84,7 +84,7 @@ public class StaffController {
     }
 
     @GetMapping("/code/{staffCode}")
-    @PreAuthorize("hasAuthority('STAFF_READ')")
+    @PreAuthorize("hasAuthority('STAFF_READ') and @dataAccess.canAccessStaffCode(authentication, #staffCode, 'STAFF')")
     @Operation(summary = "Get staff by code", description = "Retrieves staff record by stable staff code (e.g. STF-8A92K3LM)")
     public ResponseEntity<ApiResponse<StaffDetailResponse>> getStaffByCode(
             @PathVariable String staffCode) {
@@ -94,7 +94,7 @@ public class StaffController {
     }
 
     @GetMapping("/tenant-user/{tenantUserId}")
-    @PreAuthorize("hasAuthority('STAFF_READ')")
+    @PreAuthorize("hasAuthority('STAFF_READ') and (@dataAccess.hasFullScope(authentication, 'STAFF') or @dataAccess.canAccessTenantUser(authentication, #tenantUserId, 'STAFF'))")
     @Operation(summary = "Get staff by TenantUser ID", description = "Retrieves staff record linked to a specific tenant user")
     public ResponseEntity<ApiResponse<StaffDetailResponse>> getStaffByTenantUserId(
             @PathVariable UUID tenantUserId) {
@@ -104,7 +104,7 @@ public class StaffController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAuthority('STAFF_UPDATE')")
+    @PreAuthorize("hasAuthority('STAFF_UPDATE') and @dataAccess.canAccessStaff(authentication, #id, 'STAFF')")
     @Operation(summary = "Update staff", description = "Updates mutable staff operational fields")
     public ResponseEntity<ApiResponse<StaffDetailResponse>> updateStaff(
             @PathVariable UUID id,
@@ -115,7 +115,7 @@ public class StaffController {
     }
 
     @PatchMapping("/{id}/status")
-    @PreAuthorize("hasAuthority('STAFF_STATUS_UPDATE')")
+    @PreAuthorize("hasAuthority('STAFF_STATUS_UPDATE') and @dataAccess.hasFullScope(authentication, 'STAFF')")
     @Operation(summary = "Update staff status", description = "Transitions staff employment lifecycle status")
     public ResponseEntity<ApiResponse<StaffDetailResponse>> updateStaffStatus(
             @PathVariable UUID id,
@@ -126,7 +126,7 @@ public class StaffController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('STAFF_DELETE')")
+    @PreAuthorize("hasAuthority('STAFF_DELETE') and @dataAccess.hasFullScope(authentication, 'STAFF')")
     @Operation(summary = "Soft delete staff", description = "Soft deletes a staff operational record")
     public ResponseEntity<ApiResponse<Void>> deleteStaff(@PathVariable UUID id) {
         log.info("REST: Delete staff ID: [{}]", id);

@@ -102,6 +102,25 @@ class AcademicYearServiceTest {
     }
 
     @Test
+    @DisplayName("Create academic year rejects dates that overlap another live year")
+    void createAcademicYear_Overlap() {
+        CreateAcademicYearRequest request = CreateAcademicYearRequest.builder()
+                .code("AY2026-27-B")
+                .name("Overlapping")
+                .startDate(LocalDate.of(2027, 1, 1))
+                .endDate(LocalDate.of(2027, 12, 31))
+                .build();
+
+        when(academicYearRepository.existsByCode("AY2026-27-B")).thenReturn(false);
+        when(academicYearRepository.findOverlapping(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any(),
+                org.mockito.ArgumentMatchers.any())).thenReturn(java.util.List.of(sampleYear));
+
+        assertThatThrownBy(() -> academicYearService.createAcademicYear(request))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("AY2026-27");
+    }
+
+    @Test
     @DisplayName("Create academic year throws BusinessException when end date is not after start date")
     void createAcademicYear_InvalidDates() {
         CreateAcademicYearRequest request = CreateAcademicYearRequest.builder()

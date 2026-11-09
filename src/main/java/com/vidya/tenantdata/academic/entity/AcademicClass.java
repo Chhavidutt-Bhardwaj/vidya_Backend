@@ -1,6 +1,7 @@
 package com.vidya.tenantdata.academic.entity;
 
 import com.vidya.tenantdata.academic.enums.AcademicClassStatus;
+import com.vidya.tenantdata.academic.enums.ClassStage;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -50,6 +51,21 @@ public class AcademicClass {
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 30)
     private AcademicClassStatus status = AcademicClassStatus.ACTIVE;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "stage", length = 30)
+    private ClassStage stage;
+
+    /** Pre-Nursery -3 … UKG 0, Class I 1 … Class XII 12. */
+    @Column(name = "grade_level")
+    private Integer gradeLevel;
+
+    @Column(name = "has_streams", nullable = false)
+    private boolean hasStreams = false;
+
+    /** Grading scale for this class when an exam schedule has none; null = school default. */
+    @Column(name = "grading_scale_id")
+    private UUID gradingScaleId;
 
     @Column(name = "deleted_at")
     private Instant deletedAt;

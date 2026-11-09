@@ -27,7 +27,9 @@ public final class SeedRoleMatrix {
     private static final List<Path> MIGRATIONS = List.of(
             Path.of("src/main/resources/db/migration/master/V29__dynamic_access_control_sessions_and_login_history.sql"),
             Path.of("src/main/resources/db/migration/master/V30__permission_matrix_cells.sql"),
-            Path.of("src/main/resources/db/migration/master/V31__data_scope_grants.sql"));
+            Path.of("src/main/resources/db/migration/master/V31__data_scope_grants.sql"),
+            Path.of("src/main/resources/db/migration/master/V32__data_scope_complete.sql"),
+            Path.of("src/main/resources/db/migration/master/V33__student_promotion_permission.sql"));
 
     private static final Map<String, String> PERMISSION_SCOPE = new LinkedHashMap<>();
     private static final Map<String, String> PERMISSION_FEATURE = new HashMap<>();
@@ -75,7 +77,7 @@ public final class SeedRoleMatrix {
         }
         String grantSection = section(sql, "INSERT INTO access_role_permission", "ON CONFLICT");
         if (grantSection != null) {
-            Matcher gm = Pattern.compile("\\('([A-Z_]+)', '([A-Z0-9_]+)'\\)").matcher(grantSection);
+            Matcher gm = Pattern.compile("\\('([A-Z_]+)',\\s*'([A-Z0-9_]+)'\\)").matcher(grantSection);
             while (gm.find()) {
                 ROLE_GRANTS.computeIfAbsent(gm.group(1), k -> new LinkedHashSet<>()).add(gm.group(2));
             }

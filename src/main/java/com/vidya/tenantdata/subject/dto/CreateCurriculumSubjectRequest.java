@@ -36,4 +36,7 @@ public class CreateCurriculumSubjectRequest {
     @Min(value = 0, message = "displayOrder cannot be negative")
     @Schema(description = "Display order for UI/reporting/timetable", example = "1")
     private Integer displayOrder;
+
+    @Schema(description = "Only for sections of this stream (classes with streams); null = whole class")
+    private UUID streamId;
 }

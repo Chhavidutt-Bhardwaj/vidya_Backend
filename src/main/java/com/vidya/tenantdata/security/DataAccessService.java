@@ -134,6 +134,213 @@ public class DataAccessService {
         return pair.isPresent() && own(access).subjectClassPairs().contains(pair.get());
     }
 
+    // ---- enrollments (STUDENT) ---------------------------------------------------------------
+
+    public boolean canAccessEnrollment(Authentication authentication, UUID enrollmentId, String domain) {
+        if (hasFullScope(authentication, domain)) {
+            return true;
+        }
+        return enrollmentId != null && resolver.studentIdOfEnrollment(enrollmentId)
+                .map(id -> canAccessStudent(authentication, id, domain)).orElse(false);
+    }
+
+    public boolean canAccessEnrollmentCode(Authentication authentication, String code, String domain) {
+        if (hasFullScope(authentication, domain)) {
+            return true;
+        }
+        return code != null && resolver.studentIdOfEnrollmentCode(code)
+                .map(id -> canAccessStudent(authentication, id, domain)).orElse(false);
+    }
+
+    /**
+     * Filtered list endpoints: ALL users may list anything; OWN users must narrow the query to a
+     * record they may see (a linked student, or a section they teach).
+     */
+    public boolean canQueryStudents(Authentication authentication, UUID studentId, UUID sectionId, String domain) {
+        if (hasFullScope(authentication, domain)) {
+            return true;
+        }
+        return (studentId != null && canAccessStudent(authentication, studentId, domain))
+                || (sectionId != null && canAccessSection(authentication, sectionId, domain));
+    }
+
+    // ---- staff, assignments (STAFF) ----------------------------------------------------------
+
+    /** A staff record: ALL, or the user's own staff row. */
+    public boolean canAccessStaff(Authentication authentication, UUID staffId, String domain) {
+        EffectiveAccess access = access(authentication);
+        if (access == null || staffId == null) {
+            return false;
+        }
+        if (access.dataScope(DataDomain.valueOf(domain)) == DataScope.ALL) {
+            return true;
+        }
+        boolean ok = own(access).includesStaff(staffId);
+        if (!ok) {
+            log.warn("Data access denied: user [{}] scope OWN on {} is not staff [{}]", access.userId(), domain, staffId);
+        }
+        return ok;
+    }
+
+    public boolean canAccessStaffCode(Authentication authentication, String staffCode, String domain) {
+        if (hasFullScope(authentication, domain)) {
+            return true;
+        }
+        return staffCode != null && resolver.staffIdByCode(staffCode)
+                .map(id -> canAccessStaff(authentication, id, domain)).orElse(false);
+    }
+
+    /** A class-teacher assignment (by id or code): ALL, or it is the user's own. */
+    public boolean canAccessClassTeacherAssignment(Authentication authentication, UUID id, String code) {
+        if (hasFullScope(authentication, DataDomain.STAFF.name())) {
+            return true;
+        }
+        return (id != null || code != null) && resolver.classTeacherAssignment(id, code)
+                .map(r -> canAccessStaff(authentication, r[0], DataDomain.STAFF.name())).orElse(false);
+    }
+
+    /** A teacher-subject assignment (by id or code): ALL, or it is the user's own. */
+    public boolean canAccessTeacherSubjectAssignment(Authentication authentication, UUID id, String code) {
+        if (hasFullScope(authentication, DataDomain.STAFF.name())) {
+            return true;
+        }
+        return (id != null || code != null) && resolver.teacherSubjectAssignment(id, code)
+                .map(r -> canAccessStaff(authentication, r[0], DataDomain.STAFF.name())).orElse(false);
+    }
+
+    /** Assignment lists: ALL, or narrowed to the user's own staff id or a section/class they teach. */
+    public boolean canQueryAssignments(Authentication authentication, UUID staffId, UUID sectionId, UUID classId) {
+        if (hasFullScope(authentication, DataDomain.STAFF.name())) {
+            return true;
+        }
+        return (staffId != null && canAccessStaff(authentication, staffId, DataDomain.STAFF.name()))
+                || (sectionId != null && canAccessSection(authentication, sectionId, DataDomain.STAFF.name()))
+                || (sectionId == null && classId != null && canAccessClass(authentication, classId, DataDomain.STAFF.name()));
+    }
+
+    // ---- timetable (TIMETABLE) ---------------------------------------------------------------
+
+    /**
+     * Read a section's timetable: ALL, sections the user teaches, or the section the user (student)
+     * or their child (parent) is enrolled in.
+     */
+    public boolean canViewSectionTimetable(Authentication authentication, UUID sectionId) {
+        EffectiveAccess access = access(authentication);
+        if (access == null || sectionId == null) {
+            return false;
+        }
+        if (access.dataScope(DataDomain.TIMETABLE) == DataScope.ALL) {
+            return true;
+        }
+        if (own(access).studentSectionIds().contains(sectionId)) {
+            return true;
+        }
+        return canAccessSection(authentication, sectionId, DataDomain.TIMETABLE.name());
+    }
+
+    /** A whole class (timetable or assignment views): ALL, a class the user teaches, or their own / child's class. */
+    public boolean canAccessClass(Authentication authentication, UUID classId, String domain) {
+        EffectiveAccess access = access(authentication);
+        if (access == null || classId == null) {
+            return false;
+        }
+        if (access.dataScope(DataDomain.valueOf(domain)) == DataScope.ALL) {
+            return true;
+        }
+        OwnRecords own = own(access);
+        if (own.teachingClassIds().contains(classId)) {
+            return true;
+        }
+        if (DataDomain.valueOf(domain) == DataDomain.TIMETABLE) {
+            for (UUID section : own.studentSectionIds()) {
+                if (resolver.classOfSection(section).map(classId::equals).orElse(false)) {
+                    return true;
+                }
+            }
+        }
+        log.warn("Data access denied: user [{}] scope OWN on {} has no link to class [{}]", access.userId(), domain, classId);
+        return false;
+    }
+
+    /** Class timetable, optionally narrowed to one section. */
+    public boolean canViewClassTimetable(Authentication authentication, UUID classId, UUID sectionId) {
+        if (sectionId != null) {
+            return canViewSectionTimetable(authentication, sectionId)
+                    && (hasFullScope(authentication, DataDomain.TIMETABLE.name())
+                    || resolver.classOfSection(sectionId).map(c -> c.equals(classId)).orElse(false));
+        }
+        return canAccessClass(authentication, classId, DataDomain.TIMETABLE.name());
+    }
+
+    /** A teacher's grid / day / load: ALL, or the user's own. */
+    public boolean canViewTeacherTimetable(Authentication authentication, UUID teacherId) {
+        return canAccessStaff(authentication, teacherId, DataDomain.TIMETABLE.name());
+    }
+
+    /** Timetable entry search: ALL, or narrowed to the user's own teacher id or a section they may view. */
+    public boolean canQueryTimetableEntries(Authentication authentication, UUID sectionId, UUID teacherId, UUID classId) {
+        if (hasFullScope(authentication, DataDomain.TIMETABLE.name())) {
+            return true;
+        }
+        return (teacherId != null && canViewTeacherTimetable(authentication, teacherId))
+                || (sectionId != null && canViewSectionTimetable(authentication, sectionId))
+                || (sectionId == null && teacherId == null && classId != null
+                    && canAccessClass(authentication, classId, DataDomain.TIMETABLE.name()));
+    }
+
+    public boolean canAccessTimetableEntry(Authentication authentication, UUID entryId) {
+        if (hasFullScope(authentication, DataDomain.TIMETABLE.name())) {
+            return true;
+        }
+        return entryId != null && resolver.timetableEntry(entryId)
+                .map(r -> (r[0] != null && canAccessStaffQuietly(authentication, r[0]))
+                        || (r[1] != null && canViewSectionTimetable(authentication, r[1])))
+                .orElse(false);
+    }
+
+    /** A substitution: ALL, the user is the original or substitute teacher, or it is in a section they may view. */
+    public boolean canAccessSubstitution(Authentication authentication, UUID substitutionId) {
+        if (hasFullScope(authentication, DataDomain.TIMETABLE.name())) {
+            return true;
+        }
+        return substitutionId != null && resolver.substitution(substitutionId)
+                .map(r -> (r[0] != null && canAccessStaffQuietly(authentication, r[0]))
+                        || (r[1] != null && canAccessStaffQuietly(authentication, r[1]))
+                        || (r[2] != null && canViewSectionTimetable(authentication, r[2])))
+                .orElse(false);
+    }
+
+    public boolean canQuerySubstitutions(Authentication authentication, UUID sectionId, UUID teacherId) {
+        if (hasFullScope(authentication, DataDomain.TIMETABLE.name())) {
+            return true;
+        }
+        return (teacherId != null && canViewTeacherTimetable(authentication, teacherId))
+                || (sectionId != null && canViewSectionTimetable(authentication, sectionId));
+    }
+
+    // ---- school user accounts (USER) ---------------------------------------------------------
+
+    /** A tenant_user row: ALL, or the user's own account. */
+    public boolean canAccessTenantUser(Authentication authentication, UUID tenantUserId, String domain) {
+        EffectiveAccess access = access(authentication);
+        if (access == null || tenantUserId == null) {
+            return false;
+        }
+        if (access.dataScope(DataDomain.valueOf(domain)) == DataScope.ALL) {
+            return true;
+        }
+        boolean ok = own(access).tenantUserIds().contains(tenantUserId);
+        if (!ok) {
+            log.warn("Data access denied: user [{}] scope OWN on {} is not tenant user [{}]", access.userId(), domain, tenantUserId);
+        }
+        return ok;
+    }
+
+    private boolean canAccessStaffQuietly(Authentication authentication, UUID staffId) {
+        EffectiveAccess access = access(authentication);
+        return access != null && own(access).includesStaff(staffId);
+    }
+
     /** Students visible to the current user under OWN scope (self, children, taught students). */
     public Set<UUID> ownStudentIds(Authentication authentication) {
         EffectiveAccess access = access(authentication);

@@ -120,4 +120,22 @@ public interface StudentAcademicEnrollmentRepository extends JpaRepository<Stude
             @Param("searchQuery") String searchQuery,
             Pageable pageable
     );
+
+    /** Active / admitted enrollments of a year with student, class and section loaded (year-end promotion). */
+    @Query("SELECT e FROM StudentAcademicEnrollment e JOIN FETCH e.student JOIN FETCH e.academicClass LEFT JOIN FETCH e.section " +
+           "WHERE e.academicYear.id = :academicYearId AND e.enrollmentStatus IN ('ADMITTED', 'ACTIVE') AND e.deletedAt IS NULL " +
+           "ORDER BY e.academicClass.sortOrder, e.rollNumber")
+    List<StudentAcademicEnrollment> findActiveByAcademicYearId(@Param("academicYearId") UUID academicYearId);
+
+    @Query("SELECT e.student.id FROM StudentAcademicEnrollment e WHERE e.academicYear.id = :academicYearId " +
+           "AND e.enrollmentStatus IN ('ADMITTED', 'ACTIVE') AND e.deletedAt IS NULL")
+    List<UUID> findStudentIdsWithActiveEnrollment(@Param("academicYearId") UUID academicYearId);
+
+    @Query("SELECT e.section.id, COUNT(e) FROM StudentAcademicEnrollment e WHERE e.academicYear.id = :academicYearId " +
+           "AND e.section IS NOT NULL AND e.enrollmentStatus IN ('ADMITTED', 'ACTIVE') AND e.deletedAt IS NULL GROUP BY e.section.id")
+    List<Object[]> countActiveBySection(@Param("academicYearId") UUID academicYearId);
+
+    @Query("SELECT e.section.id, e.rollNumber FROM StudentAcademicEnrollment e WHERE e.academicYear.id = :academicYearId " +
+           "AND e.section IS NOT NULL AND e.rollNumber IS NOT NULL AND e.enrollmentStatus IN ('ADMITTED', 'ACTIVE') AND e.deletedAt IS NULL")
+    List<Object[]> findActiveRollNumbers(@Param("academicYearId") UUID academicYearId);
 }

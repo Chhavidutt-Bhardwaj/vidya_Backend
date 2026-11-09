@@ -46,7 +46,7 @@ public class AcademicYearController {
     private final TimetableService timetableService;
 
     @GetMapping("/{id}/sections/{sectionId}/timetable")
-    @PreAuthorize("hasAuthority('TIMETABLE_READ')")
+    @PreAuthorize("hasAuthority('TIMETABLE_READ') and @dataAccess.canViewSectionTimetable(authentication, #sectionId)")
     @Operation(summary = "Get active section timetable for academic year", description = "Retrieves the active timetable weekly grid for a section within an academic year")
     public ResponseEntity<ApiResponse<TimetableGridResponse>> getActiveSectionTimetable(
             @PathVariable UUID id,

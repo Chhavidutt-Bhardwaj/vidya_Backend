@@ -57,4 +57,16 @@ public interface CurriculumSubjectRepository extends JpaRepository<CurriculumSub
            "WHERE cs.curriculum.id = :curriculumId AND cs.deletedAt IS NULL " +
            "ORDER BY cs.displayOrder ASC")
     List<CurriculumSubject> findByCurriculumIdAndNotDeleted(@Param("curriculumId") UUID curriculumId);
+
+    /** Duplicate check including the stream; pass UUID(0,0) as streamKey for whole-class rows. */
+    @Query("SELECT COUNT(cs) > 0 FROM CurriculumSubject cs WHERE cs.curriculum.id = :curriculumId AND cs.subject.id = :subjectId " +
+           "AND cs.academicClass.id = :academicClassId AND cs.deletedAt IS NULL " +
+           "AND COALESCE(cs.streamId, :none) = :streamKey")
+    boolean existsActiveForStream(@Param("curriculumId") UUID curriculumId, @Param("subjectId") UUID subjectId,
+                                  @Param("academicClassId") UUID academicClassId, @Param("streamKey") UUID streamKey,
+                                  @Param("none") UUID none);
+
+    default boolean existsActiveForStream(UUID curriculumId, UUID subjectId, UUID academicClassId, UUID streamKey) {
+        return existsActiveForStream(curriculumId, subjectId, academicClassId, streamKey, new UUID(0, 0));
+    }
 }

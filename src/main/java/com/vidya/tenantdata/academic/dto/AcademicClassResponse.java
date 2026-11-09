@@ -34,6 +34,18 @@ public class AcademicClassResponse {
     @Schema(description = "Sort order", example = "5")
     private int sortOrder;
 
+    @Schema(description = "School stage", example = "PRIMARY")
+    private com.vidya.tenantdata.academic.enums.ClassStage stage;
+
+    @Schema(description = "Numeric level: Nursery -2, LKG -1, UKG 0, Class I 1 … XII 12", example = "5")
+    private Integer gradeLevel;
+
+    @Schema(description = "Sections are split into streams (XI–XII)")
+    private boolean hasStreams;
+
+    @Schema(description = "Grading scale of this class; null = school default")
+    private UUID gradingScaleId;
+
     @Schema(description = "Class status", example = "ACTIVE")
     private AcademicClassStatus status;
 

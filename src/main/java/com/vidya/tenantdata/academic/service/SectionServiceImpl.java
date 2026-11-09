@@ -33,6 +33,7 @@ public class SectionServiceImpl implements SectionService {
     private final AcademicYearRepository academicYearRepository;
     private final AcademicClassRepository academicClassRepository;
     private final StudentAcademicAssignmentRepository assignmentRepository;
+    private final com.vidya.tenantdata.academic.repository.StreamRepository streamRepository;
 
     @Override
     @Transactional(transactionManager = "tenantTransactionManager")
@@ -52,6 +53,17 @@ public class SectionServiceImpl implements SectionService {
         }
 
         Section section = AcademicMapper.toEntity(request, year, cls);
+        if (request.getStreamId() != null) {
+            if (!cls.isHasStreams()) {
+                throw new com.vidya.common.exception.BusinessException("Class " + cls.getName() + " does not use streams");
+            }
+            var stream = streamRepository.findByIdAndNotDeleted(request.getStreamId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Stream", request.getStreamId()));
+            if (stream.getStatus() != com.vidya.tenantdata.academic.enums.StreamStatus.ACTIVE) {
+                throw new com.vidya.common.exception.BusinessException("Stream " + stream.getCode() + " is inactive");
+            }
+            section.setStreamId(stream.getId());
+        }
         Section saved = sectionRepository.save(section);
 
         log.info("Created section ID: [{}]", saved.getId());

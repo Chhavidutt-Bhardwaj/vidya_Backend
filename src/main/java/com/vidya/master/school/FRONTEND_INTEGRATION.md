@@ -392,4 +392,4 @@ interface MasterStatsResponse { totalSchools: number; activeSchools: number; dra
 | Compliance documents | `GET /schools/{id}/documents` (show `verificationStatus` and `rejectionReason`) | POST / DELETE |
 | My Relationship Manager | `GET /schools/{id}/relationship` | |
 
-Next phase: the academic setup screens (Academic Year, Classes, Sections), which use the tenant APIs under `/api/v1/academic-years`, `/api/v1/academic-classes` and `/api/v1/sections`. A separate guide will cover them.
+Academic year planning (create the year, setup checklist, year-end promotion) is covered in `tenantdata/academic/ACADEMIC_SETUP.md`.

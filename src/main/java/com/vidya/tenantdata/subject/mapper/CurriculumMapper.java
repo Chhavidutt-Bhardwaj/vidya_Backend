@@ -72,6 +72,7 @@ public final class CurriculumMapper {
                 .academicClassCode(entity.getAcademicClass() != null ? entity.getAcademicClass().getCode() : null)
                 .academicClassName(entity.getAcademicClass() != null ? entity.getAcademicClass().getName() : null)
                 .isCompulsory(entity.isCompulsory())
+                .streamId(entity.getStreamId())
                 .displayOrder(entity.getDisplayOrder())
                 .createdAt(entity.getCreatedAt())
                 .updatedAt(entity.getUpdatedAt())

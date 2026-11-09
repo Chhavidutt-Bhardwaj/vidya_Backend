@@ -12,7 +12,9 @@ public enum DataDomain {
     TIMETABLE("TIMETABLE"),
     STAFF("STAFF"),
     FEE("FEE"),
-    CHAT("CHAT");
+    CHAT("CHAT"),
+    /** School user accounts (tenant_user). */
+    USER("USER");
 
     private final String permissionPrefix;
 
