@@ -57,6 +57,7 @@ public class StudentGuardianServiceImpl implements StudentGuardianService {
         }
 
         StudentGuardian entity = StudentGuardianMapper.toEntity(request, student, code);
+        entity.setGuardianUserId(request.getGuardianUserId());
         StudentGuardian saved = guardianRepository.save(entity);
         log.info("Saved guardian ID: [{}] with code: [{}] for student: [{}]", saved.getId(), saved.getGuardianCode(), student.getId());
         return saved;
@@ -110,6 +111,9 @@ public class StudentGuardianServiceImpl implements StudentGuardianService {
         }
         if (request.getEmail() != null) {
             guardian.setEmail(request.getEmail().trim());
+        }
+        if (request.getGuardianUserId() != null) {
+            guardian.setGuardianUserId(request.getGuardianUserId());
         }
         if (request.getOccupation() != null) {
             guardian.setOccupation(request.getOccupation().trim());

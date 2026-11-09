@@ -41,7 +41,7 @@ public class StudentMarkController {
     private final StudentMarkService studentMarkService;
 
     @PostMapping("/subject-config/{configId}")
-    @PreAuthorize("hasAuthority('MARKS_ENTRY') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN') or hasRole('TEACHER')")
+    @PreAuthorize("hasAuthority('MARKS_ENTRY') and @dataAccess.canAccessExamSubjectConfig(authentication, #configId) and @dataAccess.canAccessStudent(authentication, #request.studentId, 'MARKS')")
     @Operation(summary = "Submit mark for student", description = "Records marks obtained for a student in an exam subject and computes grade")
     public ResponseEntity<ApiResponse<StudentMarkResponse>> submitStudentMark(
             @PathVariable UUID configId,
@@ -54,7 +54,7 @@ public class StudentMarkController {
     }
 
     @PostMapping("/bulk")
-    @PreAuthorize("hasAuthority('MARKS_ENTRY') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN') or hasRole('TEACHER')")
+    @PreAuthorize("hasAuthority('MARKS_ENTRY') and @dataAccess.canAccessExamSubjectConfig(authentication, #request.examSubjectConfigId) and @dataAccess.canAccessStudents(authentication, #request.entries.![studentId], 'MARKS')")
     @Operation(summary = "Bulk submit marks for a subject", description = "Transactional bulk mark entry upsert for all students in an exam subject")
     public ResponseEntity<ApiResponse<BulkStudentMarksResponse>> submitBulkMarks(
             @Valid @RequestBody BulkStudentMarksRequest request,
@@ -67,7 +67,7 @@ public class StudentMarkController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('MARKS_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN') or hasRole('TEACHER')")
+    @PreAuthorize("hasAuthority('MARKS_READ') and @dataAccess.canAccessMarkEntry(authentication, #id)")
     @Operation(summary = "Get student mark entry by ID")
     public ResponseEntity<ApiResponse<StudentMarkResponse>> getMarkById(@PathVariable UUID id) {
         StudentMarkResponse response = studentMarkService.getMarkById(id);
@@ -75,7 +75,7 @@ public class StudentMarkController {
     }
 
     @GetMapping("/subject-config/{configId}")
-    @PreAuthorize("hasAuthority('MARKS_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN') or hasRole('TEACHER')")
+    @PreAuthorize("hasAuthority('MARKS_READ') and @dataAccess.canAccessExamSubjectConfig(authentication, #configId)")
     @Operation(summary = "Search marks for an exam subject with pagination")
     public ResponseEntity<PagedApiResponse<StudentMarkResponse>> searchMarks(
             @PathVariable UUID configId,
@@ -87,7 +87,7 @@ public class StudentMarkController {
     }
 
     @GetMapping("/student/{studentId}")
-    @PreAuthorize("hasAuthority('MARKS_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN') or hasRole('TEACHER')")
+    @PreAuthorize("hasAuthority('MARKS_READ') and @dataAccess.canAccessStudent(authentication, #studentId, 'MARKS')")
     @Operation(summary = "Get all exam marks for a student")
     public ResponseEntity<ApiResponse<List<StudentMarkResponse>>> getMarksByStudent(@PathVariable UUID studentId) {
         List<StudentMarkResponse> responses = studentMarkService.getMarksByStudent(studentId);
@@ -95,7 +95,7 @@ public class StudentMarkController {
     }
 
     @PostMapping("/subject-config/{configId}/lock")
-    @PreAuthorize("hasAuthority('MARKS_LOCK') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('MARKS_LOCK') and @dataAccess.canAccessExamSubjectConfig(authentication, #configId)")
     @Operation(summary = "Lock marks for subject", description = "Freezes mark entries for an exam subject config, preventing further edits")
     public ResponseEntity<ApiResponse<Void>> lockMarks(@PathVariable UUID configId) {
         log.info("REST: Lock marks for config: {}", configId);

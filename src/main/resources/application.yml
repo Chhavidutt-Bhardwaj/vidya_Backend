@@ -46,6 +46,20 @@ vidya:
     login:
       max-failed-attempts: 5
       lockout-minutes: 15
+    # DB-driven roles/permissions (see docs/security/DYNAMIC_ACCESS_CONTROL.md)
+    access:
+      # Per-instance cache of each user's effective permissions. API changes evict immediately;
+      # direct SQL edits go live within this many seconds (or call POST /api/v1/admin/access/cache/evict).
+      cache-ttl-seconds: ${VIDYA_ACCESS_CACHE_TTL_SECONDS:60}
+      # Remove permissions whose feature_code is not enabled for the user's school (plan + overrides).
+      feature-gating-enabled: ${VIDYA_ACCESS_FEATURE_GATING:true}
+    jwt:
+      # Put a snapshot of effective access (perms, roles, features, data scopes, version "av") into
+      # access tokens for the frontend. The server never authorizes from it; it re-reads the DB.
+      embed-access: ${VIDYA_JWT_EMBED_ACCESS:true}
+    session:
+      # Oldest active session is ended when a user logs in on one device too many.
+      max-active-per-user: ${VIDYA_MAX_SESSIONS_PER_USER:10}
 
   # Flyway migration locations
   flyway:

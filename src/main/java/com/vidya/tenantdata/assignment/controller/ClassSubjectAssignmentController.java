@@ -46,7 +46,7 @@ public class ClassSubjectAssignmentController {
     private final ClassSubjectAssignmentService classSubjectAssignmentService;
 
     @PostMapping
-    @PreAuthorize("hasAuthority('CLASS_SUBJECT_ASSIGNMENT_CREATE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('CLASS_SUBJECT_ASSIGNMENT_CREATE')")
     @Operation(summary = "Create class subject deployment", description = "Deploys a subject offering to an academic class/section")
     public ResponseEntity<ApiResponse<ClassSubjectAssignmentDetailResponse>> createAssignment(
             @Valid @RequestBody CreateClassSubjectAssignmentRequest request) {
@@ -57,7 +57,7 @@ public class ClassSubjectAssignmentController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAuthority('CLASS_SUBJECT_ASSIGNMENT_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('CLASS_SUBJECT_ASSIGNMENT_READ')")
     @Operation(summary = "Search class subject deployments", description = "Lists class subject deployments with filtering and pagination")
     public ResponseEntity<PagedApiResponse<ClassSubjectAssignmentResponse>> searchAssignments(
             @RequestParam(required = false) UUID academicYearId,
@@ -75,7 +75,7 @@ public class ClassSubjectAssignmentController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('CLASS_SUBJECT_ASSIGNMENT_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('CLASS_SUBJECT_ASSIGNMENT_READ')")
     @Operation(summary = "Get class subject assignment by ID", description = "Retrieves class subject deployment details by UUID")
     public ResponseEntity<ApiResponse<ClassSubjectAssignmentDetailResponse>> getAssignment(
             @Parameter(description = "Assignment UUID") @PathVariable UUID id) {
@@ -85,7 +85,7 @@ public class ClassSubjectAssignmentController {
     }
 
     @GetMapping("/code/{assignmentCode}")
-    @PreAuthorize("hasAuthority('CLASS_SUBJECT_ASSIGNMENT_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('CLASS_SUBJECT_ASSIGNMENT_READ')")
     @Operation(summary = "Get class subject assignment by code", description = "Retrieves class subject deployment details by business code")
     public ResponseEntity<ApiResponse<ClassSubjectAssignmentDetailResponse>> getAssignmentByCode(
             @Parameter(description = "Assignment business code") @PathVariable String assignmentCode) {
@@ -95,7 +95,7 @@ public class ClassSubjectAssignmentController {
     }
 
     @GetMapping("/class/{academicClassId}")
-    @PreAuthorize("hasAuthority('CLASS_SUBJECT_ASSIGNMENT_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('CLASS_SUBJECT_ASSIGNMENT_READ')")
     @Operation(summary = "Get active subjects for class/section", description = "Retrieves all active subject assignments for a specific class and optional section")
     public ResponseEntity<ApiResponse<List<ClassSubjectAssignmentResponse>>> getActiveAssignmentsByClass(
             @Parameter(description = "Academic Class UUID") @PathVariable UUID academicClassId,
@@ -107,7 +107,7 @@ public class ClassSubjectAssignmentController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAuthority('CLASS_SUBJECT_ASSIGNMENT_UPDATE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('CLASS_SUBJECT_ASSIGNMENT_UPDATE')")
     @Operation(summary = "Update class subject assignment", description = "Updates class subject deployment properties")
     public ResponseEntity<ApiResponse<ClassSubjectAssignmentDetailResponse>> updateAssignment(
             @Parameter(description = "Assignment UUID") @PathVariable UUID id,
@@ -118,7 +118,7 @@ public class ClassSubjectAssignmentController {
     }
 
     @PatchMapping("/{id}/status")
-    @PreAuthorize("hasAuthority('CLASS_SUBJECT_ASSIGNMENT_STATUS_UPDATE') or hasAuthority('CLASS_SUBJECT_ASSIGNMENT_UPDATE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('CLASS_SUBJECT_ASSIGNMENT_STATUS_UPDATE') or hasAuthority('CLASS_SUBJECT_ASSIGNMENT_UPDATE')")
     @Operation(summary = "Update class subject assignment status", description = "Transitions class subject deployment status")
     public ResponseEntity<ApiResponse<ClassSubjectAssignmentDetailResponse>> updateStatus(
             @Parameter(description = "Assignment UUID") @PathVariable UUID id,
@@ -129,7 +129,7 @@ public class ClassSubjectAssignmentController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('CLASS_SUBJECT_ASSIGNMENT_DELETE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('CLASS_SUBJECT_ASSIGNMENT_DELETE')")
     @Operation(summary = "Delete class subject assignment", description = "Soft-deletes a class subject assignment")
     public ResponseEntity<ApiResponse<Void>> deleteAssignment(
             @Parameter(description = "Assignment UUID") @PathVariable UUID id) {

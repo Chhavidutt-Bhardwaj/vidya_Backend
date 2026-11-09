@@ -44,6 +44,7 @@ public final class StudentGuardianMapper {
                 .relationshipType(entity.getRelationshipType())
                 .phone(entity.getPhone())
                 .email(entity.getEmail())
+                .guardianUserId(entity.getGuardianUserId())
                 .occupation(entity.getOccupation())
                 .annualIncome(entity.getAnnualIncome())
                 .addressLine1(entity.getAddressLine1())

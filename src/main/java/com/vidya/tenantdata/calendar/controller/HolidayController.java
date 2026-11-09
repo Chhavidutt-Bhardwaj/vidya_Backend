@@ -40,7 +40,7 @@ public class HolidayController {
     private final HolidayService holidayService;
 
     @PostMapping
-    @PreAuthorize("hasAuthority('CALENDAR_MANAGE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('CALENDAR_MANAGE')")
     @Operation(summary = "Create holiday", description = "Creates a new school holiday or break for an academic year")
     public ResponseEntity<ApiResponse<HolidayResponse>> createHoliday(@Valid @RequestBody CreateHolidayRequest request) {
         HolidayResponse response = holidayService.createHoliday(request);
@@ -49,7 +49,7 @@ public class HolidayController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('CALENDAR_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('CALENDAR_READ')")
     @Operation(summary = "Get holiday by ID", description = "Retrieves a holiday record by ID")
     public ResponseEntity<ApiResponse<HolidayResponse>> getHolidayById(@PathVariable UUID id) {
         HolidayResponse response = holidayService.getHolidayById(id);
@@ -57,7 +57,7 @@ public class HolidayController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAuthority('CALENDAR_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('CALENDAR_READ')")
     @Operation(summary = "Search holidays", description = "Search holidays with filters for academic year, type, and date range")
     public ResponseEntity<PagedApiResponse<HolidayResponse>> searchHolidays(
             @RequestParam(required = false) UUID academicYearId,
@@ -71,7 +71,7 @@ public class HolidayController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAuthority('CALENDAR_MANAGE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('CALENDAR_MANAGE')")
     @Operation(summary = "Update holiday", description = "Updates an existing holiday record")
     public ResponseEntity<ApiResponse<HolidayResponse>> updateHoliday(
             @PathVariable UUID id,
@@ -82,7 +82,7 @@ public class HolidayController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('CALENDAR_MANAGE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('CALENDAR_MANAGE')")
     @Operation(summary = "Delete holiday", description = "Soft deletes a holiday record")
     public ResponseEntity<ApiResponse<Void>> deleteHoliday(@PathVariable UUID id) {
         holidayService.deleteHoliday(id);

@@ -13,6 +13,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -42,6 +43,7 @@ public class SchoolSubscriptionController {
     private final SchoolSubscriptionService schoolSubscriptionService;
     private final SubscriptionEntitlementService entitlementService;
 
+    @PreAuthorize("hasAuthority('SUBSCRIPTION_MANAGE')")
     @PostMapping
     public ResponseEntity<ApiResponse<SchoolSubscriptionResponse>> subscribeSchool(
             @PathVariable UUID schoolId,
@@ -67,6 +69,7 @@ public class SchoolSubscriptionController {
                 ));
     }
 
+    @PreAuthorize("hasAuthority('SUBSCRIPTION_READ') and @tenantAuthorizationService.canAccessSchool(authentication, #schoolId)")
     @GetMapping("/active")
     public ResponseEntity<ApiResponse<SchoolSubscriptionResponse>> getActiveSubscription(
             @PathVariable UUID schoolId) {
@@ -78,6 +81,7 @@ public class SchoolSubscriptionController {
         ));
     }
 
+    @PreAuthorize("hasAuthority('SUBSCRIPTION_READ') and @tenantAuthorizationService.canAccessSchool(authentication, #schoolId)")
     @GetMapping("/entitlements")
     public ResponseEntity<ApiResponse<SchoolEntitlementResponse>> getSchoolEntitlements(
             @PathVariable UUID schoolId) {
@@ -89,6 +93,7 @@ public class SchoolSubscriptionController {
         ));
     }
 
+    @PreAuthorize("hasAuthority('SUBSCRIPTION_MANAGE')")
     @PutMapping("/feature-overrides")
     public ResponseEntity<ApiResponse<SchoolFeatureOverrideResponse>> overrideFeature(
             @PathVariable UUID schoolId,
@@ -103,6 +108,7 @@ public class SchoolSubscriptionController {
         ));
     }
 
+    @PreAuthorize("hasAuthority('SUBSCRIPTION_MANAGE')")
     @DeleteMapping("/feature-overrides/{featureCode}")
     public ResponseEntity<ApiResponse<Void>> removeFeatureOverride(
             @PathVariable UUID schoolId,
@@ -115,6 +121,7 @@ public class SchoolSubscriptionController {
         ));
     }
 
+    @PreAuthorize("hasAuthority('SUBSCRIPTION_READ') and @tenantAuthorizationService.canAccessSchool(authentication, #schoolId)")
     @GetMapping
     public ResponseEntity<PagedApiResponse<SchoolSubscriptionResponse>> getSubscriptionHistory(
             @PathVariable UUID schoolId,
@@ -128,6 +135,7 @@ public class SchoolSubscriptionController {
         ));
     }
 
+    @PreAuthorize("hasAuthority('SUBSCRIPTION_MANAGE')")
     @PostMapping("/{subscriptionId}/cancel")
     public ResponseEntity<ApiResponse<SchoolSubscriptionResponse>> cancelSubscription(
             @PathVariable UUID schoolId,

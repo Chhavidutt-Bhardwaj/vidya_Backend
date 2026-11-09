@@ -38,7 +38,7 @@ public class GradingScaleController {
     private final GradingScaleService gradingScaleService;
 
     @PostMapping
-    @PreAuthorize("hasAuthority('GRADING_SCALE_MANAGE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('GRADING_SCALE_MANAGE')")
     @Operation(summary = "Create grading scale", description = "Defines a new grading scale with percentage boundaries and grade points")
     public ResponseEntity<ApiResponse<GradingScaleResponse>> createGradingScale(
             @Valid @RequestBody CreateGradingScaleRequest request) {
@@ -49,7 +49,7 @@ public class GradingScaleController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('GRADING_SCALE_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN') or hasRole('TEACHER')")
+    @PreAuthorize("hasAuthority('GRADING_SCALE_READ')")
     @Operation(summary = "Get grading scale by ID")
     public ResponseEntity<ApiResponse<GradingScaleResponse>> getGradingScaleById(@PathVariable UUID id) {
         log.info("REST: Get grading scale by ID: {}", id);
@@ -58,7 +58,7 @@ public class GradingScaleController {
     }
 
     @GetMapping("/default")
-    @PreAuthorize("hasAuthority('GRADING_SCALE_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN') or hasRole('TEACHER')")
+    @PreAuthorize("hasAuthority('GRADING_SCALE_READ')")
     @Operation(summary = "Get default active grading scale")
     public ResponseEntity<ApiResponse<GradingScaleResponse>> getDefaultGradingScale() {
         GradingScaleResponse response = gradingScaleService.getDefaultGradingScale();
@@ -66,7 +66,7 @@ public class GradingScaleController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAuthority('GRADING_SCALE_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN') or hasRole('TEACHER')")
+    @PreAuthorize("hasAuthority('GRADING_SCALE_READ')")
     @Operation(summary = "List all grading scales with pagination")
     public ResponseEntity<PagedApiResponse<GradingScaleResponse>> listGradingScales(
             @Parameter(hidden = true)
@@ -76,7 +76,7 @@ public class GradingScaleController {
     }
 
     @PatchMapping("/{id}/default")
-    @PreAuthorize("hasAuthority('GRADING_SCALE_MANAGE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('GRADING_SCALE_MANAGE')")
     @Operation(summary = "Set grading scale as school default")
     public ResponseEntity<ApiResponse<Void>> setDefaultScale(@PathVariable UUID id) {
         log.info("REST: Set grading scale default: {}", id);
@@ -85,7 +85,7 @@ public class GradingScaleController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('GRADING_SCALE_MANAGE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('GRADING_SCALE_MANAGE')")
     @Operation(summary = "Delete grading scale")
     public ResponseEntity<ApiResponse<Void>> deleteGradingScale(@PathVariable UUID id) {
         log.info("REST: Delete grading scale: {}", id);

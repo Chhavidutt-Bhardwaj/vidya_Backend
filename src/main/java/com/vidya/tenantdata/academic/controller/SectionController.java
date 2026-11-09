@@ -42,7 +42,7 @@ public class SectionController {
     private final SectionService sectionService;
 
     @PostMapping
-    @PreAuthorize("hasAuthority('SECTION_CREATE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('SECTION_CREATE')")
     @Operation(summary = "Create section")
     public ResponseEntity<ApiResponse<SectionResponse>> createSection(
             @Valid @RequestBody CreateSectionRequest request) {
@@ -54,7 +54,7 @@ public class SectionController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('SECTION_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('SECTION_READ')")
     @Operation(summary = "Get section by ID")
     public ResponseEntity<ApiResponse<SectionResponse>> getSectionById(@PathVariable UUID id) {
         log.info("REST: Get section ID: [{}]", id);
@@ -63,7 +63,7 @@ public class SectionController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAuthority('SECTION_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('SECTION_READ')")
     @Operation(summary = "List sections with filters and pagination")
     public ResponseEntity<PagedApiResponse<SectionResponse>> listSections(
             @RequestParam(required = false) UUID academicYearId,
@@ -77,7 +77,7 @@ public class SectionController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAuthority('SECTION_UPDATE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('SECTION_UPDATE')")
     @Operation(summary = "Update section")
     public ResponseEntity<ApiResponse<SectionResponse>> updateSection(
             @PathVariable UUID id,
@@ -88,7 +88,7 @@ public class SectionController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('SECTION_DELETE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('SECTION_DELETE')")
     @Operation(summary = "Soft delete section")
     public ResponseEntity<ApiResponse<Void>> deleteSection(@PathVariable UUID id) {
         log.info("REST: Delete section ID: [{}]", id);

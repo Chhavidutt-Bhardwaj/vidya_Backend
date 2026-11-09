@@ -1,6 +1,7 @@
 package com.vidya.security.user;
 
-import com.vidya.security.entity.PlatformPermission;
+import com.vidya.security.access.AccessScope;
+import com.vidya.security.access.service.EffectiveAccess;
 import com.vidya.security.entity.PlatformRole;
 import com.vidya.security.entity.PlatformUser;
 import com.vidya.security.entity.UserStatus;
@@ -13,10 +14,16 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
- * Spring Security UserDetails implementation for authenticated platform users.
+ * Spring Security principal for authenticated platform users.
+ *
+ * <p>Authorities come from {@link EffectiveAccess}, which is resolved from the DB-driven role and
+ * permission tables. The principal also carries the id of the server-side session the request
+ * was authenticated with.
  */
 @Getter
 public class PlatformUserDetails implements UserDetails {
@@ -30,13 +37,22 @@ public class PlatformUserDetails implements UserDetails {
     private final String tenantCode;
     private final UserStatus status;
     private final boolean accountLocked;
+    private final UUID sessionId;
+    private final EffectiveAccess effectiveAccess;
     private final Collection<? extends GrantedAuthority> authorities;
+    private final Set<String> authorityNames;
 
+    /** Principal without resolved permissions: carries only {@code ROLE_<accountType>} (tests and internal use). */
     public PlatformUserDetails(PlatformUser user) {
         this(user, null);
     }
 
     public PlatformUserDetails(PlatformUser user, String tenantCode) {
+        this(user, tenantCode, null, null);
+    }
+
+    /** Main constructor used by request authentication. */
+    public PlatformUserDetails(PlatformUser user, String tenantCode, EffectiveAccess access, UUID sessionId) {
         this.userId = user.getId();
         this.userCode = user.getUserCode();
         this.email = user.getEmail();
@@ -46,28 +62,20 @@ public class PlatformUserDetails implements UserDetails {
         this.tenantCode = tenantCode;
         this.status = user.getStatus();
         this.accountLocked = user.isAccountLocked();
+        this.sessionId = sessionId;
+        this.effectiveAccess = access;
 
-        List<GrantedAuthority> auths = new ArrayList<>();
-        // Role authority
-        if (user.getPlatformRole() != null) {
-            auths.add(new SimpleGrantedAuthority("ROLE_" + user.getPlatformRole().name()));
-            if (user.getPlatformRole().getPermissions() != null) {
-                for (PlatformPermission permission : user.getPlatformRole().getPermissions()) {
-                    auths.add(new SimpleGrantedAuthority(permission.name()));
-                    auths.add(new SimpleGrantedAuthority("PERMISSION_" + permission.name()));
-                }
-            }
-
-            // SuperUser automatically inherits ALL platform roles (current and future)
-            if (user.getPlatformRole() == PlatformRole.PLATFORM_SUPER_ADMIN) {
-                for (PlatformRole r : PlatformRole.values()) {
-                    if (r != PlatformRole.PLATFORM_SUPER_ADMIN) {
-                        auths.add(new SimpleGrantedAuthority("ROLE_" + r.name()));
-                    }
-                }
+        List<GrantedAuthority> auths;
+        if (access != null) {
+            auths = access.toAuthorities();
+        } else {
+            auths = new ArrayList<>();
+            if (user.getPlatformRole() != null) {
+                auths.add(new SimpleGrantedAuthority("ROLE_" + user.getPlatformRole().name()));
             }
         }
         this.authorities = Collections.unmodifiableList(auths);
+        this.authorityNames = names(this.authorities);
     }
 
     public PlatformUserDetails(UUID userId,
@@ -78,6 +86,7 @@ public class PlatformUserDetails implements UserDetails {
         this(userId, email, passwordHash, platformRole, null, null, authorities);
     }
 
+    /** Explicit-authorities constructor (tests, system actors). */
     public PlatformUserDetails(UUID userId,
                                String email,
                                String passwordHash,
@@ -94,52 +103,57 @@ public class PlatformUserDetails implements UserDetails {
         this.tenantCode = tenantCode;
         this.status = UserStatus.ACTIVE;
         this.accountLocked = false;
+        this.sessionId = null;
+        this.effectiveAccess = null;
 
-        List<GrantedAuthority> resolvedAuths = new ArrayList<>();
+        List<GrantedAuthority> resolved = new ArrayList<>();
         if (authorities != null) {
-            resolvedAuths.addAll(authorities);
+            resolved.addAll(authorities);
         }
         if (this.platformRole == PlatformRole.PLATFORM_SUPER_ADMIN) {
             for (PlatformRole r : PlatformRole.values()) {
                 SimpleGrantedAuthority roleAuth = new SimpleGrantedAuthority("ROLE_" + r.name());
-                if (!resolvedAuths.contains(roleAuth)) {
-                    resolvedAuths.add(roleAuth);
-                }
-            }
-            for (PlatformPermission p : PlatformPermission.values()) {
-                SimpleGrantedAuthority permAuth = new SimpleGrantedAuthority(p.name());
-                SimpleGrantedAuthority permPrefixAuth = new SimpleGrantedAuthority("PERMISSION_" + p.name());
-                if (!resolvedAuths.contains(permAuth)) {
-                    resolvedAuths.add(permAuth);
-                }
-                if (!resolvedAuths.contains(permPrefixAuth)) {
-                    resolvedAuths.add(permPrefixAuth);
+                if (!resolved.contains(roleAuth)) {
+                    resolved.add(roleAuth);
                 }
             }
         }
-        this.authorities = Collections.unmodifiableList(resolvedAuths);
+        this.authorities = Collections.unmodifiableList(resolved);
+        this.authorityNames = names(this.authorities);
     }
 
-    public boolean hasPermission(PlatformPermission permission) {
-        if (this.platformRole == PlatformRole.PLATFORM_SUPER_ADMIN) {
+    /** True when the user currently holds the permission (DB-resolved, after overrides and feature gating). */
+    public boolean hasPermission(String permissionCode) {
+        if (permissionCode == null) {
+            return false;
+        }
+        if (effectiveAccess != null && effectiveAccess.superUser()) {
             return true;
         }
-        return platformRole != null && platformRole.hasPermission(permission);
+        return authorityNames.contains(permissionCode);
     }
 
     public boolean hasRole(PlatformRole role) {
         if (this.platformRole == PlatformRole.PLATFORM_SUPER_ADMIN) {
             return true;
         }
-        return this.platformRole == role;
+        return this.platformRole == role || authorityNames.contains("ROLE_" + role.name());
+    }
+
+    public AccessScope getScope() {
+        return platformRole != null ? platformRole.getScope() : AccessScope.SCHOOL_PORTAL;
     }
 
     public boolean isPlatformAdmin() {
-        return platformRole == PlatformRole.PLATFORM_SUPER_ADMIN || platformRole == PlatformRole.PLATFORM_ADMIN;
+        return platformRole != null && platformRole.isPlatformAdmin();
     }
 
     public String getPlatformRoleName() {
         return platformRole != null ? platformRole.name() : null;
+    }
+
+    private static Set<String> names(Collection<? extends GrantedAuthority> authorities) {
+        return authorities.stream().map(GrantedAuthority::getAuthority).collect(Collectors.toUnmodifiableSet());
     }
 
     @Override

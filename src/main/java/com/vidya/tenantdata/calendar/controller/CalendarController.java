@@ -33,7 +33,7 @@ public class CalendarController {
     private final CalendarService calendarService;
 
     @GetMapping("/config")
-    @PreAuthorize("hasAuthority('CALENDAR_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('CALENDAR_READ')")
     @Operation(summary = "Get working day config", description = "Retrieves the working day configuration for an academic year")
     public ResponseEntity<ApiResponse<WorkingDayConfigResponse>> getWorkingDayConfig(
             @RequestParam UUID academicYearId
@@ -43,7 +43,7 @@ public class CalendarController {
     }
 
     @PutMapping("/config")
-    @PreAuthorize("hasAuthority('CALENDAR_MANAGE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('CALENDAR_MANAGE')")
     @Operation(summary = "Update working day config", description = "Creates or updates the working day configuration for an academic year")
     public ResponseEntity<ApiResponse<WorkingDayConfigResponse>> updateWorkingDayConfig(
             @RequestParam UUID academicYearId,
@@ -54,7 +54,7 @@ public class CalendarController {
     }
 
     @GetMapping("/days")
-    @PreAuthorize("hasAuthority('CALENDAR_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('CALENDAR_READ')")
     @Operation(summary = "Get per-date calendar status", description = "Retrieves per-date status for dates in a specified range")
     public ResponseEntity<ApiResponse<List<DayStatusResponse>>> getDaysStatus(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
@@ -65,7 +65,7 @@ public class CalendarController {
     }
 
     @GetMapping("/working-days/count")
-    @PreAuthorize("hasAuthority('CALENDAR_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('CALENDAR_READ')")
     @Operation(summary = "Count working days in range", description = "Returns the count of working days in a specified date range")
     public ResponseEntity<ApiResponse<WorkingDaysCountResponse>> countWorkingDays(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,

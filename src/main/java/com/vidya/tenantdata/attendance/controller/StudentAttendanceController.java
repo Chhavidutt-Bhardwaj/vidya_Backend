@@ -63,7 +63,7 @@ public class StudentAttendanceController {
     // ── Mark individual attendance ─────────────────────────────────────────────
 
     @PostMapping
-    @PreAuthorize("hasAuthority('ATTENDANCE_CREATE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN') or hasRole('TEACHER')")
+    @PreAuthorize("hasAuthority('ATTENDANCE_CREATE') and @dataAccess.canAccessSection(authentication, #request.sectionId, 'ATTENDANCE') and @dataAccess.canAccessStudent(authentication, #request.studentId, 'ATTENDANCE')")
     @Operation(summary = "Mark attendance for a student",
                description = "Marks attendance for a single student. Teachers may only mark attendance for their assigned section.")
     public ResponseEntity<ApiResponse<AttendanceDetailResponse>> markAttendance(
@@ -79,7 +79,7 @@ public class StudentAttendanceController {
     // ── Bulk attendance ────────────────────────────────────────────────────────
 
     @PostMapping("/bulk")
-    @PreAuthorize("hasAuthority('ATTENDANCE_BULK_MARK') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN') or hasRole('TEACHER')")
+    @PreAuthorize("hasAuthority('ATTENDANCE_BULK_MARK') and @dataAccess.canAccessSection(authentication, #request.sectionId, 'ATTENDANCE') and @dataAccess.canAccessStudents(authentication, #request.records.![studentId], 'ATTENDANCE')")
     @Operation(summary = "Bulk mark / upsert attendance for a section",
                description = "Transactional bulk upsert: creates new attendance records or updates existing active records. Atomic: all or nothing.")
     public ResponseEntity<ApiResponse<BulkAttendanceResponse>> markBulkAttendance(
@@ -96,7 +96,7 @@ public class StudentAttendanceController {
     // ── Get by ID ─────────────────────────────────────────────────────────────
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('ATTENDANCE_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN') or hasRole('TEACHER')")
+    @PreAuthorize("hasAuthority('ATTENDANCE_READ') and @dataAccess.canAccessAttendanceRecord(authentication, #id)")
     @Operation(summary = "Get attendance record by ID",
                description = "Retrieves a single attendance record by UUID")
     public ResponseEntity<ApiResponse<AttendanceDetailResponse>> getAttendance(
@@ -109,7 +109,7 @@ public class StudentAttendanceController {
     // ── Update attendance (correction) ────────────────────────────────────────
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAuthority('ATTENDANCE_UPDATE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN') or hasRole('TEACHER')")
+    @PreAuthorize("hasAuthority('ATTENDANCE_UPDATE') and @dataAccess.canAccessAttendanceRecord(authentication, #id)")
     @Operation(summary = "Correct attendance record",
                description = "Updates status and/or remarks of an existing attendance record (attendance correction)")
     public ResponseEntity<ApiResponse<AttendanceDetailResponse>> updateAttendance(
@@ -125,7 +125,7 @@ public class StudentAttendanceController {
     // ── Status-only patch ─────────────────────────────────────────────────────
 
     @PatchMapping("/{id}/status")
-    @PreAuthorize("hasAuthority('ATTENDANCE_STATUS_UPDATE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN') or hasRole('TEACHER')")
+    @PreAuthorize("hasAuthority('ATTENDANCE_STATUS_UPDATE') and @dataAccess.canAccessAttendanceRecord(authentication, #id)")
     @Operation(summary = "Update attendance status",
                description = "Patches only the status field of an existing attendance record")
     public ResponseEntity<ApiResponse<AttendanceDetailResponse>> updateAttendanceStatus(
@@ -142,7 +142,7 @@ public class StudentAttendanceController {
     // ── Soft delete ───────────────────────────────────────────────────────────
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('ATTENDANCE_DELETE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('ATTENDANCE_DELETE') and @dataAccess.canAccessAttendanceRecord(authentication, #id)")
     @Operation(summary = "Delete attendance record",
                description = "Soft-deletes an attendance record. Historical data is preserved.")
     public ResponseEntity<ApiResponse<Void>> deleteAttendance(
@@ -155,7 +155,7 @@ public class StudentAttendanceController {
     // ── Student attendance history ────────────────────────────────────────────
 
     @GetMapping("/students/{studentId}")
-    @PreAuthorize("hasAuthority('ATTENDANCE_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN') or hasRole('TEACHER')")
+    @PreAuthorize("hasAuthority('ATTENDANCE_READ') and @dataAccess.canAccessStudent(authentication, #studentId, 'ATTENDANCE')")
     @Operation(summary = "Get student attendance history",
                description = "Paginated attendance history for a student with optional filters")
     public ResponseEntity<PagedApiResponse<AttendanceResponse>> getStudentAttendanceHistory(
@@ -176,7 +176,7 @@ public class StudentAttendanceController {
     // ── Student attendance summary ────────────────────────────────────────────
 
     @GetMapping("/students/{studentId}/summary")
-    @PreAuthorize("hasAuthority('ATTENDANCE_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN') or hasRole('TEACHER')")
+    @PreAuthorize("hasAuthority('ATTENDANCE_READ') and @dataAccess.canAccessStudent(authentication, #studentId, 'ATTENDANCE')")
     @Operation(summary = "Get attendance summary for a student",
                description = "Returns present/absent/late/half-day/excused counts and percentage for a student in an academic year")
     public ResponseEntity<ApiResponse<AttendanceSummaryResponse>> getAttendanceSummary(
@@ -191,7 +191,7 @@ public class StudentAttendanceController {
     // ── Daily section attendance sheet ────────────────────────────────────────
 
     @GetMapping("/sections/{sectionId}/daily")
-    @PreAuthorize("hasAuthority('ATTENDANCE_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN') or hasRole('TEACHER')")
+    @PreAuthorize("hasAuthority('ATTENDANCE_READ') and @dataAccess.canAccessSection(authentication, #sectionId, 'ATTENDANCE')")
     @Operation(summary = "Daily section attendance sheet",
                description = "Returns attendance for all students in a section on a specific date. Unrecorded students have null status.")
     public ResponseEntity<ApiResponse<DailySectionAttendanceResponse>> getDailySectionAttendance(
@@ -207,7 +207,7 @@ public class StudentAttendanceController {
     // ── Section attendance history ─────────────────────────────────────────────
 
     @GetMapping("/sections/{sectionId}")
-    @PreAuthorize("hasAuthority('ATTENDANCE_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN') or hasRole('TEACHER')")
+    @PreAuthorize("hasAuthority('ATTENDANCE_READ') and @dataAccess.canAccessSection(authentication, #sectionId, 'ATTENDANCE')")
     @Operation(summary = "Section attendance history",
                description = "Paginated attendance records for a section over a date range")
     public ResponseEntity<PagedApiResponse<AttendanceResponse>> getSectionAttendanceHistory(
@@ -226,7 +226,7 @@ public class StudentAttendanceController {
     // ── Missing attendance gaps report ────────────────────────────────────────
 
     @GetMapping("/missing")
-    @PreAuthorize("hasAuthority('ATTENDANCE_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN') or hasRole('TEACHER')")
+    @PreAuthorize("hasAuthority('ATTENDANCE_READ') and @dataAccess.canAccessSection(authentication, #sectionId, 'ATTENDANCE')")
     @Operation(summary = "Get missing attendance dates for a section",
                description = "Returns working dates in range (max 92 days) on which no attendance was recorded for any student in the section")
     public ResponseEntity<ApiResponse<List<LocalDate>>> getMissingAttendance(

@@ -27,7 +27,7 @@ public class StudentAdmissionController {
     private final StudentAdmissionService admissionService;
 
     @PostMapping
-    @PreAuthorize("hasAuthority('STUDENT_CREATE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('STUDENT_CREATE')")
     @Operation(summary = "Complete student admission", description = "Atomically creates Student Identity, User Profile, Academic Enrollment, Guardians, and assigns initial subjects in one transaction")
     public ResponseEntity<ApiResponse<AdmissionResponse>> admitStudent(
             @Valid @RequestBody CreateAdmissionRequest request) {

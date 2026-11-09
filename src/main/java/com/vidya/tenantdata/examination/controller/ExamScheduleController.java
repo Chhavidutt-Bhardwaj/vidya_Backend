@@ -42,7 +42,7 @@ public class ExamScheduleController {
     private final ExamScheduleService examScheduleService;
 
     @PostMapping
-    @PreAuthorize("hasAuthority('EXAM_CREATE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('EXAM_CREATE')")
     @Operation(summary = "Create exam schedule for a class")
     public ResponseEntity<ApiResponse<ExamScheduleResponse>> createExamSchedule(
             @Valid @RequestBody CreateExamScheduleRequest request) {
@@ -53,7 +53,7 @@ public class ExamScheduleController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('EXAM_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN') or hasRole('TEACHER')")
+    @PreAuthorize("hasAuthority('EXAM_READ')")
     @Operation(summary = "Get exam schedule by ID")
     public ResponseEntity<ApiResponse<ExamScheduleResponse>> getExamScheduleById(@PathVariable UUID id) {
         log.info("REST: Get exam schedule ID: {}", id);
@@ -62,7 +62,7 @@ public class ExamScheduleController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAuthority('EXAM_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN') or hasRole('TEACHER')")
+    @PreAuthorize("hasAuthority('EXAM_READ')")
     @Operation(summary = "Search exam schedules with filters")
     public ResponseEntity<PagedApiResponse<ExamScheduleResponse>> searchSchedules(
             @RequestParam(required = false) UUID termId,
@@ -75,7 +75,7 @@ public class ExamScheduleController {
     }
 
     @PostMapping("/{id}/subjects")
-    @PreAuthorize("hasAuthority('EXAM_UPDATE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('EXAM_UPDATE')")
     @Operation(summary = "Add subject to exam schedule", description = "Schedules an exam date, duration, max marks, and pass marks for a subject")
     public ResponseEntity<ApiResponse<ExamSubjectConfigResponse>> addSubjectToSchedule(
             @PathVariable UUID id,
@@ -87,7 +87,7 @@ public class ExamScheduleController {
     }
 
     @GetMapping("/{id}/subjects")
-    @PreAuthorize("hasAuthority('EXAM_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN') or hasRole('TEACHER')")
+    @PreAuthorize("hasAuthority('EXAM_READ')")
     @Operation(summary = "Get configured subjects for an exam schedule")
     public ResponseEntity<ApiResponse<List<ExamSubjectConfigResponse>>> getScheduleSubjects(@PathVariable UUID id) {
         List<ExamSubjectConfigResponse> responses = examScheduleService.getScheduleSubjects(id);
@@ -95,7 +95,7 @@ public class ExamScheduleController {
     }
 
     @DeleteMapping("/{id}/subjects/{subjectConfigId}")
-    @PreAuthorize("hasAuthority('EXAM_UPDATE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('EXAM_UPDATE')")
     @Operation(summary = "Remove subject from exam schedule")
     public ResponseEntity<ApiResponse<Void>> removeSubjectFromSchedule(
             @PathVariable UUID id,
@@ -106,7 +106,7 @@ public class ExamScheduleController {
     }
 
     @PostMapping("/{id}/publish")
-    @PreAuthorize("hasAuthority('EXAM_PUBLISH') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('EXAM_PUBLISH')")
     @Operation(summary = "Publish exam schedule")
     public ResponseEntity<ApiResponse<ExamScheduleResponse>> publishSchedule(@PathVariable UUID id) {
         log.info("REST: Publish exam schedule: {}", id);
@@ -115,7 +115,7 @@ public class ExamScheduleController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('EXAM_DELETE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('EXAM_DELETE')")
     @Operation(summary = "Soft delete exam schedule")
     public ResponseEntity<ApiResponse<Void>> deleteExamSchedule(@PathVariable UUID id) {
         log.info("REST: Delete exam schedule: {}", id);

@@ -24,6 +24,13 @@ import java.util.UUID;
 @Component
 public class JwtTokenProvider {
 
+    public static final String SESSION_CLAIM = "sid";
+
+    /** Claims the snapshot may never overwrite. */
+    private static final java.util.Set<String> RESERVED_CLAIMS = java.util.Set.of(
+            "sub", "jti", "iat", "exp", "nbf", "iss", "aud", "email", "userCode", "role", "type",
+            "schoolId", "tenantCode", SESSION_CLAIM);
+
     public static final String DEV_TEST_NON_PROD_SECRET = "vidya-dev-test-only-secret-key-do-not-use-in-production-min-256-bits";
 
     private final SecretKey signingKey;
@@ -70,6 +77,21 @@ public class JwtTokenProvider {
     }
 
     public String generateAccessToken(UUID userId, String email, String userCode, String role, UUID schoolId, String tenantCode) {
+        return generateAccessToken(userId, email, userCode, role, schoolId, tenantCode, null);
+    }
+
+    public String generateAccessToken(UUID userId, String email, String userCode, String role, UUID schoolId,
+                                      String tenantCode, UUID sessionId) {
+        return generateAccessToken(userId, email, userCode, role, schoolId, tenantCode, sessionId, null);
+    }
+
+    /**
+     * Access token bound to a server-side session ({@code sid} claim), optionally carrying an access
+     * snapshot for the UI ({@link com.vidya.security.access.service.AccessTokenClaims}). The server
+     * never authorizes from that snapshot; it re-resolves access from the DB on every request.
+     */
+    public String generateAccessToken(UUID userId, String email, String userCode, String role, UUID schoolId,
+                                      String tenantCode, UUID sessionId, java.util.Map<String, Object> extraClaims) {
         Date now = new Date();
         Date expiry = new Date(now.getTime() + accessTokenExpiryMs);
 
@@ -89,23 +111,52 @@ public class JwtTokenProvider {
         if (tenantCode != null && !tenantCode.isBlank()) {
             builder.claim("tenantCode", tenantCode);
         }
+        if (sessionId != null) {
+            builder.claim(SESSION_CLAIM, sessionId.toString());
+        }
+        if (extraClaims != null) {
+            extraClaims.forEach((k, v) -> {
+                if (v != null && !RESERVED_CLAIMS.contains(k)) {
+                    builder.claim(k, v);
+                }
+            });
+        }
 
         return builder.signWith(signingKey).compact();
     }
 
     public String generateRefreshToken(UUID userId, String email) {
+        return generateRefreshToken(userId, email, null);
+    }
+
+    public String generateRefreshToken(UUID userId, String email, UUID sessionId) {
         Date now = new Date();
         Date expiry = new Date(now.getTime() + refreshTokenExpiryMs);
 
-        return Jwts.builder()
+        var builder = Jwts.builder()
                 .subject(userId.toString())
                 .id(UUID.randomUUID().toString())
                 .claim("email", email)
                 .claim("type", "REFRESH")
                 .issuedAt(now)
-                .expiration(expiry)
-                .signWith(signingKey)
-                .compact();
+                .expiration(expiry);
+        if (sessionId != null) {
+            builder.claim(SESSION_CLAIM, sessionId.toString());
+        }
+        return builder.signWith(signingKey).compact();
+    }
+
+    /** Session id ({@code sid}) of the token, or null when absent/malformed. */
+    public UUID getSessionIdFromToken(String token) {
+        String sid = getClaims(token).get(SESSION_CLAIM, String.class);
+        if (sid == null || sid.isBlank()) {
+            return null;
+        }
+        try {
+            return UUID.fromString(sid);
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
     }
 
     public boolean validateToken(String token) {

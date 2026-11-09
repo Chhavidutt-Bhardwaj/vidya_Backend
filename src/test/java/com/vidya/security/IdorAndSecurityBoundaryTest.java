@@ -65,7 +65,8 @@ class IdorAndSecurityBoundaryTest {
     void setUp() {
         authorizationService = new TenantAuthorizationServiceImpl(
                 userRepository, tenantRepository, schoolRepository,
-                onboardingRepository, communityMemberRepository, securityAuditService
+                onboardingRepository, communityMemberRepository, securityAuditService,
+                org.mockito.Mockito.mock(com.vidya.security.access.service.EffectiveAccessService.class)
         );
 
         schoolAId = UUID.randomUUID();

@@ -96,6 +96,15 @@ class SecurityTenantIsolationIntegrationTest {
     @Mock
     private UserPermissionMatrixService userPermissionMatrixService;
 
+    @Mock
+    private com.vidya.security.session.service.SessionService sessionService;
+
+    @Mock
+    private com.vidya.security.session.service.LoginHistoryService loginHistoryService;
+
+    @Mock
+    private com.vidya.security.access.service.EffectiveAccessService effectiveAccessService;
+
     private PasswordEncoder passwordEncoder;
     private JwtTokenProvider jwtTokenProvider;
     private AuthServiceImpl authService;
@@ -131,8 +140,16 @@ class SecurityTenantIsolationIntegrationTest {
                 passwordEncoder,
                 jwtTokenProvider,
                 securityAuditService,
-                userPermissionMatrixService
+                userPermissionMatrixService,
+                tenantRepository,
+                sessionService,
+                loginHistoryService,
+                effectiveAccessService
         );
+        org.mockito.Mockito.lenient().when(effectiveAccessService.resolveFresh(any(PlatformUser.class)))
+                .thenAnswer(inv -> com.vidya.security.access.SeedRoleMatrix.accessFor(inv.getArgument(0)));
+        org.mockito.Mockito.lenient().when(effectiveAccessService.getAccess(any(PlatformUser.class)))
+                .thenAnswer(inv -> com.vidya.security.access.SeedRoleMatrix.accessFor(inv.getArgument(0)));
 
         tenantAuthorizationService = new TenantAuthorizationServiceImpl(
                 userRepository,
@@ -140,7 +157,8 @@ class SecurityTenantIsolationIntegrationTest {
                 schoolRepository,
                 null,
                 null,
-                securityAuditService
+                securityAuditService,
+                effectiveAccessService
         );
 
         tenantResolutionFilter = new TenantResolutionFilter(
@@ -205,6 +223,11 @@ class SecurityTenantIsolationIntegrationTest {
         when(userRepository.findByEmailIgnoreCase("admin@springfield.edu")).thenReturn(Optional.of(adminA));
         when(userRepository.save(any(PlatformUser.class))).thenReturn(adminA);
         when(refreshTokenRepository.save(any(RefreshToken.class))).thenAnswer(i -> i.getArgument(0));
+        when(sessionService.open(any(PlatformUser.class), any(), any())).thenAnswer(inv -> {
+            PlatformUser u = inv.getArgument(0);
+            return new com.vidya.security.session.entity.UserSession(u.getId(), u.getSchoolId(), u.getPlatformRole().getScope(),
+                    com.vidya.security.session.service.ClientInfo.UNKNOWN, inv.getArgument(2));
+        });
 
         AuthResponse authResponse = authService.login(new LoginRequest("admin@springfield.edu", "SpringfieldPass@2026"));
 

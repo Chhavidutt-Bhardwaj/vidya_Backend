@@ -34,7 +34,7 @@ public class ClassStudentController {
             "/api/v1/tenant/classes/{classId}/sections/{sectionId}/students",
             "/api/v1/classes/{classId}/sections/{sectionId}/students"
     })
-    @PreAuthorize("hasAuthority('STUDENT_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('STUDENT_READ') and @dataAccess.canAccessSection(authentication, #sectionId, 'STUDENT')")
     @Operation(summary = "Get student roster for class and section", description = "Lists students enrolled in a specific class and section with search and pagination")
     public ResponseEntity<PagedApiResponse<ClassSectionStudentResponse>> getSectionStudents(
             @PathVariable UUID classId,
@@ -53,7 +53,7 @@ public class ClassStudentController {
             "/api/v1/tenant/classes/{classId}/students",
             "/api/v1/classes/{classId}/students"
     })
-    @PreAuthorize("hasAuthority('STUDENT_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('STUDENT_READ') and @dataAccess.hasFullScope(authentication, 'STUDENT')")
     @Operation(summary = "Get student roster for class", description = "Lists all students enrolled in a class across all sections with search and pagination")
     public ResponseEntity<PagedApiResponse<ClassSectionStudentResponse>> getClassStudents(
             @PathVariable UUID classId,

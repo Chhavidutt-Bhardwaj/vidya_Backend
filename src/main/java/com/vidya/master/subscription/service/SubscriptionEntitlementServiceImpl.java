@@ -52,6 +52,16 @@ public class SubscriptionEntitlementServiceImpl implements SubscriptionEntitleme
     private final SubscriptionFeatureRepository subscriptionFeatureRepository;
     private final SchoolSubscriptionFeatureOverrideRepository overrideRepository;
 
+    /** Optional so unit tests can build the service without it; evicts cached permissions on override changes. */
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    private org.springframework.context.ApplicationEventPublisher eventPublisher;
+
+    private void publishAccessChange(String reason) {
+        if (eventPublisher != null) {
+            eventPublisher.publishEvent(com.vidya.security.access.service.AccessChangedEvent.all(reason));
+        }
+    }
+
     @Override
     @Transactional(transactionManager = "masterTransactionManager", readOnly = true)
     public SchoolEntitlementResponse getSchoolEntitlements(UUID schoolId) {
@@ -175,6 +185,46 @@ public class SubscriptionEntitlementServiceImpl implements SubscriptionEntitleme
 
     @Override
     @Transactional(transactionManager = "masterTransactionManager", readOnly = true)
+    public java.util.Set<String> getEnabledFeatureCodes(UUID schoolId) {
+        if (schoolId == null) {
+            return java.util.Set.of();
+        }
+        java.util.Set<String> enabled = new java.util.HashSet<>();
+
+        List<SchoolSubscription> activeSubs = schoolSubscriptionRepository.findActiveSubscriptionsBySchoolId(schoolId);
+        if (!activeSubs.isEmpty() && activeSubs.get(0).getPlan() != null && activeSubs.get(0).getPlan().getFeatures() != null) {
+            for (SubscriptionPlanFeature pf : activeSubs.get(0).getPlan().getFeatures()) {
+                if (pf.isIncluded() && pf.getFeature() != null) {
+                    enabled.add(pf.getFeature().getFeatureCode().toUpperCase());
+                }
+            }
+        }
+
+        for (SchoolSubscriptionFeatureOverride override : overrideRepository.findBySchoolId(schoolId)) {
+            String code = override.getFeatureCode().toUpperCase();
+            if (override.isEnabled()) {
+                enabled.add(code);
+            } else {
+                enabled.remove(code);
+            }
+        }
+
+        // Only features that are live in the catalog count; INACTIVE is a platform-wide kill switch.
+        java.util.Set<String> result = new java.util.HashSet<>();
+        for (SubscriptionFeature feature : subscriptionFeatureRepository.findByStatus(FeatureStatus.ACTIVE)) {
+            String code = feature.getFeatureCode().toUpperCase();
+            if (enabled.contains(code)) {
+                result.add(code);
+                if (feature.getParentModuleCode() != null) {
+                    result.add(feature.getParentModuleCode().toUpperCase());
+                }
+            }
+        }
+        return java.util.Collections.unmodifiableSet(result);
+    }
+
+    @Override
+    @Transactional(transactionManager = "masterTransactionManager", readOnly = true)
     public boolean isModuleEnabled(UUID schoolId, String moduleCode) {
         List<SubscriptionFeature> moduleFeatures = subscriptionFeatureRepository.findByParentModuleCode(moduleCode.trim().toUpperCase());
         if (moduleFeatures.isEmpty()) {
@@ -211,6 +261,7 @@ public class SubscriptionEntitlementServiceImpl implements SubscriptionEntitleme
 
         SchoolSubscriptionFeatureOverride saved = overrideRepository.save(override);
         log.info("Overrode feature [{}] for school [{}] to enabled=[{}]", code, schoolId, saved.isEnabled());
+        publishAccessChange("Feature override " + code + " for school " + schoolId);
         return toOverrideResponse(saved);
     }
 
@@ -218,6 +269,7 @@ public class SubscriptionEntitlementServiceImpl implements SubscriptionEntitleme
     public void removeSchoolFeatureOverride(UUID schoolId, String featureCode) {
         overrideRepository.deleteBySchoolIdAndFeatureCode(schoolId, featureCode.trim().toUpperCase());
         log.info("Reset feature override [{}] for school [{}] to plan defaults", featureCode, schoolId);
+        publishAccessChange("Feature override reset " + featureCode + " for school " + schoolId);
     }
 
     @Override

@@ -11,7 +11,8 @@ import com.vidya.master.school.repository.SchoolRepository;
 import com.vidya.master.tenant.entity.Tenant;
 import com.vidya.master.tenant.entity.TenantStatus;
 import com.vidya.master.tenant.repository.TenantRepository;
-import com.vidya.security.entity.PlatformPermission;
+import com.vidya.security.access.AccessScope;
+import com.vidya.security.access.service.EffectiveAccessService;
 import com.vidya.security.entity.PlatformRole;
 import com.vidya.security.entity.PlatformUser;
 import com.vidya.security.entity.UserStatus;
@@ -40,6 +41,7 @@ public class TenantAuthorizationServiceImpl implements TenantAuthorizationServic
     private final SchoolOnboardingRepository onboardingRepository;
     private final CommunityMemberRepository communityMemberRepository;
     private final SecurityAuditService securityAuditService;
+    private final EffectiveAccessService effectiveAccessService;
 
     @Override
     public boolean canAccessTenant(UUID userId, String tenantCode) {
@@ -79,10 +81,13 @@ public class TenantAuthorizationServiceImpl implements TenantAuthorizationServic
             return false;
         }
 
-        // School Users (SCHOOL_OWNER, SCHOOL_ADMIN, TEACHER)
-        if (user.getPlatformRole() == PlatformRole.SCHOOL_OWNER
-                || user.getPlatformRole() == PlatformRole.SCHOOL_ADMIN
-                || user.getPlatformRole() == PlatformRole.TEACHER) {
+        // Other platform staff (PLATFORM_STAFF): same reach as platform admins, limited by their permissions
+        if (scopeOf(user) == AccessScope.PLATFORM) {
+            return true;
+        }
+
+        // School operational users (any SCHOOL-scope account: owner, admin, teachers, staff, custom-role users)
+        if (scopeOf(user) == AccessScope.SCHOOL) {
             if (user.getSchoolId() == null || tenant.getSchoolId() == null) {
                 auditAccessDenied(user, "TENANT:" + tenantCode, "School user or tenant has no assigned schoolId");
                 return false;
@@ -94,10 +99,8 @@ public class TenantAuthorizationServiceImpl implements TenantAuthorizationServic
             return belongsToSchool;
         }
 
-        // Community Roles
-        if (user.getPlatformRole() == PlatformRole.COMMUNITY_ADMIN
-                || user.getPlatformRole() == PlatformRole.COMMUNITY_MANAGER
-                || user.getPlatformRole() == PlatformRole.FIELD_AGENT) {
+        // Community users: only tenants of schools they onboarded
+        if (scopeOf(user) == AccessScope.COMMUNITY) {
             if (tenant.getSchoolId() == null) {
                 auditAccessDenied(user, "TENANT:" + tenantCode, "Tenant has no assigned schoolId for community access");
                 return false;
@@ -110,7 +113,7 @@ public class TenantAuthorizationServiceImpl implements TenantAuthorizationServic
             return false;
         }
 
-        // Default Deny for all other roles or unspecified roles (e.g. STUDENT, PARENT)
+        // Default deny: SCHOOL_PORTAL accounts (PARENT, STUDENT) have no tenant-wide access yet
         auditAccessDenied(user, "TENANT:" + tenantCode, "Role not authorized");
         return false;
     }
@@ -138,8 +141,8 @@ public class TenantAuthorizationServiceImpl implements TenantAuthorizationServic
 
         School school = schoolOpt.get();
 
-        // Platform Admins
-        if (user.getPlatformRole() == PlatformRole.PLATFORM_SUPER_ADMIN || user.getPlatformRole() == PlatformRole.PLATFORM_ADMIN) {
+        // Platform accounts (admins and platform staff)
+        if (scopeOf(user) == AccessScope.PLATFORM) {
             return true;
         }
 
@@ -149,8 +152,8 @@ public class TenantAuthorizationServiceImpl implements TenantAuthorizationServic
             return false;
         }
 
-        // School Users
-        if (user.getPlatformRole() == PlatformRole.SCHOOL_OWNER || user.getPlatformRole() == PlatformRole.SCHOOL_ADMIN) {
+        // School staff (any SCHOOL-scope account). Parents/students (SCHOOL_PORTAL) stay denied.
+        if (scopeOf(user) == AccessScope.SCHOOL) {
             if (user.getSchoolId() == null) {
                 auditAccessDenied(user, "SCHOOL:" + schoolId, "User has no schoolId");
                 return false;
@@ -162,10 +165,8 @@ public class TenantAuthorizationServiceImpl implements TenantAuthorizationServic
             return matches;
         }
 
-        // Community Roles
-        if (user.getPlatformRole() == PlatformRole.COMMUNITY_ADMIN
-                || user.getPlatformRole() == PlatformRole.COMMUNITY_MANAGER
-                || user.getPlatformRole() == PlatformRole.FIELD_AGENT) {
+        // Community users
+        if (scopeOf(user) == AccessScope.COMMUNITY) {
             boolean hasAccess = onboardingRepository.existsByPlatformUserIdAndSchoolId(user.getId(), schoolId);
             if (hasAccess) {
                 return true;
@@ -201,13 +202,13 @@ public class TenantAuthorizationServiceImpl implements TenantAuthorizationServic
 
         SchoolOnboarding onboarding = obOpt.get();
 
-        // Platform Admins
-        if (user.getPlatformRole() == PlatformRole.PLATFORM_SUPER_ADMIN || user.getPlatformRole() == PlatformRole.PLATFORM_ADMIN) {
+        // Platform accounts
+        if (scopeOf(user) == AccessScope.PLATFORM) {
             return true;
         }
 
-        // School users
-        if (user.getPlatformRole() == PlatformRole.SCHOOL_OWNER || user.getPlatformRole() == PlatformRole.SCHOOL_ADMIN) {
+        // School staff
+        if (scopeOf(user) == AccessScope.SCHOOL) {
             if (user.getSchoolId() != null && onboarding.getSchool() != null) {
                 return user.getSchoolId().equals(onboarding.getSchool().getId());
             }
@@ -215,9 +216,7 @@ public class TenantAuthorizationServiceImpl implements TenantAuthorizationServic
         }
 
         // Community users & Field Agent
-        if (user.getPlatformRole() == PlatformRole.FIELD_AGENT
-                || user.getPlatformRole() == PlatformRole.COMMUNITY_ADMIN
-                || user.getPlatformRole() == PlatformRole.COMMUNITY_MANAGER) {
+        if (scopeOf(user) == AccessScope.COMMUNITY) {
 
             List<CommunityMember> members = communityMemberRepository.findByPlatformUserId(user.getId());
             for (CommunityMember member : members) {
@@ -235,12 +234,16 @@ public class TenantAuthorizationServiceImpl implements TenantAuthorizationServic
     }
 
     @Override
-    public boolean hasPermission(UUID userId, PlatformPermission permission) {
-        if (userId == null || permission == null) {
+    public boolean hasPermission(UUID userId, String permissionCode) {
+        if (userId == null || permissionCode == null) {
             return false;
         }
-        Optional<PlatformUser> userOpt = userRepository.findById(userId);
-        return userOpt.map(u -> u.getStatus() == UserStatus.ACTIVE && !u.isAccountLocked() && u.getPlatformRole().hasPermission(permission))
+        return userRepository.findById(userId)
+                .filter(u -> u.getStatus() == UserStatus.ACTIVE && !u.isAccountLocked())
+                .map(u -> {
+                    var access = effectiveAccessService.getAccess(u);
+                    return access.superUser() || access.hasPermission(permissionCode);
+                })
                 .orElse(false);
     }
 
@@ -278,12 +281,7 @@ public class TenantAuthorizationServiceImpl implements TenantAuthorizationServic
         if (principal == null) {
             return false;
         }
-        try {
-            PlatformPermission perm = PlatformPermission.valueOf(permissionName);
-            return principal.hasPermission(perm);
-        } catch (IllegalArgumentException e) {
-            return false;
-        }
+        return principal.hasPermission(permissionName);
     }
 
     @Override
@@ -344,12 +342,15 @@ public class TenantAuthorizationServiceImpl implements TenantAuthorizationServic
     }
 
     private static boolean isPlatformAdminRole(PlatformRole role) {
-        return role == PlatformRole.PLATFORM_SUPER_ADMIN || role == PlatformRole.PLATFORM_ADMIN;
+        return role != null && role.isPlatformAdmin();
     }
 
     private static boolean isCommunityRole(PlatformRole role) {
-        return role == PlatformRole.COMMUNITY_ADMIN || role == PlatformRole.COMMUNITY_MANAGER
-                || role == PlatformRole.COMMUNITY_ROLE_MANAGER || role == PlatformRole.FIELD_AGENT;
+        return role != null && role.getScope() == AccessScope.COMMUNITY;
+    }
+
+    private static AccessScope scopeOf(PlatformUser user) {
+        return user.getPlatformRole() != null ? user.getPlatformRole().getScope() : AccessScope.SCHOOL_PORTAL;
     }
 
     private PlatformUserDetails extractPrincipal(Authentication authentication) {

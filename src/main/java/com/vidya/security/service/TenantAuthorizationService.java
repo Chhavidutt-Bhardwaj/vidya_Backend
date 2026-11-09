@@ -1,6 +1,5 @@
 package com.vidya.security.service;
 
-import com.vidya.security.entity.PlatformPermission;
 import org.springframework.security.core.Authentication;
 
 import java.util.UUID;
@@ -13,7 +12,8 @@ public interface TenantAuthorizationService {
 
     boolean canAccessOnboarding(UUID userId, UUID onboardingId);
 
-    boolean hasPermission(UUID userId, PlatformPermission permission);
+    /** DB-resolved check (roles + overrides + feature gating) by permission code. */
+    boolean hasPermission(UUID userId, String permissionCode);
 
     // SpEL-friendly overloads
     boolean canAccessTenant(Authentication authentication, String tenantCode);
