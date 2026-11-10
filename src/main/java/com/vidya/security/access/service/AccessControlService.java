@@ -47,6 +47,7 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -469,6 +470,33 @@ public class AccessControlService {
     private static UserRoleResponse primaryRole(AccessRole r) {
         return new UserRoleResponse(null, r.getId(), r.getCode(), r.getName(), r.getScope(), r.getSchoolId(),
                 true, r.isActive(), r.isActive(), null, null, "Account type (platform_user.platform_role)", null, null);
+    }
+
+    /** Id of a role the school may use: its own role with this code, else the global one. */
+    @Transactional(readOnly = true, transactionManager = "masterTransactionManager")
+    public Optional<UUID> findRoleId(String code, UUID schoolId) {
+        return roleRepository.findByCodeAndSchoolId(code, schoolId).or(() -> roleRepository.findGlobalByCode(code))
+                .filter(r -> r.isGlobal() ? r.getScope().isSchoolBound() : true).map(AccessRole::getId);
+    }
+
+    /**
+     * The school's role with this code, created with the given permissions when it does not exist yet
+     * (used by duties such as Exam Coordinator that come with a standard permission set).
+     */
+    public UUID ensureSchoolRole(UUID schoolId, String code, String name, String description, Set<String> permissionCodes) {
+        return findRoleId(code, schoolId).orElseGet(() ->
+                createRole(new RoleRequest(code, name, description, AccessScope.SCHOOL, true, permissionCodes), schoolId).id());
+    }
+
+    /**
+     * Throws unless the signed-in user may give someone this global role as their account type,
+     * i.e. holds every permission of that role (same rule as {@link #assignRole}).
+     */
+    @Transactional(readOnly = true, transactionManager = "masterTransactionManager")
+    public void requireActorCanGrantRole(String roleCode) {
+        AccessRole role = roleRepository.findGlobalByCode(roleCode)
+                .orElseThrow(() -> new ResourceNotFoundException("AccessRole", roleCode));
+        requireActorCanAssign(role);
     }
 
     private void requireActorCanAssign(AccessRole role) {

@@ -153,6 +153,9 @@ public class AcademicSetupService {
                 + "AND EXISTS (SELECT 1 FROM section s WHERE s.academic_class_id = c.id AND s.academic_year_id = :y AND s.deleted_at IS NULL) "
                 + "AND NOT EXISTS (SELECT 1 FROM class_subject_assignment a WHERE a.academic_class_id = c.id AND a.academic_year_id = :y "
                 + "AND a.deleted_at IS NULL AND a.status = 'ACTIVE')", id);
+        long teachers = count("SELECT count(*) FROM staff WHERE deleted_at IS NULL AND employment_status = 'ACTIVE' AND staff_type = 'TEACHER'", null);
+        long teachersWithoutLogin = count("SELECT count(*) FROM staff s JOIN tenant_user u ON u.id = s.tenant_user_id WHERE s.deleted_at IS NULL "
+                + "AND s.employment_status = 'ACTIVE' AND s.staff_type = 'TEACHER' AND u.master_user_id IS NULL", null);
         long sectionsWithoutClassTeacher = count("SELECT count(*) FROM section s WHERE s.academic_year_id = :y AND s.deleted_at IS NULL "
                 + "AND s.status = 'ACTIVE' AND NOT EXISTS (SELECT 1 FROM class_teacher_assignment t WHERE t.section_id = s.id "
                 + "AND t.academic_year_id = :y AND t.deleted_at IS NULL AND t.status = 'ACTIVE')", id);
@@ -200,6 +203,10 @@ public class AcademicSetupService {
         steps.add(step("GRADING", "Grading scales", Level.RECOMMENDED, classesWithoutScale == 0, classes - classesWithoutScale, classesWithoutScale,
                 classesWithoutScale + " class(es) have no grading scale and there is no school default; marks get no grade.",
                 "POST /api/v1/exams/grading-scales/presets/{key}"));
+        steps.add(step("STAFF", "Teachers and staff", Level.REQUIRED, teachers > 0 && teachersWithoutLogin == 0, teachers, teachersWithoutLogin,
+                teachers == 0 ? "Add the teachers (departments and designations first, then onboard or import staff)."
+                        : teachersWithoutLogin + " teacher(s) have no login; they cannot take attendance or enter marks.",
+                "POST /api/v1/staff-setup/onboard"));
         steps.add(step("CLASS_TEACHERS", "Class teachers", Level.RECOMMENDED, sections > 0 && sectionsWithoutClassTeacher == 0,
                 sections - sectionsWithoutClassTeacher, sectionsWithoutClassTeacher,
                 sectionsWithoutClassTeacher + " section(s) have no class teacher. Teachers only see their own sections.",
