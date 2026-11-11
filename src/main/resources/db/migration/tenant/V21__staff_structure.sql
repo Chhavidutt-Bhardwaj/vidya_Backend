@@ -77,8 +77,9 @@ ALTER TABLE staff
     ADD CONSTRAINT chk_staff_max_periods CHECK (max_periods_per_week IS NULL OR max_periods_per_week BETWEEN 0 AND 80),
     ADD CONSTRAINT chk_staff_not_own_manager CHECK (reporting_to_staff_id IS NULL OR reporting_to_staff_id <> id);
 
-CREATE INDEX idx_staff_department  ON staff(department_id);
-CREATE INDEX idx_staff_designation ON staff(designation_id);
+-- idx_staff_department already exists (V6, on the old free-text column), so this one carries the column name.
+CREATE INDEX idx_staff_department_id ON staff(department_id);
+CREATE INDEX idx_staff_designation_id ON staff(designation_id);
 CREATE INDEX idx_staff_reporting   ON staff(reporting_to_staff_id);
 
 CREATE TABLE staff_subject (

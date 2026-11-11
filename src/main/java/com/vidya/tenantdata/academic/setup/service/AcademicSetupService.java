@@ -184,6 +184,14 @@ public class AcademicSetupService {
                 + "AND NOT EXISTS (SELECT 1 FROM student_guardian g JOIN tenant_user u ON u.id = g.guardian_user_id "
                 + "WHERE g.student_id = e.student_id AND g.deleted_at IS NULL AND u.deleted_at IS NULL AND u.master_user_id IS NOT NULL)", id);
 
+        long syllabusSubjects = count("SELECT count(DISTINCT (academic_class_id, subject_id)) FROM class_subject_assignment "
+                + "WHERE academic_year_id = :y AND deleted_at IS NULL AND status = 'ACTIVE'", id);
+        long syllabusPublished = count("SELECT count(*) FROM syllabus sy WHERE sy.academic_year_id = :y AND sy.deleted_at IS NULL "
+                + "AND sy.status = 'PUBLISHED' AND EXISTS (SELECT 1 FROM class_subject_assignment a WHERE a.academic_year_id = :y "
+                + "AND a.academic_class_id = sy.academic_class_id AND a.subject_id = sy.subject_id AND a.deleted_at IS NULL AND a.status = 'ACTIVE')", id);
+        long lessonPlans = count("SELECT count(*) FROM lesson_plan WHERE academic_year_id = :y AND deleted_at IS NULL", id);
+        long lessonPlansToReview = count("SELECT count(*) FROM lesson_plan WHERE academic_year_id = :y AND deleted_at IS NULL AND status = 'SUBMITTED'", id);
+
         List<Step> steps = new ArrayList<>();
         steps.add(step("CLASSES", "Classes (grades)", Level.REQUIRED, classes > 0, classes, 0,
                 "Create the classes the school teaches, with sortOrder in promotion order (Nursery=1, LKG=2, …).",
@@ -214,10 +222,18 @@ public class AcademicSetupService {
         steps.add(step("CLASS_TEACHERS", "Class teachers", Level.RECOMMENDED, sections > 0 && sectionsWithoutClassTeacher == 0,
                 sections - sectionsWithoutClassTeacher, sectionsWithoutClassTeacher,
                 sectionsWithoutClassTeacher + " section(s) have no class teacher. Teachers only see their own sections.",
-                "POST /api/v1/academic-years/{id}/class-teachers/bulk"));
+                "PUT /api/v1/academic-config/class-teachers"));
         steps.add(step("SUBJECT_TEACHERS", "Subject teachers", Level.RECOMMENDED, classSubjects > 0 && classSubjectsWithoutTeacher == 0,
                 subjectTeachers, classSubjectsWithoutTeacher,
-                classSubjectsWithoutTeacher + " class subject(s) have no teacher.", "POST /api/v1/teacher-assignments"));
+                classSubjectsWithoutTeacher + " class subject(s) have no teacher.", "PUT /api/v1/academic-config/subject-teachers"));
+        steps.add(step("SYLLABUS", "Syllabus", Level.RECOMMENDED, syllabusSubjects > 0 && syllabusPublished >= syllabusSubjects,
+                syllabusPublished, Math.max(0, syllabusSubjects - syllabusPublished),
+                Math.max(0, syllabusSubjects - syllabusPublished) + " class subject(s) have no published syllabus. Write them or copy last year's.",
+                "PUT /api/v1/academic-config/syllabi"));
+        steps.add(step("LESSON_PLANS", "Lesson plans", Level.OPTIONAL, lessonPlans > 0 && lessonPlansToReview == 0, lessonPlans, lessonPlansToReview,
+                lessonPlans == 0 ? "Teachers write lesson plans against the syllabus once the year is running."
+                        : lessonPlansToReview + " lesson plan(s) are waiting for review.",
+                "POST /api/v1/academic-config/lesson-plans"));
         steps.add(step("TERMS", "Terms / exam periods", Level.RECOMMENDED, terms > 0, terms, 0,
                 "Add terms (e.g. Term 1, Term 2) for exams and report cards.", "POST /api/v1/exams/terms"));
         steps.add(step("WORKING_DAYS", "Working days", Level.RECOMMENDED, workingDays > 0, workingDays, 0,

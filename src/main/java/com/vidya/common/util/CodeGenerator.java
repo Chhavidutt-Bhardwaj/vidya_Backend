@@ -151,6 +151,16 @@ public final class CodeGenerator {
         return "CUR-" + generate(8);
     }
 
+    /** Syllabus code, e.g. {@code SYL-A1B2C3D4}. */
+    public static String syllabusCode() {
+        return "SYL-" + generate(8);
+    }
+
+    /** Lesson plan code, e.g. {@code LSP-A1B2C3D4}. */
+    public static String lessonPlanCode() {
+        return "LSP-" + generate(8);
+    }
+
     /**
      * Generates a teacher subject assignment code with prefix.
      * Example: {@code TSA-A1B2C3D4}

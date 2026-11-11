@@ -47,24 +47,25 @@ public class HolidayCatalogService {
 
     private final HolidayProvider provider;
     private final Duration cacheFor;
-    private final EntityManager em;
     private final ObjectMapper json = new ObjectMapper();
+
+    // @PersistenceContext cannot be put on a constructor parameter, so the master EntityManager is field-injected.
+    @jakarta.persistence.PersistenceContext(unitName = "master")
+    private EntityManager em;
 
     public HolidayCatalogService(@Value("${vidya.holidays.provider:auto}") String providerName,
                                  @Value("${vidya.holidays.calendarific.api-key:}") String calendarificKey,
                                  @Value("${vidya.holidays.calendarific.base-url:https://calendarific.com/api/v2}") String calendarificUrl,
                                  @Value("${vidya.holidays.ics.url:}") String icsUrl,
                                  @Value("${vidya.holidays.timeout-seconds:8}") long timeoutSeconds,
-                                 @Value("${vidya.holidays.cache-days:30}") long cacheDays,
-                                 @jakarta.persistence.PersistenceContext(unitName = "master") EntityManager em) {
+                                 @Value("${vidya.holidays.cache-days:30}") long cacheDays) {
         this(select(providerName, calendarificKey, calendarificUrl, icsUrl, Duration.ofSeconds(timeoutSeconds)),
-                Duration.ofDays(cacheDays), em);
+                Duration.ofDays(cacheDays));
     }
 
-    HolidayCatalogService(HolidayProvider provider, Duration cacheFor, EntityManager em) {
+    HolidayCatalogService(HolidayProvider provider, Duration cacheFor) {
         this.provider = provider;
         this.cacheFor = cacheFor;
-        this.em = em;
         log.info("Holiday provider: {}", provider == null ? "none" : provider.id());
     }
 
