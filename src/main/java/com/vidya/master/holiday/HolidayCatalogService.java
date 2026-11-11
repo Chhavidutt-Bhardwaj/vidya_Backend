@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -48,24 +47,24 @@ public class HolidayCatalogService {
 
     private final HolidayProvider provider;
     private final Duration cacheFor;
+    private final EntityManager em;
     private final ObjectMapper json = new ObjectMapper();
-
-    @PersistenceContext(unitName = "master")
-    private EntityManager em;
 
     public HolidayCatalogService(@Value("${vidya.holidays.provider:auto}") String providerName,
                                  @Value("${vidya.holidays.calendarific.api-key:}") String calendarificKey,
                                  @Value("${vidya.holidays.calendarific.base-url:https://calendarific.com/api/v2}") String calendarificUrl,
                                  @Value("${vidya.holidays.ics.url:}") String icsUrl,
                                  @Value("${vidya.holidays.timeout-seconds:8}") long timeoutSeconds,
-                                 @Value("${vidya.holidays.cache-days:30}") long cacheDays) {
+                                 @Value("${vidya.holidays.cache-days:30}") long cacheDays,
+                                 @jakarta.persistence.PersistenceContext(unitName = "master") EntityManager em) {
         this(select(providerName, calendarificKey, calendarificUrl, icsUrl, Duration.ofSeconds(timeoutSeconds)),
-                Duration.ofDays(cacheDays));
+                Duration.ofDays(cacheDays), em);
     }
 
-    HolidayCatalogService(HolidayProvider provider, Duration cacheFor) {
+    HolidayCatalogService(HolidayProvider provider, Duration cacheFor, EntityManager em) {
         this.provider = provider;
         this.cacheFor = cacheFor;
+        this.em = em;
         log.info("Holiday provider: {}", provider == null ? "none" : provider.id());
     }
 

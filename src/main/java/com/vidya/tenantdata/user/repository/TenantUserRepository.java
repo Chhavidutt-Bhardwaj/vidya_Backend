@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -35,4 +36,16 @@ public interface TenantUserRepository extends JpaRepository<TenantUser, UUID> {
 
     @Query("SELECT u FROM TenantUser u WHERE u.id = :id AND u.deletedAt IS NULL")
     Optional<TenantUser> findByIdAndNotDeleted(@Param("id") UUID id);
+
+    @Query("SELECT u FROM TenantUser u LEFT JOIN FETCH u.profile WHERE u.userType = :type AND u.deletedAt IS NULL")
+    List<TenantUser> findAllActiveByType(@Param("type") TenantUserType type);
+
+    @Query("SELECT u FROM TenantUser u LEFT JOIN FETCH u.profile WHERE u.userType = :type AND u.deletedAt IS NULL AND lower(u.email) = lower(:email)")
+    List<TenantUser> findActiveByTypeAndEmail(@Param("type") TenantUserType type, @Param("email") String email);
+
+    @Query("SELECT u FROM TenantUser u LEFT JOIN FETCH u.profile WHERE u.userType = :type AND u.deletedAt IS NULL AND u.phone LIKE :phoneSuffix")
+    List<TenantUser> findActiveByTypeAndPhoneLike(@Param("type") TenantUserType type, @Param("phoneSuffix") String phoneSuffix);
+
+    @Query("SELECT u FROM TenantUser u LEFT JOIN FETCH u.profile WHERE u.id IN :ids AND u.deletedAt IS NULL")
+    List<TenantUser> findAllActiveByIdIn(@Param("ids") java.util.Collection<UUID> ids);
 }

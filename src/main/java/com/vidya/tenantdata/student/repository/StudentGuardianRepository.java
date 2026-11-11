@@ -26,4 +26,13 @@ public interface StudentGuardianRepository extends JpaRepository<StudentGuardian
 
     @Query("SELECT g FROM StudentGuardian g WHERE g.student.id = :studentId AND g.isPrimary = TRUE AND g.status = 'ACTIVE' AND g.deletedAt IS NULL")
     Optional<StudentGuardian> findPrimaryGuardian(@Param("studentId") UUID studentId);
+
+    @Query("SELECT g FROM StudentGuardian g WHERE g.guardianUserId IN :userIds AND g.deletedAt IS NULL AND g.status = 'ACTIVE'")
+    List<StudentGuardian> findActiveByGuardianUserIdIn(@Param("userIds") java.util.Collection<UUID> userIds);
+
+    @Query("SELECT g FROM StudentGuardian g WHERE g.guardianUserId = :userId AND g.deletedAt IS NULL")
+    List<StudentGuardian> findByGuardianUserId(@Param("userId") UUID userId);
+
+    @Query("SELECT g FROM StudentGuardian g JOIN FETCH g.student s WHERE g.deletedAt IS NULL AND g.status = 'ACTIVE' AND s.deletedAt IS NULL")
+    List<StudentGuardian> findAllActiveWithStudent();
 }

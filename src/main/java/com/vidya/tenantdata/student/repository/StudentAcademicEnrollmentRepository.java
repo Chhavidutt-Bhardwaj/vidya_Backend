@@ -138,4 +138,12 @@ public interface StudentAcademicEnrollmentRepository extends JpaRepository<Stude
     @Query("SELECT e.section.id, e.rollNumber FROM StudentAcademicEnrollment e WHERE e.academicYear.id = :academicYearId " +
            "AND e.section IS NOT NULL AND e.rollNumber IS NOT NULL AND e.enrollmentStatus IN ('ADMITTED', 'ACTIVE') AND e.deletedAt IS NULL")
     List<Object[]> findActiveRollNumbers(@Param("academicYearId") UUID academicYearId);
+
+    @Query("SELECT e FROM StudentAcademicEnrollment e JOIN FETCH e.student s JOIN FETCH s.tenantUser u LEFT JOIN FETCH u.profile "
+            + "LEFT JOIN FETCH e.section WHERE e.academicYear.id = :academicYearId AND e.deletedAt IS NULL")
+    List<StudentAcademicEnrollment> findAllByAcademicYearIdWithStudent(@Param("academicYearId") UUID academicYearId);
+
+    @Query("SELECT e FROM StudentAcademicEnrollment e WHERE e.student.id IN :studentIds AND e.deletedAt IS NULL "
+            + "AND e.enrollmentStatus IN ('ACTIVE', 'ADMITTED') ORDER BY e.enrollmentDate DESC")
+    List<StudentAcademicEnrollment> findActiveByStudentIdIn(@Param("studentIds") java.util.Collection<UUID> studentIds);
 }

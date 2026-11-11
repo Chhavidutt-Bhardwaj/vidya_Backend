@@ -179,6 +179,10 @@ public class AcademicSetupService {
                 + "AND enrollment_status IN ('ADMITTED', 'ACTIVE')", id);
         long studentsWithoutSection = count("SELECT count(*) FROM student_academic_enrollment WHERE academic_year_id = :y "
                 + "AND deleted_at IS NULL AND enrollment_status IN ('ADMITTED', 'ACTIVE') AND section_id IS NULL", id);
+        long studentsWithoutParentLogin = count("SELECT count(DISTINCT e.student_id) FROM student_academic_enrollment e "
+                + "WHERE e.academic_year_id = :y AND e.deleted_at IS NULL AND e.enrollment_status IN ('ADMITTED', 'ACTIVE') "
+                + "AND NOT EXISTS (SELECT 1 FROM student_guardian g JOIN tenant_user u ON u.id = g.guardian_user_id "
+                + "WHERE g.student_id = e.student_id AND g.deleted_at IS NULL AND u.deleted_at IS NULL AND u.master_user_id IS NOT NULL)", id);
 
         List<Step> steps = new ArrayList<>();
         steps.add(step("CLASSES", "Classes (grades)", Level.REQUIRED, classes > 0, classes, 0,
@@ -225,8 +229,12 @@ public class AcademicSetupService {
         steps.add(step("TIMETABLE", "Timetable", Level.RECOMMENDED, timetables > 0, timetables, 0,
                 "Build and publish this year's timetable, or carry over last year's.", "POST /api/v1/academic-years/{id}/timetable/carry-over"));
         steps.add(step("STUDENTS", "Students enrolled", Level.REQUIRED, students > 0, students, studentsWithoutSection,
-                students == 0 ? "Admit new students and promote last year's students." : studentsWithoutSection + " student(s) have no section.",
+                students == 0 ? "Admit new students (POST /api/v1/student-setup/admit) and promote last year's students." : studentsWithoutSection + " student(s) have no section.",
                 "POST /api/v1/academic-years/{previousYearId}/promotion"));
+        steps.add(step("PARENT_LOGINS", "Parent logins", Level.RECOMMENDED, students > 0 && studentsWithoutParentLogin == 0,
+                students - studentsWithoutParentLogin, studentsWithoutParentLogin,
+                studentsWithoutParentLogin + " student(s) have no parent with a login; parents cannot see attendance, marks or notices.",
+                "POST /api/v1/student-setup/students/{id}/guardians/{gid}/parent"));
 
         int requiredTotal = (int) steps.stream().filter(s -> s.level() == Level.REQUIRED).count();
         int requiredDone = (int) steps.stream().filter(s -> s.level() == Level.REQUIRED && s.done()).count();
