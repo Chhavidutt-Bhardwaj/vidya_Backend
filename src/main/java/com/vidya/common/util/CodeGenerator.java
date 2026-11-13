@@ -161,6 +161,21 @@ public final class CodeGenerator {
         return "LSP-" + generate(8);
     }
 
+    /** Fee structure code, e.g. {@code FST-A1B2C3D4}. */
+    public static String feeStructureCode() {
+        return "FST-" + generate(8);
+    }
+
+    /** Transport vehicle code, e.g. {@code VEH-A1B2C3D4}. */
+    public static String vehicleCode() {
+        return "VEH-" + generate(8);
+    }
+
+    /** Transport route code, e.g. {@code RTE-A1B2C3D4}. */
+    public static String routeCode() {
+        return "RTE-" + generate(8);
+    }
+
     /**
      * Generates a teacher subject assignment code with prefix.
      * Example: {@code TSA-A1B2C3D4}

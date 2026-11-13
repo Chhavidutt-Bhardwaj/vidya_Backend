@@ -191,6 +191,16 @@ public class AcademicSetupService {
                 + "AND a.academic_class_id = sy.academic_class_id AND a.subject_id = sy.subject_id AND a.deleted_at IS NULL AND a.status = 'ACTIVE')", id);
         long lessonPlans = count("SELECT count(*) FROM lesson_plan WHERE academic_year_id = :y AND deleted_at IS NULL", id);
         long lessonPlansToReview = count("SELECT count(*) FROM lesson_plan WHERE academic_year_id = :y AND deleted_at IS NULL AND status = 'SUBMITTED'", id);
+        long feeStructures = count("SELECT count(*) FROM fee_structure WHERE academic_year_id = :y AND deleted_at IS NULL AND status = 'ACTIVE'", id);
+        long classesWithoutFees = count("SELECT count(*) FROM academic_class c WHERE c.deleted_at IS NULL AND c.status = 'ACTIVE' AND NOT EXISTS "
+                + "(SELECT 1 FROM fee_structure f WHERE f.academic_class_id = c.id AND f.academic_year_id = :y AND f.deleted_at IS NULL AND f.status = 'ACTIVE')", id);
+        long feeInstallments = count("SELECT count(*) FROM fee_installment WHERE academic_year_id = :y", id);
+        long attendanceRules = count("SELECT count(*) FROM attendance_settings", null);
+        long transportRoutes = count("SELECT count(*) FROM transport_route WHERE deleted_at IS NULL AND status = 'ACTIVE'", null);
+        long routesNotReady = count("SELECT count(*) FROM transport_route r WHERE r.deleted_at IS NULL AND r.status = 'ACTIVE' AND (r.vehicle_id IS NULL "
+                + "OR NOT EXISTS (SELECT 1 FROM transport_stop s WHERE s.route_id = r.id))", null);
+        long libraryCategories = count("SELECT count(*) FROM library_category WHERE deleted_at IS NULL AND status = 'ACTIVE'", null);
+        long communicationSettings = count("SELECT count(*) FROM communication_settings", null);
 
         List<Step> steps = new ArrayList<>();
         steps.add(step("CLASSES", "Classes (grades)", Level.REQUIRED, classes > 0, classes, 0,
@@ -244,6 +254,21 @@ public class AcademicSetupService {
                 "Define the school day's periods before building the timetable.", "POST /api/v1/bell-schedules"));
         steps.add(step("TIMETABLE", "Timetable", Level.RECOMMENDED, timetables > 0, timetables, 0,
                 "Build and publish this year's timetable, or carry over last year's.", "POST /api/v1/academic-years/{id}/timetable/carry-over"));
+        // Operational configuration: optional, because fees, transport and library depend on the school's plan
+        steps.add(step("FEES", "Fee structure", Level.OPTIONAL, feeStructures > 0 && classesWithoutFees == 0 && feeInstallments > 0,
+                feeStructures, classesWithoutFees,
+                feeStructures == 0 ? "Add fee heads, then a fee structure per class and the instalment due dates."
+                        : classesWithoutFees > 0 ? classesWithoutFees + " class(es) have no active fee structure." : "Set the instalment due dates.",
+                "PUT /api/v1/operations-config/fees/structures"));
+        steps.add(step("ATTENDANCE_RULES", "Attendance rules", Level.OPTIONAL, attendanceRules > 0, attendanceRules, 0,
+                "Set how far back teachers may mark, how LATE counts and the minimum attendance.", "PUT /api/v1/operations-config/attendance/settings"));
+        steps.add(step("TRANSPORT", "Transport routes", Level.OPTIONAL, transportRoutes > 0 && routesNotReady == 0, transportRoutes, routesNotReady,
+                transportRoutes == 0 ? "Add vehicles and routes with their stops, if the school runs transport."
+                        : routesNotReady + " route(s) have no vehicle or no stops.", "PUT /api/v1/operations-config/transport/routes"));
+        steps.add(step("LIBRARY", "Library rules", Level.OPTIONAL, libraryCategories > 0, libraryCategories, 0,
+                "Set the lending rules and add book categories.", "PUT /api/v1/operations-config/library/settings"));
+        steps.add(step("COMMUNICATION", "Communication", Level.OPTIONAL, communicationSettings > 0, communicationSettings, 0,
+                "Choose the channels (in-app, email, SMS, WhatsApp) and review the message templates.", "PUT /api/v1/operations-config/communication/settings"));
         steps.add(step("STUDENTS", "Students enrolled", Level.REQUIRED, students > 0, students, studentsWithoutSection,
                 students == 0 ? "Admit new students (POST /api/v1/student-setup/admit) and promote last year's students." : studentsWithoutSection + " student(s) have no section.",
                 "POST /api/v1/academic-years/{previousYearId}/promotion"));

@@ -86,8 +86,10 @@ public class TenantAuthorizationServiceImpl implements TenantAuthorizationServic
             return true;
         }
 
-        // School operational users (any SCHOOL-scope account: owner, admin, teachers, staff, custom-role users)
-        if (scopeOf(user) == AccessScope.SCHOOL) {
+        // School users: staff (SCHOOL scope) and the school's parents and students (SCHOOL_PORTAL scope), own school only.
+        // Portal accounts hold only portal permissions, and every tenant endpoint they can reach narrows the data to
+        // their own record or their own children (DataAccessService, OWN scope).
+        if (scopeOf(user) == AccessScope.SCHOOL || scopeOf(user) == AccessScope.SCHOOL_PORTAL) {
             if (user.getSchoolId() == null || tenant.getSchoolId() == null) {
                 auditAccessDenied(user, "TENANT:" + tenantCode, "School user or tenant has no assigned schoolId");
                 return false;
@@ -113,7 +115,6 @@ public class TenantAuthorizationServiceImpl implements TenantAuthorizationServic
             return false;
         }
 
-        // Default deny: SCHOOL_PORTAL accounts (PARENT, STUDENT) have no tenant-wide access yet
         auditAccessDenied(user, "TENANT:" + tenantCode, "Role not authorized");
         return false;
     }
