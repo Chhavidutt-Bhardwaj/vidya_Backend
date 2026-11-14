@@ -57,7 +57,30 @@ public final class GradingPresets {
                             t("I", 60, 74, 0, "First division", true),
                             t("II", 45, 59, 0, "Second division", true),
                             t("III", 33, 44, 0, "Third division", true),
-                            t("F", 0, 32, 0, "Fail", false))));
+                            t("F", 0, 32, 0, "Fail", false))),
+            new Preset("IB_1_7", "IB 1–7 scale (MYP / DP)",
+                    "IB achievement levels from the criteria total (MYP: out of 32, shown here as a percentage). "
+                            + "Check the boundaries against the current IB guide.",
+                    Set.of(), tiers(
+                            t("7", 85, 100, 7, "Excellent", true),
+                            t("6", 72, 84, 6, "Very good", true),
+                            t("5", 57, 71, 5, "Good", true),
+                            t("4", 44, 56, 4, "Satisfactory", true),
+                            t("3", 29, 43, 3, "Mediocre", true),
+                            t("2", 16, 28, 2, "Poor", false),
+                            t("1", 0, 15, 1, "Very poor", false))),
+            new Preset("IGCSE_A_STAR_G", "IGCSE A*–G scale",
+                    "Indicative school-level boundaries; Cambridge sets real boundaries per paper and series. U = ungraded.",
+                    Set.of(), tiers(
+                            t("A*", 90, 100, 0, "", true),
+                            t("A", 80, 89, 0, "", true),
+                            t("B", 70, 79, 0, "", true),
+                            t("C", 60, 69, 0, "", true),
+                            t("D", 50, 59, 0, "", true),
+                            t("E", 40, 49, 0, "", true),
+                            t("F", 30, 39, 0, "", true),
+                            t("G", 20, 29, 0, "", true),
+                            t("U", 0, 19, 0, "Ungraded", false))));
 
     private GradingPresets() {
     }

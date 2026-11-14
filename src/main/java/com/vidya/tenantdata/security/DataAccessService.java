@@ -341,6 +341,12 @@ public class DataAccessService {
         return access != null && own(access).includesStaff(staffId);
     }
 
+    /** The records the current user is personally linked to (children, own student row, taught sections). */
+    public OwnRecords ownRecords(Authentication authentication) {
+        EffectiveAccess access = access(authentication);
+        return access == null ? OwnRecords.NONE : own(access);
+    }
+
     /** Students visible to the current user under OWN scope (self, children, taught students). */
     public Set<UUID> ownStudentIds(Authentication authentication) {
         EffectiveAccess access = access(authentication);

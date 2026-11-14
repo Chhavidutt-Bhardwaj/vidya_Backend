@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -50,7 +51,7 @@ public class HolidayCatalogService {
     private final ObjectMapper json = new ObjectMapper();
 
     // @PersistenceContext cannot be put on a constructor parameter, so the master EntityManager is field-injected.
-    @jakarta.persistence.PersistenceContext(unitName = "master")
+    @PersistenceContext(unitName = "master")
     private EntityManager em;
 
     public HolidayCatalogService(@Value("${vidya.holidays.provider:auto}") String providerName,

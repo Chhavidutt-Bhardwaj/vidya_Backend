@@ -42,6 +42,26 @@ vidya:
   school:
     timezone: ${VIDYA_SCHOOL_TIMEZONE:Asia/Kolkata}
 
+  # Parent engagement: daily activity report + notification outbox (see tenantdata/engagement/PARENT_ENGAGEMENT.md)
+  engagement:
+    scheduler:
+      # Background jobs (deliver outbox, send daily reports). Turn off on extra API-only instances if you like;
+      # running them on several servers is safe.
+      enabled: ${VIDYA_ENGAGEMENT_SCHEDULER:true}
+    dispatch-interval: ${VIDYA_ENGAGEMENT_DISPATCH_INTERVAL:PT1M}
+    dispatch-batch-size: 200
+    daily-report-cron: "0 */5 * * * *"
+  # Assessment engine (see tenantdata/assessment/ASSESSMENT_ENGINE.md)
+  assessment:
+    scheduler:
+      # Submits online-exam attempts whose time ran out. Safe on several servers (rows are locked).
+      enabled: ${VIDYA_ASSESSMENT_SCHEDULER:true}
+    auto-submit-interval: PT1M
+  notifications:
+    email:
+      # From address for email notifications (needs spring.mail.host). Empty = email messages are SKIPPED.
+      from: ${VIDYA_NOTIFICATION_EMAIL_FROM:}
+
   security:
     login:
       max-failed-attempts: 5

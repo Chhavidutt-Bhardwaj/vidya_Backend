@@ -166,6 +166,37 @@ class TenantAuthorizationServiceTest {
     }
 
     @Test
+    @DisplayName("Parent of School A reaches Tenant A only; never Tenant B, a suspended tenant, or master school admin APIs")
+    void parent_OwnSchoolTenantOnly() {
+        UUID parentId = UUID.randomUUID();
+        PlatformUser parent = new PlatformUser("USR-PARENT", "parent@a.com", "hash", "Pat", "Parent", null, PlatformRole.PARENT, schoolAId);
+        parent.setId(parentId);
+        when(userRepository.findById(parentId)).thenReturn(Optional.of(parent));
+        when(tenantRepository.findByTenantCode("TNT-001")).thenReturn(Optional.of(tenantA));
+        when(tenantRepository.findByTenantCode("TNT-002")).thenReturn(Optional.of(tenantB));
+        when(schoolRepository.findById(schoolAId)).thenReturn(Optional.of(schoolA));
+
+        assertThat(authorizationService.canAccessTenant(parentId, "TNT-001")).isTrue();
+        assertThat(authorizationService.canAccessTenant(parentId, "TNT-002")).isFalse();
+        assertThat(authorizationService.canAccessSchool(parentId, schoolAId)).isFalse();
+
+        tenantA.setStatus(TenantStatus.SUSPENDED);
+        assertThat(authorizationService.canAccessTenant(parentId, "TNT-001")).isFalse();
+    }
+
+    @Test
+    @DisplayName("Student and parent accounts without a school are denied")
+    void portalUserWithoutSchool_Denied() {
+        UUID studentId = UUID.randomUUID();
+        PlatformUser student = new PlatformUser("USR-STU", "stu@a.com", "hash", "Sam", "Student", null, PlatformRole.STUDENT);
+        student.setId(studentId);
+        when(userRepository.findById(studentId)).thenReturn(Optional.of(student));
+        when(tenantRepository.findByTenantCode("TNT-001")).thenReturn(Optional.of(tenantA));
+
+        assertThat(authorizationService.canAccessTenant(studentId, "TNT-001")).isFalse();
+    }
+
+    @Test
     @DisplayName("School user access to SUSPENDED tenant is blocked")
     void schoolUser_AccessToSuspendedTenant_Blocked() {
         tenantA.setStatus(TenantStatus.SUSPENDED);

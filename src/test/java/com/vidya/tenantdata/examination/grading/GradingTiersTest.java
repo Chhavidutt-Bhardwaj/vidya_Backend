@@ -31,7 +31,7 @@ class GradingTiersTest {
     @Test
     @DisplayName("every preset is a valid scale")
     void presetsValid() {
-        assertThat(GradingPresets.all()).hasSize(4);
+        assertThat(GradingPresets.all()).hasSize(6);
         GradingPresets.all().forEach(p -> assertThatCode(() -> GradingTiers.validate(p.tiers())).as(p.key()).doesNotThrowAnyException());
         assertThat(GradingPresets.forStage(ClassStage.SECONDARY).key()).isEqualTo("CBSE_9_POINT");
         assertThat(GradingPresets.forStage(ClassStage.MIDDLE).key()).isEqualTo("CBSE_8_POINT");

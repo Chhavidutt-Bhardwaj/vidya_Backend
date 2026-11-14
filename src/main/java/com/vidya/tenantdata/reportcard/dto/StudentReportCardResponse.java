@@ -47,6 +47,11 @@ public class StudentReportCardResponse {
     private ResultStatus resultStatus;
     private ReportCardStatus status;
     private Instant publishedAt;
+    private UUID assessmentSchemeId;
+    private BigDecimal cumulativePercentage;
+    private String cumulativeGrade;
+    private boolean graceApplied;
+    private String resultNote;
     private List<ReportCardSubjectResultResponse> subjectResults;
     private List<ReportCardRemarkResponse> remarks;
     private Instant createdAt;
