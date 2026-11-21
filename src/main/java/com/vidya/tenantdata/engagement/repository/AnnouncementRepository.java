@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface AnnouncementRepository extends JpaRepository<Announcement, UUID> {
+public interface AnnouncementRepository extends JpaRepository<Announcement, UUID>, AnnouncementRepositoryCustom {
 
     Optional<Announcement> findByIdAndDeletedAtIsNull(UUID id);
 

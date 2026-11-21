@@ -1,8 +1,8 @@
-package com.vidya.tenantdata.assessment;
+package com.vidya.tenantdata.assessment.repository;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 import java.sql.Date;
@@ -15,7 +15,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 /** Read queries shared by the assessment services (native SQL on the tenant database). */
-@Component
+@Repository
 public class AssessmentQueries {
 
     static final String STUDENT_NAME = "COALESCE(NULLIF(trim(concat_ws(' ', p.first_name, p.last_name)), ''), s.student_code)";

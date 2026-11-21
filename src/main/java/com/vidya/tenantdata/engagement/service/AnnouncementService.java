@@ -1,5 +1,6 @@
 package com.vidya.tenantdata.engagement.service;
 
+import com.vidya.tenantdata.engagement.repository.DailyReportQueries;
 import com.vidya.common.exception.BusinessException;
 import com.vidya.common.exception.ResourceNotFoundException;
 import com.vidya.common.util.CodeGenerator;
@@ -19,14 +20,13 @@ import com.vidya.tenantdata.engagement.notification.NotificationTemplates.Resolv
 import com.vidya.tenantdata.engagement.notification.OutboxDraft;
 import com.vidya.tenantdata.engagement.notification.RecipientTargets;
 import com.vidya.tenantdata.engagement.repository.AnnouncementRepository;
-import com.vidya.tenantdata.engagement.service.DailyReportQueries.EnrolledStudent;
-import com.vidya.tenantdata.engagement.service.DailyReportQueries.GuardianContact;
+import com.vidya.tenantdata.engagement.repository.OwnScope;
+import com.vidya.tenantdata.engagement.repository.DailyReportQueries.EnrolledStudent;
+import com.vidya.tenantdata.engagement.repository.DailyReportQueries.GuardianContact;
 import com.vidya.tenantdata.operations.entity.CommunicationSettings;
 import com.vidya.tenantdata.operations.enums.NotificationChannel;
 import com.vidya.tenantdata.operations.enums.NotificationEvent;
 import com.vidya.tenantdata.security.OwnRecords;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.AccessDeniedException;
@@ -37,7 +37,6 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -66,31 +65,19 @@ public class AnnouncementService {
     private final EngagementAccess access;
     private final Clock clock;
 
-    @PersistenceContext(unitName = "tenant")
-    private EntityManager em;
-
     // ── read ─────────────────────────────────────────────────────────────────
 
     /** Staff list. Without full scope: own drafts, and published ones for the school or classes the user teaches. */
     @Transactional(readOnly = true, transactionManager = "tenantTransactionManager")
     public List<AnnouncementResponse> list(AnnouncementStatus status, AnnouncementAudience audience, UUID academicClassId, Integer limit) {
-        StringBuilder sql = new StringBuilder("SELECT a.* FROM announcement a WHERE a.deleted_at IS NULL");
-        Map<String, Object> params = new HashMap<>();
-        HomeworkService.filter(sql, params, "a.status = :st", "st", status != null ? status.name() : null);
-        HomeworkService.filter(sql, params, "a.audience = :au", "au", audience != null ? audience.name() : null);
-        HomeworkService.filter(sql, params, "a.academic_class_id = :c", "c", academicClassId);
+        OwnScope scope = null;
         if (!access.all()) {
             OwnRecords own = access.own();
             Set<UUID> sections = new LinkedHashSet<>(own.sectionIds());
             sections.addAll(own.studentSectionIds());
-            sql.append(" AND (a.created_by = CAST(:me AS uuid) OR (a.status = 'PUBLISHED' AND (a.audience = 'SCHOOL' "
-                    + "OR (a.audience = 'CLASS' AND a.academic_class_id IN (:classes)) OR (a.audience = 'SECTION' AND a.section_id IN (:sections)))))");
-            params.put("me", access.actorId());
-            params.put("classes", HomeworkService.nonEmpty(classesOf(own)));
-            params.put("sections", HomeworkService.nonEmpty(sections));
+            scope = new OwnScope(access.actorId(), Set.of(), sections, classesOf(own));
         }
-        sql.append(" ORDER BY COALESCE(a.published_at, a.created_at) DESC");
-        return respond(query(sql.toString(), params, limit), null);
+        return respond(repository.search(status, audience, academicClassId, scope, HomeworkService.limit(limit, 50, 200)), null);
     }
 
     /** Published, unexpired announcements for the signed-in family's children (and the school), newest first. */
@@ -108,17 +95,8 @@ public class AnnouncementService {
                 sections.add(e.sectionId());
             }
         }
-        Map<String, Object> params = new HashMap<>();
-        params.put("from", from != null ? from : today.minusDays(30));
-        params.put("to", to != null ? to : today);
-        params.put("today", today);
-        params.put("classes", HomeworkService.nonEmpty(classes));
-        params.put("sections", HomeworkService.nonEmpty(sections));
-        return respond(query("SELECT a.* FROM announcement a WHERE a.deleted_at IS NULL AND a.status = 'PUBLISHED' "
-                + "AND a.publish_on BETWEEN :from AND :to AND (a.expires_on IS NULL OR a.expires_on >= :today) "
-                + "AND (a.audience = 'SCHOOL' OR (a.audience = 'CLASS' AND a.academic_class_id IN (:classes)) "
-                + "OR (a.audience = 'SECTION' AND a.section_id IN (:sections))) "
-                + "ORDER BY CASE a.priority WHEN 'EMERGENCY' THEN 0 ELSE 1 END, a.published_at DESC", params, limit), null);
+        return respond(repository.findPublishedFor(classes, sections, from != null ? from : today.minusDays(30), to != null ? to : today,
+                today, HomeworkService.limit(limit, 50, 200)), null);
     }
 
     // ── write ────────────────────────────────────────────────────────────────
@@ -297,14 +275,6 @@ public class AnnouncementService {
                     a.getUpdatedAt()));
         }
         return out;
-    }
-
-    @SuppressWarnings("unchecked")
-    private List<Announcement> query(String sql, Map<String, Object> params, Integer limit) {
-        var q = em.createNativeQuery(sql, Announcement.class);
-        params.forEach(q::setParameter);
-        q.setMaxResults(limit == null ? 50 : Math.max(1, Math.min(limit, 200)));
-        return q.getResultList();
     }
 
     private Announcement announcement(UUID id) {

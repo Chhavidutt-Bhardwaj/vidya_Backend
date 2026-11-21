@@ -12,8 +12,6 @@ import com.vidya.tenantdata.engagement.enums.RemarkCategory;
 import com.vidya.tenantdata.engagement.enums.RemarkSentiment;
 import com.vidya.tenantdata.engagement.repository.StudentDailyRemarkRepository;
 import com.vidya.tenantdata.subject.repository.SubjectRepository;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,7 +20,6 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -41,9 +38,6 @@ public class StudentRemarkService {
     private final SubjectRepository subjectRepository;
     private final EngagementAccess access;
     private final Clock clock;
-
-    @PersistenceContext(unitName = "tenant")
-    private EntityManager em;
 
     /** One or many students, one day. All or nothing. */
     @Transactional(transactionManager = "tenantTransactionManager")
@@ -93,23 +87,8 @@ public class StudentRemarkService {
         if (studentId == null && sectionId == null) {
             throw new BusinessException("Give studentId or sectionId");
         }
-        StringBuilder sql = new StringBuilder("SELECT r.* FROM student_daily_remark r WHERE r.deleted_at IS NULL");
-        Map<String, Object> params = new HashMap<>();
-        HomeworkService.filter(sql, params, "r.student_id = :s", "s", studentId);
-        HomeworkService.filter(sql, params, "r.student_id IN (SELECT e.student_id FROM student_academic_enrollment e WHERE e.section_id = :sec "
-                + "AND e.deleted_at IS NULL AND e.enrollment_status IN ('ADMITTED', 'ACTIVE'))", "sec", sectionId);
-        HomeworkService.filter(sql, params, "r.remark_date >= :from", "from", from);
-        HomeworkService.filter(sql, params, "r.remark_date <= :to", "to", to);
-        if (!access.hasAuthority(DailyActivityReportService.STAFF_REMARKS_AUTHORITY)) {
-            sql.append(" AND r.visible_to_guardians = TRUE");
-        }
-        sql.append(" ORDER BY r.remark_date DESC, r.created_at DESC");
-        var q = em.createNativeQuery(sql.toString(), StudentDailyRemark.class);
-        params.forEach(q::setParameter);
-        q.setMaxResults(limit == null ? 100 : Math.max(1, Math.min(limit, 500)));
-        @SuppressWarnings("unchecked")
-        List<StudentDailyRemark> rows = q.getResultList();
-        return respond(rows);
+        boolean guardianVisibleOnly = !access.hasAuthority(DailyActivityReportService.STAFF_REMARKS_AUTHORITY);
+        return respond(repository.search(studentId, sectionId, from, to, guardianVisibleOnly, HomeworkService.limit(limit, 100, 500)));
     }
 
     private void set(StudentDailyRemark m, UUID subjectId, RemarkCategory category, RemarkSentiment sentiment, String remark,

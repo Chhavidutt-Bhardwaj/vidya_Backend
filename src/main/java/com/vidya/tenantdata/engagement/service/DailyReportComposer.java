@@ -1,12 +1,13 @@
 package com.vidya.tenantdata.engagement.service;
 
+import com.vidya.tenantdata.engagement.repository.DailyReportQueries;
 import com.vidya.tenantdata.engagement.dto.EngagementDtos.DailyActivityReport;
 import com.vidya.tenantdata.engagement.enums.AnnouncementPriority;
 import com.vidya.tenantdata.engagement.notification.NotificationTemplates;
 import com.vidya.tenantdata.engagement.notification.NotificationTemplates.Resolved;
 import com.vidya.tenantdata.engagement.notification.OutboxDraft;
 import com.vidya.tenantdata.engagement.notification.RecipientTargets;
-import com.vidya.tenantdata.engagement.service.DailyReportQueries.GuardianContact;
+import com.vidya.tenantdata.engagement.repository.DailyReportQueries.GuardianContact;
 import com.vidya.tenantdata.operations.enums.NotificationChannel;
 
 import java.time.LocalDate;

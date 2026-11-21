@@ -8,11 +8,10 @@ import com.vidya.tenantdata.engagement.dto.EngagementDtos.ClassActivityRequest;
 import com.vidya.tenantdata.engagement.dto.EngagementDtos.ClassActivityResponse;
 import com.vidya.tenantdata.engagement.entity.ClassActivity;
 import com.vidya.tenantdata.engagement.repository.ClassActivityRepository;
+import com.vidya.tenantdata.engagement.repository.OwnScope;
 import com.vidya.tenantdata.engagement.service.EngagementAccess.Place;
 import com.vidya.tenantdata.security.OwnRecords;
 import com.vidya.tenantdata.subject.repository.SubjectRepository;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,7 +20,6 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -36,34 +34,15 @@ public class ClassActivityService {
     private final EngagementAccess access;
     private final Clock clock;
 
-    @PersistenceContext(unitName = "tenant")
-    private EntityManager em;
-
     @Transactional(readOnly = true, transactionManager = "tenantTransactionManager")
     public List<ClassActivityResponse> list(UUID academicYearId, UUID academicClassId, UUID sectionId, LocalDate from, LocalDate to,
                                             Integer limit) {
-        StringBuilder sql = new StringBuilder("SELECT a.* FROM class_activity a WHERE a.deleted_at IS NULL");
-        Map<String, Object> params = new HashMap<>();
-        HomeworkService.filter(sql, params, "a.academic_year_id = :y", "y", academicYearId);
-        HomeworkService.filter(sql, params, "a.academic_class_id = :c", "c", academicClassId);
-        HomeworkService.filter(sql, params, "(a.section_id = :sec OR a.section_id IS NULL)", "sec", sectionId);
-        HomeworkService.filter(sql, params, "a.activity_date >= :from", "from", from);
-        HomeworkService.filter(sql, params, "a.activity_date <= :to", "to", to);
+        OwnScope scope = null;
         if (!access.all()) {
             OwnRecords own = access.own();
-            sql.append(" AND (a.created_by = CAST(:me AS uuid) OR a.section_id IN (:ownSections) "
-                    + "OR (a.section_id IS NULL AND a.academic_class_id IN (:ownClasses)))");
-            params.put("me", access.actorId());
-            params.put("ownSections", HomeworkService.nonEmpty(own.sectionIds()));
-            params.put("ownClasses", HomeworkService.nonEmpty(own.teachingClassIds()));
+            scope = new OwnScope(access.actorId(), own.staffIds(), own.sectionIds(), own.teachingClassIds());
         }
-        sql.append(" ORDER BY a.activity_date DESC, a.created_at DESC");
-        var q = em.createNativeQuery(sql.toString(), ClassActivity.class);
-        params.forEach(q::setParameter);
-        q.setMaxResults(limit == null ? 100 : Math.max(1, Math.min(limit, 500)));
-        @SuppressWarnings("unchecked")
-        List<ClassActivity> rows = q.getResultList();
-        return respond(rows);
+        return respond(repository.search(academicYearId, academicClassId, sectionId, from, to, scope, HomeworkService.limit(limit, 100, 500)));
     }
 
     @Transactional(transactionManager = "tenantTransactionManager")

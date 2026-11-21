@@ -1,4 +1,4 @@
-package com.vidya.tenantdata.engagement.service;
+package com.vidya.tenantdata.engagement.repository;
 
 import com.vidya.tenantdata.engagement.dto.EngagementDtos.ActivityItem;
 import com.vidya.tenantdata.engagement.dto.EngagementDtos.AnnouncementItem;
@@ -14,7 +14,7 @@ import com.vidya.tenantdata.engagement.enums.RemarkSentiment;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -33,7 +33,7 @@ import java.util.UUID;
  * Class-level queries take {@code (year, class, section)} so that a whole section's report needs one query
  * per kind of content, not one per student.
  */
-@Component
+@Repository
 public class DailyReportQueries {
 
     private static final String ACTIVE_ENROLLMENT = "('ADMITTED', 'ACTIVE')";

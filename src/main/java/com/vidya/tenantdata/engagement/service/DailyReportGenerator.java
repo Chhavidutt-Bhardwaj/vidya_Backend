@@ -1,5 +1,6 @@
 package com.vidya.tenantdata.engagement.service;
 
+import com.vidya.tenantdata.engagement.repository.DailyReportQueries;
 import com.vidya.common.exception.BusinessException;
 import com.vidya.tenantdata.calendar.dto.DayStatusResponse;
 import com.vidya.tenantdata.calendar.enums.DayStatus;

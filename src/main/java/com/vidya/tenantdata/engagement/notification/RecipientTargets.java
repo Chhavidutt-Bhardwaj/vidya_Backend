@@ -1,6 +1,6 @@
 package com.vidya.tenantdata.engagement.notification;
 
-import com.vidya.tenantdata.engagement.service.DailyReportQueries.GuardianContact;
+import com.vidya.tenantdata.engagement.repository.DailyReportQueries.GuardianContact;
 import com.vidya.tenantdata.operations.enums.NotificationChannel;
 
 /** Where a guardian is reached on a channel; null when the guardian has no such contact. */

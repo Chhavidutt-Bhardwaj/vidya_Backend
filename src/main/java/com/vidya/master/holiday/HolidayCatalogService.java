@@ -4,9 +4,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
+import com.vidya.master.holiday.repository.HolidayCatalogRepository;
+import com.vidya.master.holiday.repository.HolidayCatalogRepository.CachedEntry;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -48,24 +49,25 @@ public class HolidayCatalogService {
 
     private final HolidayProvider provider;
     private final Duration cacheFor;
+    private final HolidayCatalogRepository repository;
     private final ObjectMapper json = new ObjectMapper();
 
-    // @PersistenceContext cannot be put on a constructor parameter, so the master EntityManager is field-injected.
-    @PersistenceContext(unitName = "master")
-    private EntityManager em;
-
-    public HolidayCatalogService(@Value("${vidya.holidays.provider:auto}") String providerName,
+    // Two constructors exist, so Spring must be told which one to use; without this it looks for a no-arg one and fails.
+    @Autowired
+    public HolidayCatalogService(HolidayCatalogRepository repository,
+                                 @Value("${vidya.holidays.provider:auto}") String providerName,
                                  @Value("${vidya.holidays.calendarific.api-key:}") String calendarificKey,
                                  @Value("${vidya.holidays.calendarific.base-url:https://calendarific.com/api/v2}") String calendarificUrl,
                                  @Value("${vidya.holidays.ics.url:}") String icsUrl,
                                  @Value("${vidya.holidays.timeout-seconds:8}") long timeoutSeconds,
                                  @Value("${vidya.holidays.cache-days:30}") long cacheDays) {
         this(select(providerName, calendarificKey, calendarificUrl, icsUrl, Duration.ofSeconds(timeoutSeconds)),
-                Duration.ofDays(cacheDays));
+                Duration.ofDays(cacheDays), repository);
     }
 
-    HolidayCatalogService(HolidayProvider provider, Duration cacheFor) {
+    HolidayCatalogService(HolidayProvider provider, Duration cacheFor, HolidayCatalogRepository repository) {
         this.provider = provider;
+        this.repository = repository;
         this.cacheFor = cacheFor;
         log.info("Holiday provider: {}", provider == null ? "none" : provider.id());
     }
@@ -108,23 +110,23 @@ public class HolidayCatalogService {
                     "No holiday provider is configured (set CALENDARIFIC_API_KEY or VIDYA_HOLIDAY_PROVIDER=ics).", List.of());
         }
         String country = countryCode.toUpperCase(Locale.ROOT);
-        Optional<Object[]> cached = cached(country, year);
+        Optional<CachedEntry> cached = repository.findCached(provider.id(), country, year);
         if (cached.isPresent()) {
-            Instant fetchedAt = toInstant(cached.get()[1]);
+            Instant fetchedAt = cached.get().fetchedAt();
             if (fetchedAt.plus(cacheFor).isAfter(Instant.now())) {
-                return new Catalog(Status.OK, provider.id(), provider.displayName(), fetchedAt, null, read(cached.get()[0]));
+                return new Catalog(Status.OK, provider.id(), provider.displayName(), fetchedAt, null, read(cached.get().holidaysJson()));
             }
         }
         try {
             List<ProviderHoliday> fresh = provider.fetch(country, year);
-            store(country, year, fresh);
+            repository.upsert(provider.id(), country, year, write(fresh));
             log.info("Fetched {} holidays for {} {} from {}", fresh.size(), country, year, provider.id());
             return new Catalog(Status.OK, provider.id(), provider.displayName(), Instant.now(), null, fresh);
         } catch (RuntimeException e) {
             log.warn("Holiday provider {} failed for {} {}: {}", provider.id(), country, year, e.getMessage());
             if (cached.isPresent()) {
-                return new Catalog(Status.STALE, provider.id(), provider.displayName(), toInstant(cached.get()[1]),
-                        "Provider unavailable; showing data fetched earlier.", read(cached.get()[0]));
+                return new Catalog(Status.STALE, provider.id(), provider.displayName(), cached.get().fetchedAt(),
+                        "Provider unavailable; showing data fetched earlier.", read(cached.get().holidaysJson()));
             }
             return new Catalog(Status.UNAVAILABLE, provider.id(), provider.displayName(), null,
                     "Holiday provider is unavailable right now; try again later.", List.of());
@@ -137,43 +139,16 @@ public class HolidayCatalogService {
         if (tenantCode == null) {
             return Optional.empty();
         }
-        @SuppressWarnings("unchecked")
-        List<Object> rows = em.createNativeQuery("""
-                        SELECT a.state FROM school_address a JOIN tenant t ON t.school_id = a.school_id
-                        WHERE t.tenant_code = :code
-                        ORDER BY a.is_primary DESC, (a.address_type = 'CAMPUS_PRIMARY') DESC, a.created_at
-                        LIMIT 1
-                        """)
-                .setParameter("code", tenantCode).getResultList();
-        return rows.isEmpty() ? Optional.empty() : IndianRegions.code((String) rows.get(0));
+        return repository.findSchoolStateByTenantCode(tenantCode).flatMap(IndianRegions::code);
     }
 
     /** Drops cached years so the next request refetches (e.g. after the provider corrected data). */
     @Transactional(transactionManager = "masterTransactionManager")
     public int evict(String countryCode, Integer year) {
-        return em.createNativeQuery("DELETE FROM holiday_catalog_cache WHERE country_code = :c AND (CAST(:y AS integer) IS NULL OR year = :y)")
-                .setParameter("c", countryCode.toUpperCase(Locale.ROOT)).setParameter("y", year).executeUpdate();
+        return repository.evict(countryCode.toUpperCase(Locale.ROOT), year);
     }
 
     // -----------------------------------------------------------------------------------------
-
-    private Optional<Object[]> cached(String country, int year) {
-        @SuppressWarnings("unchecked")
-        List<Object[]> rows = em.createNativeQuery(
-                        "SELECT CAST(holidays AS text), fetched_at FROM holiday_catalog_cache WHERE provider = :p AND country_code = :c AND year = :y")
-                .setParameter("p", provider.id()).setParameter("c", country).setParameter("y", year).getResultList();
-        return rows.isEmpty() ? Optional.empty() : Optional.of(rows.get(0));
-    }
-
-    private void store(String country, int year, List<ProviderHoliday> holidays) {
-        em.createNativeQuery("""
-                        INSERT INTO holiday_catalog_cache (provider, country_code, year, holidays, fetched_at)
-                        VALUES (:p, :c, :y, CAST(:h AS jsonb), NOW())
-                        ON CONFLICT (provider, country_code, year) DO UPDATE SET holidays = EXCLUDED.holidays, fetched_at = NOW()
-                        """)
-                .setParameter("p", provider.id()).setParameter("c", country).setParameter("y", year)
-                .setParameter("h", write(holidays)).executeUpdate();
-    }
 
     String write(List<ProviderHoliday> holidays) {
         ArrayNode arr = json.createArrayNode();
@@ -205,18 +180,5 @@ public class HolidayCatalogService {
             log.warn("Unreadable holiday cache entry: {}", e.getMessage());
             return List.of();
         }
-    }
-
-    private static Instant toInstant(Object o) {
-        if (o instanceof Instant i) {
-            return i;
-        }
-        if (o instanceof java.time.OffsetDateTime odt) {
-            return odt.toInstant();
-        }
-        if (o instanceof java.sql.Timestamp ts) {
-            return ts.toInstant();
-        }
-        return Instant.parse(String.valueOf(o));
     }
 }

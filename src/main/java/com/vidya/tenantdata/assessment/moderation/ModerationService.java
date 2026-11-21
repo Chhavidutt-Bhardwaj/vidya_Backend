@@ -4,10 +4,10 @@ import com.vidya.common.exception.BusinessException;
 import com.vidya.common.exception.ResourceNotFoundException;
 import com.vidya.common.util.CodeGenerator;
 import com.vidya.tenantdata.assessment.AssessmentAccess;
-import com.vidya.tenantdata.assessment.AssessmentQueries;
-import com.vidya.tenantdata.assessment.AssessmentQueries.ConfigInfo;
-import com.vidya.tenantdata.assessment.AssessmentQueries.EffectiveMark;
-import com.vidya.tenantdata.assessment.AssessmentQueries.Score;
+import com.vidya.tenantdata.assessment.repository.AssessmentQueries;
+import com.vidya.tenantdata.assessment.repository.AssessmentQueries.ConfigInfo;
+import com.vidya.tenantdata.assessment.repository.AssessmentQueries.EffectiveMark;
+import com.vidya.tenantdata.assessment.repository.AssessmentQueries.Score;
 import com.vidya.tenantdata.assessment.entity.Assessment;
 import com.vidya.tenantdata.assessment.entity.AssessmentScheme;
 import com.vidya.tenantdata.assessment.entity.MarkAdjustment;
@@ -52,8 +52,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
-import static com.vidya.tenantdata.assessment.AssessmentQueries.params;
-import static com.vidya.tenantdata.assessment.AssessmentQueries.uuid;
+import static com.vidya.tenantdata.assessment.repository.AssessmentQueries.params;
+import static com.vidya.tenantdata.assessment.repository.AssessmentQueries.uuid;
 
 /**
  * Changes to marks after entry, all kept as {@link MarkAdjustment} rows so the raw mark and every change stay visible:

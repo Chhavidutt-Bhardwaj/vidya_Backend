@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface ClassActivityRepository extends JpaRepository<ClassActivity, UUID> {
+public interface ClassActivityRepository extends JpaRepository<ClassActivity, UUID>, ClassActivityRepositoryCustom {
 
     Optional<ClassActivity> findByIdAndDeletedAtIsNull(UUID id);
 

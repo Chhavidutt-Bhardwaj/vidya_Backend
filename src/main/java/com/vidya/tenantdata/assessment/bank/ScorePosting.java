@@ -3,9 +3,9 @@ package com.vidya.tenantdata.assessment.bank;
 import com.vidya.common.exception.BusinessException;
 import com.vidya.common.exception.ResourceNotFoundException;
 import com.vidya.tenantdata.assessment.AssessmentAccess;
-import com.vidya.tenantdata.assessment.AssessmentQueries;
-import com.vidya.tenantdata.assessment.AssessmentQueries.ConfigInfo;
-import com.vidya.tenantdata.assessment.AssessmentQueries.Enrolled;
+import com.vidya.tenantdata.assessment.repository.AssessmentQueries;
+import com.vidya.tenantdata.assessment.repository.AssessmentQueries.ConfigInfo;
+import com.vidya.tenantdata.assessment.repository.AssessmentQueries.Enrolled;
 import com.vidya.tenantdata.assessment.entity.Assessment;
 import com.vidya.tenantdata.assessment.enums.ScoreSource;
 import com.vidya.tenantdata.assessment.formative.AssessmentService;
@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import static com.vidya.tenantdata.assessment.AssessmentQueries.params;
+import static com.vidya.tenantdata.assessment.repository.AssessmentQueries.params;
 
 /**
  * Posts paper totals (online exam or OMR) as the marks of an exam paper or the scores of a formative assessment, scaled

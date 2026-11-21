@@ -1,5 +1,6 @@
 package com.vidya.tenantdata.engagement.service;
 
+import com.vidya.tenantdata.engagement.repository.DailyReportQueries;
 import com.vidya.tenantdata.calendar.dto.DayStatusResponse;
 import com.vidya.tenantdata.calendar.service.CalendarService;
 import com.vidya.tenantdata.engagement.dto.EngagementDtos.ActivityItem;
@@ -17,8 +18,8 @@ import com.vidya.tenantdata.engagement.dto.EngagementDtos.ReportSummary;
 import com.vidya.tenantdata.engagement.entity.DailyReportSettings;
 import com.vidya.tenantdata.engagement.enums.RemarkSentiment;
 import com.vidya.tenantdata.engagement.repository.DailyReportSettingsRepository;
-import com.vidya.tenantdata.engagement.service.DailyReportQueries.EnrolledStudent;
-import com.vidya.tenantdata.engagement.service.DailyReportQueries.StudentRef;
+import com.vidya.tenantdata.engagement.repository.DailyReportQueries.EnrolledStudent;
+import com.vidya.tenantdata.engagement.repository.DailyReportQueries.StudentRef;
 import com.vidya.tenantdata.security.DataAccessService;
 import com.vidya.tenantdata.security.OwnRecords;
 import com.vidya.tenantdata.user.account.SchoolContext;

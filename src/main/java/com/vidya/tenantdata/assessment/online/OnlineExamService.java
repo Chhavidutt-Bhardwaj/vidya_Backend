@@ -4,8 +4,8 @@ import com.vidya.common.exception.BusinessException;
 import com.vidya.common.exception.ResourceNotFoundException;
 import com.vidya.common.util.CodeGenerator;
 import com.vidya.tenantdata.assessment.AssessmentAccess;
-import com.vidya.tenantdata.assessment.AssessmentQueries;
-import com.vidya.tenantdata.assessment.AssessmentQueries.Enrolled;
+import com.vidya.tenantdata.assessment.repository.AssessmentQueries;
+import com.vidya.tenantdata.assessment.repository.AssessmentQueries.Enrolled;
 import com.vidya.tenantdata.assessment.bank.PaperScoring;
 import com.vidya.tenantdata.assessment.bank.PaperService;
 import com.vidya.tenantdata.assessment.bank.PaperService.Leaf;
@@ -63,8 +63,8 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static com.vidya.tenantdata.assessment.AssessmentQueries.params;
-import static com.vidya.tenantdata.assessment.AssessmentQueries.uuid;
+import static com.vidya.tenantdata.assessment.repository.AssessmentQueries.params;
+import static com.vidya.tenantdata.assessment.repository.AssessmentQueries.uuid;
 
 /**
  * Online exams on a finalised question paper. A student starts an attempt inside the window and gets their own question

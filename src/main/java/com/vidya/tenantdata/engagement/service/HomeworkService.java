@@ -1,5 +1,6 @@
 package com.vidya.tenantdata.engagement.service;
 
+import com.vidya.tenantdata.engagement.repository.DailyReportQueries;
 import com.vidya.common.exception.BusinessException;
 import com.vidya.common.exception.ResourceNotFoundException;
 import com.vidya.common.util.CodeGenerator;
@@ -9,14 +10,14 @@ import com.vidya.tenantdata.engagement.dto.EngagementDtos.HomeworkResponse;
 import com.vidya.tenantdata.engagement.entity.Homework;
 import com.vidya.tenantdata.engagement.enums.HomeworkStatus;
 import com.vidya.tenantdata.engagement.repository.HomeworkRepository;
-import com.vidya.tenantdata.engagement.service.DailyReportQueries.EnrolledStudent;
+import com.vidya.tenantdata.engagement.repository.HomeworkRepositoryCustom;
+import com.vidya.tenantdata.engagement.repository.OwnScope;
+import com.vidya.tenantdata.engagement.repository.DailyReportQueries.EnrolledStudent;
 import com.vidya.tenantdata.engagement.service.EngagementAccess.Place;
 import com.vidya.tenantdata.security.OwnRecords;
 import com.vidya.tenantdata.staff.repository.StaffRepository;
 import com.vidya.tenantdata.subject.entity.Subject;
 import com.vidya.tenantdata.subject.repository.SubjectRepository;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.AccessDeniedException;
@@ -27,7 +28,6 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -49,9 +49,6 @@ public class HomeworkService {
     private final EngagementAccess access;
     private final Clock clock;
 
-    @PersistenceContext(unitName = "tenant")
-    private EntityManager em;
-
     // ── read ─────────────────────────────────────────────────────────────────
 
     /**
@@ -62,27 +59,16 @@ public class HomeworkService {
     @Transactional(readOnly = true, transactionManager = "tenantTransactionManager")
     public List<HomeworkResponse> list(UUID academicYearId, UUID academicClassId, UUID sectionId, UUID subjectId, UUID teacherId,
                                        LocalDate from, LocalDate to, Integer limit) {
-        StringBuilder sql = new StringBuilder("SELECT h.* FROM homework h WHERE h.deleted_at IS NULL");
-        Map<String, Object> params = new HashMap<>();
-        filter(sql, params, "h.academic_year_id = :y", "y", academicYearId);
-        filter(sql, params, "h.academic_class_id = :c", "c", academicClassId);
-        filter(sql, params, "(h.section_id = :sec OR h.section_id IS NULL)", "sec", sectionId);
-        filter(sql, params, "h.subject_id = :s", "s", subjectId);
-        filter(sql, params, "h.teacher_id = :t", "t", teacherId);
-        filter(sql, params, "h.assigned_on >= :from", "from", from);
-        filter(sql, params, "h.assigned_on <= :to", "to", to);
+        OwnScope scope = null;
         if (!access.all()) {
             OwnRecords own = access.own();
             if (own.staffIds().isEmpty()) {
                 return List.of();
             }
-            sql.append(" AND (h.teacher_id IN (:own) OR h.section_id IN (:ownSections) OR (h.section_id IS NULL AND h.academic_class_id IN (:ownClasses)))");
-            params.put("own", own.staffIds());
-            params.put("ownSections", nonEmpty(own.sectionIds()));
-            params.put("ownClasses", nonEmpty(own.teachingClassIds()));
+            scope = new OwnScope(access.actorId(), own.staffIds(), own.sectionIds(), own.teachingClassIds());
         }
-        sql.append(" ORDER BY h.assigned_on DESC, h.created_at DESC");
-        return respond(query(sql.toString(), params, limit));
+        var filter = new HomeworkRepositoryCustom.Filter(academicYearId, academicClassId, sectionId, subjectId, teacherId, from, to);
+        return respond(repository.search(filter, scope, limit(limit, 100, 500)));
     }
 
     @Transactional(readOnly = true, transactionManager = "tenantTransactionManager")
@@ -111,15 +97,8 @@ public class HomeworkService {
             return List.of();
         }
         EnrolledStudent s = e.get(0);
-        Map<String, Object> params = new HashMap<>();
-        params.put("y", s.academicYearId());
-        params.put("c", s.academicClassId());
-        params.put("sec", s.sectionId());
-        params.put("from", from != null ? from : today);
-        params.put("to", to != null ? to : today.plusWeeks(2));
-        return respond(query("SELECT h.* FROM homework h WHERE h.deleted_at IS NULL AND h.status = 'PUBLISHED' AND h.academic_year_id = :y "
-                + "AND h.academic_class_id = :c AND (h.section_id IS NULL OR h.section_id = CAST(:sec AS uuid)) "
-                + "AND h.due_on BETWEEN :from AND :to ORDER BY h.due_on, h.assigned_on", params, 200));
+        return respond(repository.findPublishedDue(s.academicYearId(), s.academicClassId(), s.sectionId(),
+                from != null ? from : today, to != null ? to : today.plusWeeks(2), 200));
     }
 
     // ── write ────────────────────────────────────────────────────────────────
@@ -230,14 +209,6 @@ public class HomeworkService {
         return out;
     }
 
-    @SuppressWarnings("unchecked")
-    private List<Homework> query(String sql, Map<String, Object> params, Integer limit) {
-        var q = em.createNativeQuery(sql, Homework.class);
-        params.forEach(q::setParameter);
-        q.setMaxResults(limit == null ? 100 : Math.max(1, Math.min(limit, 500)));
-        return q.getResultList();
-    }
-
     private Homework homework(UUID id) {
         return repository.findByIdAndDeletedAtIsNull(id).orElseThrow(() -> new ResourceNotFoundException("Homework", id));
     }
@@ -252,14 +223,8 @@ public class HomeworkService {
         throw new BusinessException("Could not generate a unique code; try again");
     }
 
-    static Set<UUID> nonEmpty(Set<UUID> ids) {
-        return ids.isEmpty() ? Set.of(new UUID(0, 0)) : ids;
-    }
-
-    static void filter(StringBuilder sql, Map<String, Object> params, String clause, String name, Object value) {
-        if (value != null) {
-            sql.append(" AND ").append(clause);
-            params.put(name, value);
-        }
+    /** Requested page size, or the default, kept within 1..max. */
+    static int limit(Integer requested, int dflt, int max) {
+        return requested == null ? dflt : Math.max(1, Math.min(requested, max));
     }
 }

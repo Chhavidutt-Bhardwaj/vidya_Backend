@@ -3,9 +3,9 @@ package com.vidya.tenantdata.assessment.competency;
 import com.vidya.common.exception.BusinessException;
 import com.vidya.common.exception.ResourceNotFoundException;
 import com.vidya.tenantdata.assessment.AssessmentAccess;
-import com.vidya.tenantdata.assessment.AssessmentQueries;
-import com.vidya.tenantdata.assessment.AssessmentQueries.Enrolled;
-import com.vidya.tenantdata.assessment.AssessmentQueries.TermInfo;
+import com.vidya.tenantdata.assessment.repository.AssessmentQueries;
+import com.vidya.tenantdata.assessment.repository.AssessmentQueries.Enrolled;
+import com.vidya.tenantdata.assessment.repository.AssessmentQueries.TermInfo;
 import com.vidya.tenantdata.assessment.competency.CompetencyDtos.CoScholasticItem;
 import com.vidya.tenantdata.assessment.competency.CompetencyDtos.CoScholasticRequest;
 import com.vidya.tenantdata.assessment.competency.CompetencyDtos.CoScholasticResponse;
@@ -46,8 +46,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
-import static com.vidya.tenantdata.assessment.AssessmentQueries.params;
-import static com.vidya.tenantdata.assessment.AssessmentQueries.uuid;
+import static com.vidya.tenantdata.assessment.repository.AssessmentQueries.params;
+import static com.vidya.tenantdata.assessment.repository.AssessmentQueries.uuid;
 
 /**
  * Competency framework (competencies → learning outcomes → syllabus topics and questions) and the term judgements

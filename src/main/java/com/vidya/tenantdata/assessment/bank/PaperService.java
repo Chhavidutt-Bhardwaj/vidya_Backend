@@ -4,7 +4,7 @@ import com.vidya.common.exception.BusinessException;
 import com.vidya.common.exception.ResourceNotFoundException;
 import com.vidya.common.util.CodeGenerator;
 import com.vidya.tenantdata.assessment.AssessmentAccess;
-import com.vidya.tenantdata.assessment.AssessmentQueries;
+import com.vidya.tenantdata.assessment.repository.AssessmentQueries;
 import com.vidya.tenantdata.assessment.bank.BankDtos.AnswerKey;
 import com.vidya.tenantdata.assessment.bank.BankDtos.BlueprintCheck;
 import com.vidya.tenantdata.assessment.bank.BankDtos.BlueprintRequest;
@@ -62,8 +62,8 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static com.vidya.tenantdata.assessment.AssessmentQueries.params;
-import static com.vidya.tenantdata.assessment.AssessmentQueries.uuid;
+import static com.vidya.tenantdata.assessment.repository.AssessmentQueries.params;
+import static com.vidya.tenantdata.assessment.repository.AssessmentQueries.uuid;
 
 /**
  * Blueprints and question papers. A paper is generated from a blueprint ({@link PaperGenerator}) in one or more sets,

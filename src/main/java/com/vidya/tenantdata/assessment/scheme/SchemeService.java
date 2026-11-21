@@ -4,8 +4,8 @@ import com.vidya.common.exception.BusinessException;
 import com.vidya.common.exception.ResourceNotFoundException;
 import com.vidya.common.util.CodeGenerator;
 import com.vidya.tenantdata.assessment.AssessmentAccess;
-import com.vidya.tenantdata.assessment.AssessmentQueries;
-import com.vidya.tenantdata.assessment.AssessmentQueries.TermInfo;
+import com.vidya.tenantdata.assessment.repository.AssessmentQueries;
+import com.vidya.tenantdata.assessment.repository.AssessmentQueries.TermInfo;
 import com.vidya.tenantdata.assessment.entity.AssessmentComponent;
 import com.vidya.tenantdata.assessment.entity.AssessmentScheme;
 import com.vidya.tenantdata.assessment.entity.CoScholasticArea;
@@ -52,8 +52,8 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static com.vidya.tenantdata.assessment.AssessmentQueries.params;
-import static com.vidya.tenantdata.assessment.AssessmentQueries.uuid;
+import static com.vidya.tenantdata.assessment.repository.AssessmentQueries.params;
+import static com.vidya.tenantdata.assessment.repository.AssessmentQueries.uuid;
 
 /**
  * Assessment schemes: one per group of classes per academic year, so a school can run CBSE in some classes and IGCSE or

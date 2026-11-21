@@ -7,14 +7,14 @@ import com.vidya.tenantdata.academic.entity.AcademicClass;
 import com.vidya.tenantdata.academic.entity.AcademicYear;
 import com.vidya.tenantdata.academic.entity.Section;
 import com.vidya.tenantdata.assessment.AssessmentAccess;
-import com.vidya.tenantdata.assessment.AssessmentQueries;
-import com.vidya.tenantdata.assessment.AssessmentQueries.Attendance;
-import com.vidya.tenantdata.assessment.AssessmentQueries.EffectiveMark;
-import com.vidya.tenantdata.assessment.AssessmentQueries.Enrolled;
-import com.vidya.tenantdata.assessment.AssessmentQueries.ExamPaper;
-import com.vidya.tenantdata.assessment.AssessmentQueries.Score;
-import com.vidya.tenantdata.assessment.AssessmentQueries.SubjectInfo;
-import com.vidya.tenantdata.assessment.AssessmentQueries.TermInfo;
+import com.vidya.tenantdata.assessment.repository.AssessmentQueries;
+import com.vidya.tenantdata.assessment.repository.AssessmentQueries.Attendance;
+import com.vidya.tenantdata.assessment.repository.AssessmentQueries.EffectiveMark;
+import com.vidya.tenantdata.assessment.repository.AssessmentQueries.Enrolled;
+import com.vidya.tenantdata.assessment.repository.AssessmentQueries.ExamPaper;
+import com.vidya.tenantdata.assessment.repository.AssessmentQueries.Score;
+import com.vidya.tenantdata.assessment.repository.AssessmentQueries.SubjectInfo;
+import com.vidya.tenantdata.assessment.repository.AssessmentQueries.TermInfo;
 import com.vidya.tenantdata.assessment.entity.Assessment;
 import com.vidya.tenantdata.assessment.entity.AssessmentComponent;
 import com.vidya.tenantdata.assessment.entity.AssessmentScheme;
@@ -84,7 +84,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static com.vidya.tenantdata.assessment.AssessmentQueries.params;
+import static com.vidya.tenantdata.assessment.repository.AssessmentQueries.params;
 
 /**
  * Term results and report cards, board-aware. For each enrolled student it gathers the term's exam papers (after

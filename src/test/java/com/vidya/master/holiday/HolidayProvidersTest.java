@@ -107,7 +107,7 @@ class HolidayProvidersTest {
     @Test
     @DisplayName("cache JSON round-trips")
     void cacheRoundTrip() {
-        HolidayCatalogService svc = new HolidayCatalogService(null, Duration.ofDays(1));
+        HolidayCatalogService svc = new HolidayCatalogService(null, Duration.ofDays(1), null);
         List<ProviderHoliday> in = List.of(new ProviderHoliday("Maharashtra Day", LocalDate.of(2027, 5, 1), LocalDate.of(2027, 5, 1),
                 ProviderHoliday.Kind.PUBLIC, null, Set.of("MH")));
 

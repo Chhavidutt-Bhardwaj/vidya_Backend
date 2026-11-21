@@ -4,7 +4,7 @@ import com.vidya.common.exception.BusinessException;
 import com.vidya.common.exception.ResourceNotFoundException;
 import com.vidya.common.util.CodeGenerator;
 import com.vidya.tenantdata.assessment.AssessmentAccess;
-import com.vidya.tenantdata.assessment.AssessmentQueries;
+import com.vidya.tenantdata.assessment.repository.AssessmentQueries;
 import com.vidya.tenantdata.assessment.bank.BankDtos.PoolCount;
 import com.vidya.tenantdata.assessment.bank.BankDtos.QuestionRequest;
 import com.vidya.tenantdata.assessment.bank.BankDtos.QuestionResponse;
@@ -34,8 +34,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
-import static com.vidya.tenantdata.assessment.AssessmentQueries.params;
-import static com.vidya.tenantdata.assessment.AssessmentQueries.uuid;
+import static com.vidya.tenantdata.assessment.repository.AssessmentQueries.params;
+import static com.vidya.tenantdata.assessment.repository.AssessmentQueries.uuid;
 
 /**
  * Question bank: questions in ten formats tagged with subject, class, syllabus unit / topic, difficulty, Bloom level and

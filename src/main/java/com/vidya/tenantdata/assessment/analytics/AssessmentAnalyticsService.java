@@ -2,9 +2,9 @@ package com.vidya.tenantdata.assessment.analytics;
 
 import com.vidya.common.exception.ResourceNotFoundException;
 import com.vidya.tenantdata.assessment.AssessmentAccess;
-import com.vidya.tenantdata.assessment.AssessmentQueries;
-import com.vidya.tenantdata.assessment.AssessmentQueries.Enrolled;
-import com.vidya.tenantdata.assessment.AssessmentQueries.TermInfo;
+import com.vidya.tenantdata.assessment.repository.AssessmentQueries;
+import com.vidya.tenantdata.assessment.repository.AssessmentQueries.Enrolled;
+import com.vidya.tenantdata.assessment.repository.AssessmentQueries.TermInfo;
 import com.vidya.tenantdata.assessment.analytics.AnalyticsDtos.ClassPerformance;
 import com.vidya.tenantdata.assessment.analytics.AnalyticsDtos.Distribution;
 import com.vidya.tenantdata.assessment.analytics.AnalyticsDtos.ItemAnalysis;
@@ -41,9 +41,9 @@ import java.util.TreeMap;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static com.vidya.tenantdata.assessment.AssessmentQueries.date;
-import static com.vidya.tenantdata.assessment.AssessmentQueries.params;
-import static com.vidya.tenantdata.assessment.AssessmentQueries.uuid;
+import static com.vidya.tenantdata.assessment.repository.AssessmentQueries.date;
+import static com.vidya.tenantdata.assessment.repository.AssessmentQueries.params;
+import static com.vidya.tenantdata.assessment.repository.AssessmentQueries.uuid;
 
 /**
  * Performance analytics from generated report cards (subject-wise, year-over-year, student progress) and from
