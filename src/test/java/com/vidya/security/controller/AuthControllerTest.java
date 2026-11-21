@@ -83,7 +83,7 @@ class AuthControllerTest {
     void login_Success() throws Exception {
         LoginRequest request = new LoginRequest("admin@vidya.io", "Password@123");
 
-        when(authService.login(any(LoginRequest.class), any(), any())).thenReturn(sampleAuthResponse);
+        when(authService.login(any(LoginRequest.class), any(com.vidya.security.session.service.ClientInfo.class), any())).thenReturn(sampleAuthResponse);
 
         mockMvc.perform(post("/api/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -99,7 +99,7 @@ class AuthControllerTest {
     void refreshToken_Success() throws Exception {
         RefreshTokenRequest request = new RefreshTokenRequest("mock-jwt-refresh-token");
 
-        when(authService.refreshToken(any(RefreshTokenRequest.class), any(), any())).thenReturn(sampleAuthResponse);
+        when(authService.refreshToken(any(RefreshTokenRequest.class), any(com.vidya.security.session.service.ClientInfo.class), any())).thenReturn(sampleAuthResponse);
 
         mockMvc.perform(post("/api/v1/auth/refresh")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -121,7 +121,7 @@ class AuthControllerTest {
                 .andExpect(jsonPath("$.success", equalTo(true)))
                 .andExpect(jsonPath("$.code", equalTo("LOGOUT_SUCCESS")));
 
-        verify(authService).logout(any(RefreshTokenRequest.class), any(), any());
+        verify(authService).logout(any(RefreshTokenRequest.class), any(com.vidya.security.session.service.ClientInfo.class), any());
     }
 
     @Test

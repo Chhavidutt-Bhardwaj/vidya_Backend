@@ -44,7 +44,7 @@ public class TimetableSubstitutionController {
     private final TimetableSubstitutionService substitutionService;
 
     @PostMapping
-    @PreAuthorize("hasAuthority('SUBSTITUTION_MANAGE')")
+    @PreAuthorize("hasAuthority('SUBSTITUTION_MANAGE') and @dataAccess.hasFullScope(authentication, 'TIMETABLE')")
     @Operation(summary = "Create substitution", description = "Creates a daily teacher substitution, room change, or class cancellation")
     public ResponseEntity<ApiResponse<SubstitutionResponse>> createSubstitution(
             @Valid @RequestBody CreateSubstitutionRequest request
@@ -56,7 +56,7 @@ public class TimetableSubstitutionController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('SUBSTITUTION_READ')")
+    @PreAuthorize("hasAuthority('SUBSTITUTION_READ') and @dataAccess.canAccessSubstitution(authentication, #id)")
     @Operation(summary = "Get substitution by ID", description = "Retrieves details of a substitution")
     public ResponseEntity<ApiResponse<SubstitutionResponse>> getSubstitutionById(
             @Parameter(description = "Substitution ID") @PathVariable UUID id
@@ -66,7 +66,7 @@ public class TimetableSubstitutionController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAuthority('SUBSTITUTION_READ')")
+    @PreAuthorize("hasAuthority('SUBSTITUTION_READ') and @dataAccess.canQuerySubstitutions(authentication, #sectionId, #teacherId)")
     @Operation(summary = "Search substitutions", description = "Search and filter substitutions by date range, section, teacher, or status")
     public ResponseEntity<PagedApiResponse<SubstitutionResponse>> searchSubstitutions(
             @Parameter(description = "Start date filter (YYYY-MM-DD)") @RequestParam(required = false) LocalDate dateFrom,
@@ -86,7 +86,7 @@ public class TimetableSubstitutionController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAuthority('SUBSTITUTION_MANAGE')")
+    @PreAuthorize("hasAuthority('SUBSTITUTION_MANAGE') and @dataAccess.hasFullScope(authentication, 'TIMETABLE')")
     @Operation(summary = "Update substitution", description = "Updates substitute teacher, room, or reason for an ACTIVE substitution")
     public ResponseEntity<ApiResponse<SubstitutionResponse>> updateSubstitution(
             @Parameter(description = "Substitution ID") @PathVariable UUID id,
@@ -97,7 +97,7 @@ public class TimetableSubstitutionController {
     }
 
     @PatchMapping("/{id}/cancel")
-    @PreAuthorize("hasAuthority('SUBSTITUTION_MANAGE')")
+    @PreAuthorize("hasAuthority('SUBSTITUTION_MANAGE') and @dataAccess.hasFullScope(authentication, 'TIMETABLE')")
     @Operation(summary = "Cancel substitution", description = "Cancels an ACTIVE substitution")
     public ResponseEntity<ApiResponse<SubstitutionResponse>> cancelSubstitution(
             @Parameter(description = "Substitution ID") @PathVariable UUID id
@@ -107,7 +107,7 @@ public class TimetableSubstitutionController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('SUBSTITUTION_MANAGE')")
+    @PreAuthorize("hasAuthority('SUBSTITUTION_MANAGE') and @dataAccess.hasFullScope(authentication, 'TIMETABLE')")
     @Operation(summary = "Delete substitution", description = "Soft deletes a substitution record")
     public ResponseEntity<ApiResponse<Void>> deleteSubstitution(
             @Parameter(description = "Substitution ID") @PathVariable UUID id

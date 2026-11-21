@@ -79,6 +79,26 @@ public class ReportCardSubjectResult {
     @Column(name = "is_exempt", nullable = false)
     private boolean isExempt = false;
 
+    /** SCHOLASTIC, ADDITIONAL or GRADE_ONLY (see the assessment scheme). */
+    @Column(name = "category", nullable = false, length = 20)
+    private String category = "SCHOLASTIC";
+
+    /** Grace given by the scheme's grace rule when the result was calculated. */
+    @Column(name = "grace_marks", nullable = false, precision = 6, scale = 2)
+    private BigDecimal graceMarks = BigDecimal.ZERO;
+
+    /** Approved grace / moderation / re-evaluation changes on the exam paper, already inside marksObtained. */
+    @Column(name = "adjustment_marks", nullable = false, precision = 6, scale = 2)
+    private BigDecimal adjustmentMarks = BigDecimal.ZERO;
+
+    @Column(name = "counted_in_total", nullable = false)
+    private boolean countedInTotal = true;
+
+    /** {"components":[{code, name, type, weight, percentage, score, note}], "note": ...} */
+    @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.JSON)
+    @Column(name = "component_breakdown", columnDefinition = "jsonb")
+    private java.util.Map<String, Object> componentBreakdown;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 

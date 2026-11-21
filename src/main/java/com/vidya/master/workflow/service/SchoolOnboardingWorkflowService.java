@@ -33,6 +33,13 @@ public interface SchoolOnboardingWorkflowService {
 
     WorkflowApprovalResponse approveOnboarding(UUID onboardingId, WorkflowApproveRequest request);
 
+    /**
+     * Explicitly waives the onboarding payment. Requires {@code ONBOARDING_PAYMENT_WAIVE}; the
+     * approver recorded in the audit trail is the authenticated user.
+     */
+    com.vidya.master.workflow.dto.PaymentWaiverResponse waivePayment(
+            UUID onboardingId, com.vidya.master.workflow.dto.PaymentWaiverRequest request);
+
     WorkflowProvisionResponse provisionTenant(UUID onboardingId, WorkflowProvisionRequest request);
 
     InitialSchoolAdminResponse createInitialAdmin(UUID onboardingId, InitialSchoolAdminRequest request);

@@ -1,5 +1,6 @@
 package com.vidya.master.workflow.admin;
 
+import com.vidya.common.exception.DuplicateResourceException;
 import com.vidya.common.exception.ResourceNotFoundException;
 import com.vidya.common.util.CodeGenerator;
 import com.vidya.master.onboarding.entity.OnboardingStep;
@@ -22,14 +23,23 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.EnumSet;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class SchoolAdminProvisioningServiceImpl implements SchoolAdminProvisioningService {
+
+    /**
+     * The only roles an initial school administrator may receive. Platform, community and other
+     * privileged roles can never be assigned through onboarding (privilege-escalation guard).
+     */
+    static final Set<PlatformRole> ALLOWED_INITIAL_ADMIN_ROLES =
+            EnumSet.of(PlatformRole.SCHOOL_OWNER, PlatformRole.SCHOOL_ADMIN);
 
     private final SchoolRepository schoolRepository;
     private final SchoolOnboardingRepository onboardingRepository;
@@ -45,6 +55,27 @@ public class SchoolAdminProvisioningServiceImpl implements SchoolAdminProvisioni
         School school = schoolRepository.findById(schoolId)
                 .orElseThrow(() -> new ResourceNotFoundException("School", schoolId));
 
+        // 0. Role whitelist — validated before anything else so a rejected request has no side effects.
+        PlatformRole role = (request != null && request.getRole() != null)
+                ? request.getRole()
+                : PlatformRole.SCHOOL_OWNER;
+        if (!ALLOWED_INITIAL_ADMIN_ROLES.contains(role)) {
+            log.warn("Rejected initial admin role [{}] for school {}", role, schoolId);
+            throw new IllegalArgumentException("Role " + role + " cannot be assigned to an initial school administrator. "
+                    + "Allowed roles: " + ALLOWED_INITIAL_ADMIN_ROLES);
+        }
+
+        // Idempotency for the activation path (no explicit admin details): reuse the school's existing admin.
+        if (request == null || request.getEmail() == null || request.getEmail().isBlank()) {
+            Optional<PlatformUser> existingSchoolAdmin = userRepository.findBySchoolId(schoolId).stream()
+                    .filter(u -> ALLOWED_INITIAL_ADMIN_ROLES.contains(u.getPlatformRole()))
+                    .findFirst();
+            if (existingSchoolAdmin.isPresent()) {
+                log.info("School {} already has an administrator ({}); reusing", schoolId, existingSchoolAdmin.get().getUserCode());
+                return mapToResponse(existingSchoolAdmin.get(), null);
+            }
+        }
+
         SchoolOnboarding onboarding = null;
         if (onboardingId != null) {
             onboarding = onboardingRepository.findById(onboardingId).orElse(null);
@@ -53,23 +84,24 @@ public class SchoolAdminProvisioningServiceImpl implements SchoolAdminProvisioni
         // 1. Resolve Admin Contact Info from Request, Onboarding Step Data, or School details
         AdminContactInfo contactInfo = resolveContactInfo(school, onboarding, request);
 
-        // 2. Resolve Role
-        PlatformRole role = (request != null && request.getRole() != null)
-                ? request.getRole()
-                : PlatformRole.SCHOOL_OWNER;
-
-        // 3. Check if user already exists
+        // 3. Existing accounts are NEVER modified: no school re-linking, no role change, no reactivation.
         Optional<PlatformUser> existingUserOpt = userRepository.findByEmailIgnoreCase(contactInfo.email);
         if (existingUserOpt.isPresent()) {
             PlatformUser existing = existingUserOpt.get();
-            log.info("User already exists for email: {}. Linking to school: {}", existing.getEmail(), schoolId);
-            existing.setSchoolId(schoolId);
-            existing.setPlatformRole(role);
-            if (existing.getStatus() != UserStatus.ACTIVE) {
-                existing.setStatus(UserStatus.ACTIVE);
+            boolean alreadyThisSchoolsAdmin = schoolId.equals(existing.getSchoolId())
+                    && ALLOWED_INITIAL_ADMIN_ROLES.contains(existing.getPlatformRole())
+                    && existing.getStatus() == UserStatus.ACTIVE;
+            if (alreadyThisSchoolsAdmin) {
+                // Idempotent replay of the same request — return the account unchanged, without credentials.
+                log.info("Initial admin {} already provisioned for school {}; returning existing account",
+                        existing.getUserCode(), schoolId);
+                return mapToResponse(existing, null);
             }
-            PlatformUser updated = userRepository.save(existing);
-            return mapToResponse(updated, null);
+            log.warn("Refusing to provision initial admin for school {}: email already belongs to an existing account ({})",
+                    schoolId, existing.getUserCode());
+            throw new DuplicateResourceException(
+                    "A user account with this email already exists and cannot be reassigned to this school. "
+                            + "Use a different email for the school administrator.");
         }
 
         // 4. Generate Credentials & Create New Platform User

@@ -45,7 +45,7 @@ public class CurriculumController {
     private final CurriculumService curriculumService;
 
     @PostMapping
-    @PreAuthorize("hasAuthority('CURRICULUM_CREATE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('CURRICULUM_CREATE')")
     @Operation(summary = "Create curriculum", description = "Creates a new curriculum structure for an academic year")
     public ResponseEntity<ApiResponse<CurriculumDetailResponse>> createCurriculum(
             @Valid @RequestBody CreateCurriculumRequest request) {
@@ -56,7 +56,7 @@ public class CurriculumController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAuthority('CURRICULUM_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('CURRICULUM_READ')")
     @Operation(summary = "Search curricula", description = "Lists curricula with optional filtering by academic year, status, or search query")
     public ResponseEntity<PagedApiResponse<CurriculumResponse>> searchCurricula(
             @RequestParam(required = false) UUID academicYearId,
@@ -69,7 +69,7 @@ public class CurriculumController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('CURRICULUM_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('CURRICULUM_READ')")
     @Operation(summary = "Get curriculum by ID", description = "Retrieves curriculum details with mapped subjects by its UUID")
     public ResponseEntity<ApiResponse<CurriculumDetailResponse>> getCurriculum(
             @Parameter(description = "Curriculum UUID") @PathVariable UUID id) {
@@ -79,7 +79,7 @@ public class CurriculumController {
     }
 
     @GetMapping("/code/{curriculumCode}")
-    @PreAuthorize("hasAuthority('CURRICULUM_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('CURRICULUM_READ')")
     @Operation(summary = "Get curriculum by code", description = "Retrieves curriculum details by its stable business code")
     public ResponseEntity<ApiResponse<CurriculumDetailResponse>> getCurriculumByCode(
             @Parameter(description = "Curriculum business code") @PathVariable String curriculumCode) {
@@ -89,7 +89,7 @@ public class CurriculumController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAuthority('CURRICULUM_UPDATE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('CURRICULUM_UPDATE')")
     @Operation(summary = "Update curriculum", description = "Updates curriculum name and description")
     public ResponseEntity<ApiResponse<CurriculumDetailResponse>> updateCurriculum(
             @Parameter(description = "Curriculum UUID") @PathVariable UUID id,
@@ -100,7 +100,7 @@ public class CurriculumController {
     }
 
     @PatchMapping("/{id}/status")
-    @PreAuthorize("hasAuthority('CURRICULUM_STATUS_UPDATE') or hasAuthority('CURRICULUM_UPDATE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('CURRICULUM_STATUS_UPDATE') or hasAuthority('CURRICULUM_UPDATE')")
     @Operation(summary = "Update curriculum status", description = "Transitions curriculum lifecycle status (e.g. DRAFT -> ACTIVE)")
     public ResponseEntity<ApiResponse<CurriculumDetailResponse>> updateStatus(
             @Parameter(description = "Curriculum UUID") @PathVariable UUID id,
@@ -111,7 +111,7 @@ public class CurriculumController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('CURRICULUM_DELETE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('CURRICULUM_DELETE')")
     @Operation(summary = "Delete curriculum", description = "Soft-deletes a curriculum")
     public ResponseEntity<ApiResponse<Void>> deleteCurriculum(
             @Parameter(description = "Curriculum UUID") @PathVariable UUID id) {

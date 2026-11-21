@@ -36,7 +36,7 @@ public class StudentSubjectEnrollmentController {
     private final StudentSubjectEnrollmentService subjectEnrollmentService;
 
     @GetMapping
-    @PreAuthorize("hasAuthority('STUDENT_SUBJECT_READ') or hasAuthority('STUDENT_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("(hasAuthority('STUDENT_SUBJECT_READ') or hasAuthority('STUDENT_READ')) and @dataAccess.canAccessEnrollment(authentication, #enrollmentId, 'STUDENT')")
     @Operation(summary = "Get enrolled subjects for student enrollment", description = "Retrieves all active and historical subjects enrolled under this academic placement")
     public ResponseEntity<ApiResponse<List<StudentSubjectEnrollmentResponse>>> getEnrolledSubjects(
             @PathVariable UUID enrollmentId) {
@@ -46,7 +46,7 @@ public class StudentSubjectEnrollmentController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAuthority('STUDENT_SUBJECT_ASSIGN') or hasAuthority('STUDENT_UPDATE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("(hasAuthority('STUDENT_SUBJECT_ASSIGN') or hasAuthority('STUDENT_UPDATE')) and @dataAccess.canAccessEnrollment(authentication, #enrollmentId, 'STUDENT')")
     @Operation(summary = "Enroll student in a subject", description = "Assigns a subject to a student enrollment after validating curriculum eligibility")
     public ResponseEntity<ApiResponse<StudentSubjectEnrollmentResponse>> enrollSubject(
             @PathVariable UUID enrollmentId,
@@ -58,7 +58,7 @@ public class StudentSubjectEnrollmentController {
     }
 
     @PostMapping("/batch")
-    @PreAuthorize("hasAuthority('STUDENT_SUBJECT_ASSIGN') or hasAuthority('STUDENT_UPDATE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("(hasAuthority('STUDENT_SUBJECT_ASSIGN') or hasAuthority('STUDENT_UPDATE')) and @dataAccess.canAccessEnrollment(authentication, #enrollmentId, 'STUDENT')")
     @Operation(summary = "Batch enroll student in subjects", description = "Assigns multiple subjects in batch to a student enrollment")
     public ResponseEntity<ApiResponse<List<StudentSubjectEnrollmentResponse>>> batchEnrollSubjects(
             @PathVariable UUID enrollmentId,
@@ -70,7 +70,7 @@ public class StudentSubjectEnrollmentController {
     }
 
     @GetMapping("/{subjectEnrollmentId}")
-    @PreAuthorize("hasAuthority('STUDENT_SUBJECT_READ') or hasAuthority('STUDENT_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("(hasAuthority('STUDENT_SUBJECT_READ') or hasAuthority('STUDENT_READ')) and @dataAccess.canAccessEnrollment(authentication, #enrollmentId, 'STUDENT')")
     @Operation(summary = "Get subject enrollment by ID", description = "Retrieves subject enrollment details")
     public ResponseEntity<ApiResponse<StudentSubjectEnrollmentResponse>> getSubjectEnrollmentById(
             @PathVariable UUID enrollmentId,
@@ -81,7 +81,7 @@ public class StudentSubjectEnrollmentController {
     }
 
     @PutMapping("/{subjectEnrollmentId}")
-    @PreAuthorize("hasAuthority('STUDENT_SUBJECT_UPDATE') or hasAuthority('STUDENT_UPDATE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("(hasAuthority('STUDENT_SUBJECT_UPDATE') or hasAuthority('STUDENT_UPDATE')) and @dataAccess.canAccessEnrollment(authentication, #enrollmentId, 'STUDENT')")
     @Operation(summary = "Update subject enrollment", description = "Updates status (DROPPED, EXEMPTED, COMPLETED) or effective dates")
     public ResponseEntity<ApiResponse<StudentSubjectEnrollmentResponse>> updateSubjectEnrollment(
             @PathVariable UUID enrollmentId,
@@ -93,7 +93,7 @@ public class StudentSubjectEnrollmentController {
     }
 
     @DeleteMapping("/{subjectEnrollmentId}")
-    @PreAuthorize("hasAuthority('STUDENT_SUBJECT_DELETE') or hasAuthority('STUDENT_UPDATE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("(hasAuthority('STUDENT_SUBJECT_DELETE') or hasAuthority('STUDENT_UPDATE')) and @dataAccess.canAccessEnrollment(authentication, #enrollmentId, 'STUDENT')")
     @Operation(summary = "Remove subject enrollment", description = "Soft deletes subject enrollment for student")
     public ResponseEntity<ApiResponse<Void>> removeSubjectEnrollment(
             @PathVariable UUID enrollmentId,

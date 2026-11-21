@@ -4,162 +4,199 @@ import com.vidya.master.community.entity.CommunityMember;
 import com.vidya.master.community.entity.CommunityRoleDefinition;
 import com.vidya.master.community.entity.CommunityRolePermission;
 import com.vidya.master.community.repository.CommunityMemberRepository;
-import com.vidya.master.subscription.entity.FeatureCategory;
-import com.vidya.master.subscription.entity.SchoolSubscription;
-import com.vidya.master.subscription.entity.SubscriptionFeature;
-import com.vidya.master.subscription.entity.SubscriptionPlan;
-import com.vidya.master.subscription.entity.SubscriptionPlanFeature;
-import com.vidya.master.subscription.repository.SchoolSubscriptionRepository;
-import com.vidya.master.subscription.repository.SubscriptionPlanFeatureRepository;
+import com.vidya.security.access.SeedRoleMatrix;
+import com.vidya.security.access.repository.AccessPermissionRepository;
+import com.vidya.security.access.service.EffectiveAccess;
+import com.vidya.security.access.service.EffectiveAccessService;
 import com.vidya.security.entity.PlatformRole;
 import com.vidya.security.entity.PlatformUser;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.util.ReflectionTestUtils;
 
+import java.time.Instant;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import static com.vidya.security.service.UserPermissionMatrixServiceImpl.ACTION_APPROVE;
+import static com.vidya.security.service.UserPermissionMatrixServiceImpl.ACTION_DELETE;
+import static com.vidya.security.service.UserPermissionMatrixServiceImpl.ACTION_EDIT;
+import static com.vidya.security.service.UserPermissionMatrixServiceImpl.ACTION_FULL;
+import static com.vidya.security.service.UserPermissionMatrixServiceImpl.ACTION_SCOPED;
+import static com.vidya.security.service.UserPermissionMatrixServiceImpl.ACTION_VIEW;
+import static com.vidya.security.service.UserPermissionMatrixServiceImpl.SECTION_ATTENDANCE;
+import static com.vidya.security.service.UserPermissionMatrixServiceImpl.SECTION_CHAT;
+import static com.vidya.security.service.UserPermissionMatrixServiceImpl.SECTION_FEES;
+import static com.vidya.security.service.UserPermissionMatrixServiceImpl.SECTION_LIBRARY;
+import static com.vidya.security.service.UserPermissionMatrixServiceImpl.SECTION_MARKS;
+import static com.vidya.security.service.UserPermissionMatrixServiceImpl.SECTION_STAFF;
+import static com.vidya.security.service.UserPermissionMatrixServiceImpl.SECTION_STUDENTS;
+import static com.vidya.security.service.UserPermissionMatrixServiceImpl.SECTION_TIMETABLE;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyCollection;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+/**
+ * The matrix is derived from the seeded DB data (V29 + V30): role grants → permissions → matrix cells.
+ * These tests pin the matrix each account type sees out of the box.
+ */
 @ExtendWith(MockitoExtension.class)
+@DisplayName("UserPermissionMatrixService — matrix derived from DB permissions")
 class UserPermissionMatrixServiceTest {
 
-    @Mock
-    private SchoolSubscriptionRepository schoolSubscriptionRepository;
+    @Mock private EffectiveAccessService effectiveAccessService;
+    @Mock private AccessPermissionRepository permissionRepository;
+    @Mock private CommunityMemberRepository communityMemberRepository;
 
-    @Mock
-    private SubscriptionPlanFeatureRepository subscriptionPlanFeatureRepository;
-
-    @Mock
-    private CommunityMemberRepository communityMemberRepository;
-
-    @InjectMocks
-    private UserPermissionMatrixServiceImpl userPermissionMatrixService;
-
-    private UUID userId;
-    private UUID schoolId;
+    private UserPermissionMatrixServiceImpl service;
+    private final UUID schoolId = UUID.randomUUID();
 
     @BeforeEach
     void setUp() {
-        userId = UUID.randomUUID();
-        schoolId = UUID.randomUUID();
+        service = new UserPermissionMatrixServiceImpl(effectiveAccessService, permissionRepository, communityMemberRepository);
+        lenient().when(permissionRepository.findMatrixCellsByCodes(anyCollection()))
+                .thenAnswer(inv -> SeedRoleMatrix.matrixRows(inv.<Collection<String>>getArgument(0)));
     }
 
-    private PlatformUser createUser(PlatformRole role, UUID schoolId) {
-        PlatformUser user = new PlatformUser(
-                "USR-001", "test@vidya.io", "hashedPass", "First", "Last", "+919999999999", role
-        );
-        ReflectionTestUtils.setField(user, "id", userId);
-        user.setSchoolId(schoolId);
-        return user;
+    private Map<Integer, Set<Integer>> matrixOf(PlatformRole role) {
+        PlatformUser user = user(role);
+        return service.resolvePermissionsMatrix(user, SeedRoleMatrix.accessFor(user));
     }
 
     @Test
-    void resolvePermissionsMatrix_SuperAdmin_GetsFullMatrix() {
-        PlatformUser superAdmin = createUser(PlatformRole.PLATFORM_SUPER_ADMIN, null);
-
-        Map<Integer, Set<Integer>> matrix = userPermissionMatrixService.resolvePermissionsMatrix(superAdmin);
-
-        assertThat(matrix).containsKey(UserPermissionMatrixServiceImpl.SECTION_STUDENTS);
-        assertThat(matrix).containsKey(UserPermissionMatrixServiceImpl.SECTION_STAFF);
-        assertThat(matrix).containsKey(UserPermissionMatrixServiceImpl.SECTION_ATTENDANCE);
-        assertThat(matrix).containsKey(UserPermissionMatrixServiceImpl.SECTION_COMMUNITY);
-        assertThat(matrix.get(UserPermissionMatrixServiceImpl.SECTION_STUDENTS))
-                .contains(UserPermissionMatrixServiceImpl.ACTION_VIEW, UserPermissionMatrixServiceImpl.ACTION_EDIT);
+    @DisplayName("super admin (grants all) sees every seeded section with all actions it maps to")
+    void superAdmin() {
+        Map<Integer, Set<Integer>> m = matrixOf(PlatformRole.PLATFORM_SUPER_ADMIN);
+        assertThat(m).containsKeys(SECTION_STUDENTS, SECTION_STAFF, SECTION_ATTENDANCE, SECTION_FEES,
+                SECTION_MARKS, SECTION_TIMETABLE, SECTION_CHAT, SECTION_LIBRARY);
+        assertThat(m.get(SECTION_STUDENTS)).contains(ACTION_VIEW, ACTION_EDIT, ACTION_DELETE, ACTION_APPROVE, ACTION_FULL);
     }
 
     @Test
-    void resolvePermissionsMatrix_Teacher_HasScopedStudentAndAttendanceAccess() {
-        PlatformUser teacher = createUser(PlatformRole.TEACHER, null);
-
-        Map<Integer, Set<Integer>> matrix = userPermissionMatrixService.resolvePermissionsMatrix(teacher);
-
-        // Teacher has SIS (4) with View (-9) and Scoped (-5)
-        assertThat(matrix).containsKey(4);
-        assertThat(matrix.get(4)).contains(-9, -5);
-
-        // Attendance (12) with View, Edit, Scoped
-        assertThat(matrix).containsKey(12);
-        assertThat(matrix.get(12)).contains(-9, -8, -5);
-
-        // Should NOT have Fees (13)
-        assertThat(matrix).doesNotContainKey(13);
+    @DisplayName("school admin: full student/staff/attendance/timetable, read-only fees and library")
+    void schoolAdmin() {
+        Map<Integer, Set<Integer>> m = matrixOf(PlatformRole.SCHOOL_ADMIN);
+        assertThat(m.get(SECTION_STUDENTS)).contains(ACTION_VIEW, ACTION_EDIT, ACTION_DELETE, ACTION_FULL);
+        assertThat(m.get(SECTION_STAFF)).contains(ACTION_VIEW, ACTION_EDIT, ACTION_FULL);
+        assertThat(m.get(SECTION_TIMETABLE)).contains(ACTION_VIEW, ACTION_EDIT, ACTION_FULL);
+        assertThat(m.get(SECTION_FEES)).containsExactly(ACTION_VIEW);
+        assertThat(m.get(SECTION_LIBRARY)).containsExactly(ACTION_VIEW);
+        assertThat(m.get(SECTION_STUDENTS)).doesNotContain(ACTION_SCOPED);
     }
 
     @Test
-    void resolvePermissionsMatrix_Student_HasReadOnlyAccess() {
-        PlatformUser student = createUser(PlatformRole.STUDENT, null);
-
-        Map<Integer, Set<Integer>> matrix = userPermissionMatrixService.resolvePermissionsMatrix(student);
-
-        // Student has Read-Only (view -9, scoped -5) for students
-        assertThat(matrix.get(4)).containsExactlyInAnyOrder(-9, -5);
-
-        // Should NOT have Fees
-        assertThat(matrix).doesNotContainKey(13);
+    @DisplayName("class teacher: own-class (SCOPED) students, attendance, marks, timetable and chat; never FULL")
+    void teacher() {
+        Map<Integer, Set<Integer>> m = matrixOf(PlatformRole.TEACHER);
+        assertThat(m.get(SECTION_STUDENTS)).contains(ACTION_VIEW, ACTION_SCOPED).doesNotContain(ACTION_FULL, ACTION_DELETE);
+        assertThat(m.get(SECTION_ATTENDANCE)).contains(ACTION_VIEW, ACTION_EDIT, ACTION_SCOPED).doesNotContain(ACTION_FULL);
+        assertThat(m.get(SECTION_MARKS)).contains(ACTION_VIEW, ACTION_EDIT, ACTION_SCOPED);
+        assertThat(m.get(SECTION_CHAT)).contains(ACTION_VIEW, ACTION_EDIT, ACTION_SCOPED);
+        assertThat(m).doesNotContainKey(SECTION_FEES);
     }
 
     @Test
-    void resolvePermissionsMatrix_FilteredBySubscription_OnlySubscribedModulesRetained() {
-        PlatformUser schoolAdmin = createUser(PlatformRole.SCHOOL_ADMIN, schoolId);
-
-        UUID planId = UUID.randomUUID();
-        SubscriptionPlan plan = Mockito.mock(SubscriptionPlan.class);
-        when(plan.getId()).thenReturn(planId);
-
-        SchoolSubscription sub = Mockito.mock(SchoolSubscription.class);
-        when(sub.getPlan()).thenReturn(plan);
-
-        when(schoolSubscriptionRepository.findActiveSubscriptionsBySchoolId(schoolId))
-                .thenReturn(List.of(sub));
-
-        SubscriptionFeature studentFeature = new SubscriptionFeature(
-                "STUDENT_MANAGEMENT", "Student Management", "Desc", FeatureCategory.CORE
-        );
-        SubscriptionPlanFeature spf = Mockito.mock(SubscriptionPlanFeature.class);
-        when(spf.isIncluded()).thenReturn(true);
-        when(spf.getFeature()).thenReturn(studentFeature);
-
-        when(subscriptionPlanFeatureRepository.findByPlanId(planId))
-                .thenReturn(List.of(spf));
-
-        Map<Integer, Set<Integer>> matrix = userPermissionMatrixService.resolvePermissionsMatrix(schoolAdmin);
-
-        // Because school ONLY subscribed to STUDENT_MANAGEMENT (4), only section 4 is returned!
-        assertThat(matrix.keySet()).containsExactly(4);
-        assertThat(matrix.get(4)).contains(-9, -8, -7, -6, -4);
+    @DisplayName("accounts: full fees, library edit, student view")
+    void accounts() {
+        Map<Integer, Set<Integer>> m = matrixOf(PlatformRole.ACCOUNTS);
+        assertThat(m.get(SECTION_FEES)).contains(ACTION_VIEW, ACTION_EDIT, ACTION_FULL);
+        assertThat(m.get(SECTION_LIBRARY)).contains(ACTION_VIEW, ACTION_EDIT);
+        assertThat(m.get(SECTION_STUDENTS)).contains(ACTION_VIEW);
     }
 
     @Test
-    void resolvePermissionsMatrix_CommunityUserWithCustomRole_LoadsDynamicPermissions() {
-        PlatformUser commUser = createUser(PlatformRole.COMMUNITY_ADMIN, null);
+    @DisplayName("parent: own child (SCOPED) students and attendance, can view and pay fees, chat")
+    void parent() {
+        Map<Integer, Set<Integer>> m = matrixOf(PlatformRole.PARENT);
+        assertThat(m.get(SECTION_STUDENTS)).containsExactlyInAnyOrder(ACTION_VIEW, ACTION_SCOPED);
+        assertThat(m.get(SECTION_ATTENDANCE)).containsExactlyInAnyOrder(ACTION_VIEW, ACTION_SCOPED);
+        assertThat(m.get(SECTION_FEES)).containsExactlyInAnyOrder(ACTION_VIEW, ACTION_EDIT);
+        assertThat(m.get(SECTION_CHAT)).contains(ACTION_VIEW, ACTION_EDIT, ACTION_SCOPED);
+        assertThat(m).doesNotContainKey(SECTION_STAFF);
+    }
 
-        CommunityRoleDefinition customRole = Mockito.mock(CommunityRoleDefinition.class);
-        CommunityRolePermission perm1 = new CommunityRolePermission(customRole, 4, -9, true);
-        CommunityRolePermission perm2 = new CommunityRolePermission(customRole, 11, -9, true);
-        when(customRole.getPermissions()).thenReturn(new HashSet<>(Set.of(perm1, perm2)));
+    @Test
+    @DisplayName("student: read-only, own records")
+    void student() {
+        Map<Integer, Set<Integer>> m = matrixOf(PlatformRole.STUDENT);
+        assertThat(m.get(SECTION_STUDENTS)).containsExactlyInAnyOrder(ACTION_VIEW, ACTION_SCOPED);
+        assertThat(m.get(SECTION_MARKS)).containsExactly(ACTION_VIEW);
+        assertThat(m.get(SECTION_TIMETABLE)).containsExactly(ACTION_VIEW);
+        assertThat(m.get(SECTION_LIBRARY)).containsExactly(ACTION_VIEW);
+        m.values().forEach(actions -> assertThat(actions).doesNotContain(ACTION_EDIT, ACTION_DELETE, ACTION_FULL));
+    }
 
-        CommunityMember member = Mockito.mock(CommunityMember.class);
+    @Test
+    @DisplayName("the matrix follows effective access: a DENY or a disabled feature removes the cells")
+    void followsEffectiveAccess() {
+        PlatformUser parent = user(PlatformRole.PARENT);
+        EffectiveAccess seeded = SeedRoleMatrix.accessFor(parent);
+        Set<String> withoutFees = new HashSet<>(seeded.permissions());
+        withoutFees.removeIf(p -> p.startsWith("FEE_"));          // e.g. school has no FEES module
+        withoutFees.remove("CHAT_SEND");                            // e.g. DENY override
+        EffectiveAccess access = new EffectiveAccess(parent.getId(), parent.getPlatformRole(), seeded.scope(), schoolId,
+                seeded.roles(), seeded.globalRoles(), withoutFees, Set.of(), false, Instant.now());
+
+        Map<Integer, Set<Integer>> m = service.resolvePermissionsMatrix(parent, access);
+
+        assertThat(m).doesNotContainKey(SECTION_FEES);
+        assertThat(m.get(SECTION_CHAT)).doesNotContain(ACTION_EDIT);
+    }
+
+    @Test
+    @DisplayName("no permissions → empty matrix without querying cells")
+    void noPermissions() {
+        PlatformUser u = user(PlatformRole.SCHOOL_STAFF);
+        EffectiveAccess none = new EffectiveAccess(u.getId(), u.getPlatformRole(), u.getPlatformRole().getScope(), schoolId,
+                Set.of(), Set.of(), Set.of(), Set.of(), false, Instant.now());
+
+        assertThat(service.resolvePermissionsMatrix(u, none)).isEmpty();
+        verify(permissionRepository, never()).findMatrixCellsByCodes(anyCollection());
+    }
+
+    @Test
+    @DisplayName("community members also get the cells of their custom community role")
+    void communityCustomRole() {
+        PlatformUser agent = new PlatformUser("USR-F", "f@vidya.io", "h", "F", "A", null, PlatformRole.FIELD_AGENT);
+        agent.setId(UUID.randomUUID());
+        CommunityRoleDefinition customRole = mock(CommunityRoleDefinition.class);
+        when(customRole.getPermissions()).thenReturn(Set.of(
+                new CommunityRolePermission(customRole, 21, ACTION_VIEW, true),
+                new CommunityRolePermission(customRole, 22, ACTION_EDIT, false)));
+        CommunityMember member = mock(CommunityMember.class);
         when(member.getCustomRole()).thenReturn(customRole);
+        when(communityMemberRepository.findByPlatformUserId(agent.getId())).thenReturn(List.of(member));
 
-        when(communityMemberRepository.findByPlatformUserId(userId)).thenReturn(List.of(member));
+        Map<Integer, Set<Integer>> m = service.resolvePermissionsMatrix(agent, SeedRoleMatrix.accessFor(agent));
 
-        Map<Integer, Set<Integer>> matrix = userPermissionMatrixService.resolvePermissionsMatrix(commUser);
+        assertThat(m.get(21)).containsExactly(ACTION_VIEW);
+        assertThat(m).doesNotContainKey(22);
+    }
 
-        assertThat(matrix).containsKey(4);
-        assertThat(matrix.get(4)).contains(-9);
-        assertThat(matrix).containsKey(11);
-        assertThat(matrix.get(11)).contains(-9);
-        assertThat(matrix).containsKey(20); // Community management
+    @Test
+    @DisplayName("single-argument overload resolves effective access first")
+    void resolvesAccessWhenNotGiven() {
+        PlatformUser t = user(PlatformRole.TEACHER);
+        when(effectiveAccessService.getAccess(t)).thenReturn(SeedRoleMatrix.accessFor(t));
+
+        assertThat(service.resolvePermissionsMatrix(t)).containsKey(SECTION_ATTENDANCE);
+    }
+
+    private PlatformUser user(PlatformRole role) {
+        UUID school = role.getScope().isSchoolBound() ? schoolId : null;
+        PlatformUser u = new PlatformUser("USR-" + role, role.name().toLowerCase() + "@x.io", "h", "F", "L", null, role, school);
+        u.setId(UUID.randomUUID());
+        return u;
     }
 }

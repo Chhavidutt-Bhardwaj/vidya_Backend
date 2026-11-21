@@ -56,6 +56,9 @@ class TenantProvisioningLifecycleTest {
 
     @BeforeEach
     void setUp() {
+        // Like JPA, save() returns the persisted entity; the engine continues with the returned instance (I0).
+        org.mockito.Mockito.lenient().when(provisioningRepository.save(any(TenantProvisioning.class)))
+                .thenAnswer(i -> i.getArgument(0));
         provisioningService = new TenantProvisioningService(
                 tenantRepository,
                 provisioningRepository,

@@ -21,6 +21,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -85,6 +86,7 @@ public class SubscriptionPlanController {
         ));
     }
 
+    @PreAuthorize("hasAuthority('SUBSCRIPTION_MANAGE')")
     @PostMapping("/custom-plan")
     public ResponseEntity<ApiResponse<SubscriptionPlanResponse>> createCustomSchoolPlan(
             @Valid @RequestBody CustomSchoolPlanRequest request) {
@@ -151,6 +153,7 @@ public class SubscriptionPlanController {
         ));
     }
 
+    @PreAuthorize("hasAuthority('SUBSCRIPTION_MANAGE')")
     @PostMapping
     public ResponseEntity<ApiResponse<SubscriptionPlanResponse>> createPlan(
             @Valid @RequestBody CreateSubscriptionPlanRequest request) {
@@ -164,6 +167,7 @@ public class SubscriptionPlanController {
                 ));
     }
 
+    @PreAuthorize("hasAuthority('SUBSCRIPTION_MANAGE')")
     @PatchMapping("/{id}/publish")
     public ResponseEntity<ApiResponse<SubscriptionPlanResponse>> publishPlan(@PathVariable UUID id) {
         SubscriptionPlanResponse response = subscriptionPlanService.publishPlan(id);
@@ -174,6 +178,7 @@ public class SubscriptionPlanController {
         ));
     }
 
+    @PreAuthorize("hasAuthority('SUBSCRIPTION_MANAGE')")
     @PatchMapping("/{id}/deprecate")
     public ResponseEntity<ApiResponse<SubscriptionPlanResponse>> deprecatePlan(@PathVariable UUID id) {
         SubscriptionPlanResponse response = subscriptionPlanService.deprecatePlan(id);

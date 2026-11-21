@@ -51,6 +51,10 @@ public class RefreshToken {
     @Column(name = "replaced_by_token_hash", length = 64)
     private String replacedByTokenHash;
 
+    /** Session this token belongs to; null only for tokens issued before V29 (all revoked by the migration). */
+    @Column(name = "session_id", updatable = false)
+    private UUID sessionId;
+
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt = Instant.now();
@@ -61,6 +65,11 @@ public class RefreshToken {
         this.expiresAt = expiresAt;
         this.revoked = false;
         this.createdAt = Instant.now();
+    }
+
+    public RefreshToken(UUID userId, String tokenHash, Instant expiresAt, UUID sessionId) {
+        this(userId, tokenHash, expiresAt);
+        this.sessionId = sessionId;
     }
 
     public boolean isExpired() {

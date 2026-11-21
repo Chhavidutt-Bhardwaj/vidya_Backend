@@ -141,8 +141,10 @@ public class TenantDatabaseCreator {
     private void createDatabase(Connection conn, String databaseName, String owner,
                                 String tenantCode) throws Exception {
         // Name is pre-validated — safe to interpolate
+        // template0 + UTF8, inheriting the server's locale. Hard-coding LC_COLLATE 'en_US.UTF-8' failed on
+        // servers whose template locale is spelled differently (e.g. 'en_US.utf8' on Alpine/Debian images).
         String sql = "CREATE DATABASE " + databaseName + " OWNER " + owner
-                + " ENCODING 'UTF8' LC_COLLATE 'en_US.UTF-8' LC_CTYPE 'en_US.UTF-8'";
+                + " TEMPLATE template0 ENCODING 'UTF8'";
         try (Statement stmt = conn.createStatement()) {
             stmt.execute(sql);
             log.info("[Provisioning][{}] Created database [{}]", tenantCode, databaseName);

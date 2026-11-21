@@ -4,6 +4,8 @@ import com.vidya.common.api.ApiResponse;
 import com.vidya.common.api.ApiResponseCode;
 import com.vidya.master.workflow.admin.dto.InitialSchoolAdminRequest;
 import com.vidya.master.workflow.admin.dto.InitialSchoolAdminResponse;
+import com.vidya.master.workflow.dto.PaymentWaiverRequest;
+import com.vidya.master.workflow.dto.PaymentWaiverResponse;
 import com.vidya.master.workflow.dto.PlanSelectionRequest;
 import com.vidya.master.workflow.dto.PlanSelectionResponse;
 import com.vidya.master.workflow.dto.SchoolOnboardingProgressResponse;
@@ -28,6 +30,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.UUID;
 
@@ -39,6 +42,7 @@ public class SchoolOnboardingWorkflowController {
 
     private final SchoolOnboardingWorkflowService workflowService;
 
+    @PreAuthorize("hasAuthority('ONBOARDING_UPDATE') and @tenantAuthorizationService.canAccessOnboarding(authentication, #id)")
     @PostMapping("/select-plan")
     @Operation(summary = "Select subscription plan and lock immutable billing snapshot")
     public ResponseEntity<ApiResponse<PlanSelectionResponse>> selectPlan(
@@ -52,6 +56,7 @@ public class SchoolOnboardingWorkflowController {
         ));
     }
 
+    @PreAuthorize("hasAuthority('ONBOARDING_UPDATE') and @tenantAuthorizationService.canAccessOnboarding(authentication, #id)")
     @PostMapping("/payment/initiate")
     @Operation(summary = "Initiate payment gateway order for onboarding subscription fee")
     public ResponseEntity<ApiResponse<WorkflowPaymentInitiateResponse>> initiatePayment(
@@ -65,11 +70,26 @@ public class SchoolOnboardingWorkflowController {
         ));
     }
 
+    @PreAuthorize("hasAuthority('ONBOARDING_PAYMENT_WAIVE') and @tenantAuthorizationService.canAccessOnboarding(authentication, #id)")
+    @PostMapping("/payment/waive")
+    @Operation(summary = "Authorized waiver of the onboarding payment (requires ONBOARDING_PAYMENT_WAIVE)")
+    public ResponseEntity<ApiResponse<PaymentWaiverResponse>> waivePayment(
+            @PathVariable UUID id,
+            @Valid @RequestBody PaymentWaiverRequest request) {
+        PaymentWaiverResponse response = workflowService.waivePayment(id, request);
+        return ResponseEntity.ok(ApiResponse.success(
+                ApiResponseCode.SUCCESS,
+                "Onboarding payment waived",
+                response
+        ));
+    }
+
+    @PreAuthorize("hasAuthority('TENANT_PROVISION') and @tenantAuthorizationService.canAccessOnboarding(authentication, #id)")
     @PostMapping("/provision")
     @Operation(summary = "Trigger tenant database creation, Flyway migrations, and initial seed data")
     public ResponseEntity<ApiResponse<WorkflowProvisionResponse>> provisionTenant(
             @PathVariable UUID id,
-            @RequestBody(required = false) WorkflowProvisionRequest request) {
+            @Valid @RequestBody(required = false) WorkflowProvisionRequest request) {
         WorkflowProvisionResponse response = workflowService.provisionTenant(id, request);
         return ResponseEntity.ok(ApiResponse.success(
                 ApiResponseCode.SUCCESS,
@@ -78,6 +98,7 @@ public class SchoolOnboardingWorkflowController {
         ));
     }
 
+    @PreAuthorize("hasAuthority('ONBOARDING_ADMIN_CREATE') and @tenantAuthorizationService.canAccessOnboarding(authentication, #id)")
     @PostMapping("/admin")
     @Operation(summary = "Provision initial school administrator account")
     public ResponseEntity<ApiResponse<InitialSchoolAdminResponse>> createInitialAdmin(
@@ -91,6 +112,7 @@ public class SchoolOnboardingWorkflowController {
         ));
     }
 
+    @PreAuthorize("hasAuthority('ONBOARDING_ACTIVATE') and hasAuthority('TENANT_PROVISION') and @tenantAuthorizationService.canAccessOnboarding(authentication, #id)")
     @PostMapping("/retry")
     @Operation(summary = "Retry failed workflow step (e.g. provisioning recovery) without double-charging")
     public ResponseEntity<ApiResponse<WorkflowActivationResponse>> retryWorkflow(
@@ -104,6 +126,7 @@ public class SchoolOnboardingWorkflowController {
         ));
     }
 
+    @PreAuthorize("hasAuthority('ONBOARDING_READ') and @tenantAuthorizationService.canAccessOnboarding(authentication, #id)")
     @GetMapping("/workflow-status")
     @Operation(summary = "Get full multi-domain pipeline status and consistency report")
     public ResponseEntity<ApiResponse<SchoolOnboardingProgressResponse>> getWorkflowProgress(

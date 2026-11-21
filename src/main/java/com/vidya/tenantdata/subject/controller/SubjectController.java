@@ -46,7 +46,7 @@ public class SubjectController {
     private final SubjectService subjectService;
 
     @PostMapping
-    @PreAuthorize("hasAuthority('SUBJECT_CREATE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('SUBJECT_CREATE')")
     @Operation(summary = "Create subject", description = "Creates a new academic subject definition")
     public ResponseEntity<ApiResponse<SubjectDetailResponse>> createSubject(
             @Valid @RequestBody CreateSubjectRequest request) {
@@ -57,7 +57,7 @@ public class SubjectController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAuthority('SUBJECT_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('SUBJECT_READ')")
     @Operation(summary = "Search subjects", description = "Lists subjects with optional filtering by type, status, or search query")
     public ResponseEntity<PagedApiResponse<SubjectResponse>> searchSubjects(
             @RequestParam(required = false) SubjectType subjectType,
@@ -70,7 +70,7 @@ public class SubjectController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('SUBJECT_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('SUBJECT_READ')")
     @Operation(summary = "Get subject by ID", description = "Retrieves subject details by its UUID")
     public ResponseEntity<ApiResponse<SubjectDetailResponse>> getSubject(
             @Parameter(description = "Subject UUID") @PathVariable UUID id) {
@@ -80,7 +80,7 @@ public class SubjectController {
     }
 
     @GetMapping("/code/{subjectCode}")
-    @PreAuthorize("hasAuthority('SUBJECT_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('SUBJECT_READ')")
     @Operation(summary = "Get subject by code", description = "Retrieves subject details by its stable business code")
     public ResponseEntity<ApiResponse<SubjectDetailResponse>> getSubjectByCode(
             @Parameter(description = "Subject business code") @PathVariable String subjectCode) {
@@ -90,7 +90,7 @@ public class SubjectController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAuthority('SUBJECT_UPDATE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('SUBJECT_UPDATE')")
     @Operation(summary = "Update subject", description = "Updates subject properties")
     public ResponseEntity<ApiResponse<SubjectDetailResponse>> updateSubject(
             @Parameter(description = "Subject UUID") @PathVariable UUID id,
@@ -101,7 +101,7 @@ public class SubjectController {
     }
 
     @PatchMapping("/{id}/status")
-    @PreAuthorize("hasAuthority('SUBJECT_STATUS_UPDATE') or hasAuthority('SUBJECT_UPDATE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('SUBJECT_STATUS_UPDATE') or hasAuthority('SUBJECT_UPDATE')")
     @Operation(summary = "Update subject status", description = "Transitions subject lifecycle status")
     public ResponseEntity<ApiResponse<SubjectDetailResponse>> updateStatus(
             @Parameter(description = "Subject UUID") @PathVariable UUID id,
@@ -112,7 +112,7 @@ public class SubjectController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('SUBJECT_DELETE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('SUBJECT_DELETE')")
     @Operation(summary = "Delete subject", description = "Soft-deletes an academic subject")
     public ResponseEntity<ApiResponse<Void>> deleteSubject(
             @Parameter(description = "Subject UUID") @PathVariable UUID id) {

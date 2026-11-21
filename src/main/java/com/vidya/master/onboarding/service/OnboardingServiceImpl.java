@@ -14,7 +14,6 @@ import com.vidya.master.onboarding.entity.OnboardingSource;
 import com.vidya.master.onboarding.entity.OnboardingStatus;
 import com.vidya.master.onboarding.entity.OnboardingStep;
 import com.vidya.master.onboarding.entity.OnboardingStepData;
-import com.vidya.master.onboarding.entity.PerformerType;
 import com.vidya.master.onboarding.entity.SchoolOnboarding;
 import com.vidya.master.onboarding.mapper.OnboardingMapper;
 import com.vidya.master.onboarding.repository.OnboardingActivityRepository;
@@ -163,12 +162,7 @@ public class OnboardingServiceImpl implements OnboardingService {
 
         // Record initial board affiliation if primary board provided
         if (request.primaryBoard() != null) {
-            BoardAffiliationType bType;
-            try {
-                bType = BoardAffiliationType.valueOf(request.primaryBoard().name());
-            } catch (Exception e) {
-                bType = BoardAffiliationType.OTHER;
-            }
+            BoardAffiliationType bType = request.primaryBoard().toAffiliationType();
             SchoolBoardAffiliation initialAffiliation = new SchoolBoardAffiliation(
                     savedSchool,
                     bType,
@@ -203,10 +197,14 @@ public class OnboardingServiceImpl implements OnboardingService {
 
         SchoolOnboarding savedOnboarding = schoolOnboardingRepository.save(onboarding);
 
+        Map<String, Object> initiationMeta = new HashMap<>();
+        initiationMeta.put("schoolName", request.schoolName());
+        initiationMeta.put("source", savedOnboarding.getSource().name());
+        if (request.communityMemberId() != null) {
+            initiationMeta.put("communityMemberId", request.communityMemberId().toString());
+        }
         recordActivity(savedOnboarding, "ONBOARDING_INITIATED", null, savedOnboarding.getStatus().name(),
-                request.communityMemberId(),
-                request.communityMemberId() != null ? PerformerType.COMMUNITY_MEMBER : PerformerType.SYSTEM,
-                Map.of("schoolName", request.schoolName(), "source", savedOnboarding.getSource().name()));
+                initiationMeta);
 
         log.info("Onboarding initiated with ID: [{}] and code: [{}] in status: [{}]",
                 savedOnboarding.getId(), savedOnboarding.getOnboardingCode(), savedOnboarding.getStatus());
@@ -274,7 +272,7 @@ public class OnboardingServiceImpl implements OnboardingService {
 
         SchoolOnboarding updated = schoolOnboardingRepository.save(onboarding);
 
-        recordActivity(updated, "STEP_SAVED", null, null, null, PerformerType.SYSTEM,
+        recordActivity(updated, "STEP_SAVED", null, null,
                 Map.of("stepName", request.stepName().name(), "completed", request.markCompleted()));
 
         return onboardingMapper.toResponse(updated);
@@ -285,7 +283,8 @@ public class OnboardingServiceImpl implements OnboardingService {
         log.info("Submitting onboarding application: [{}]", id);
         SchoolOnboarding onboarding = findOnboardingOrThrow(id);
 
-        if (onboarding.getStatus() != OnboardingStatus.DRAFT) {
+        onboarding.getStatus().validateTransitionTo(OnboardingStatus.SUBMITTED);
+        if (onboarding.getStatus() == OnboardingStatus.SUBMITTED) {
             throw new InvalidStateTransitionException("SchoolOnboarding", onboarding.getStatus().name(), "SUBMITTED");
         }
 
@@ -300,8 +299,7 @@ public class OnboardingServiceImpl implements OnboardingService {
 
         SchoolOnboarding updated = schoolOnboardingRepository.save(onboarding);
 
-        recordActivity(updated, "ONBOARDING_SUBMITTED", prevStatus, OnboardingStatus.SUBMITTED.name(),
-                null, PerformerType.SYSTEM, Map.of());
+        recordActivity(updated, "ONBOARDING_SUBMITTED", prevStatus, OnboardingStatus.SUBMITTED.name(), Map.of());
 
         return onboardingMapper.toResponse(updated);
     }
@@ -317,6 +315,7 @@ public class OnboardingServiceImpl implements OnboardingService {
 
         String prevStatus = onboarding.getStatus().name();
         OnboardingStatus newStatus = request.verified() ? OnboardingStatus.VERIFIED : OnboardingStatus.VERIFICATION_PENDING;
+        onboarding.getStatus().validateTransitionTo(newStatus);
         onboarding.setStatus(newStatus);
 
         if (request.verified() && onboarding.getSchool() != null) {
@@ -330,7 +329,7 @@ public class OnboardingServiceImpl implements OnboardingService {
         if (request.notes() != null) {
             meta.put("notes", request.notes());
         }
-        recordActivity(updated, "ONBOARDING_VERIFIED", prevStatus, newStatus.name(), null, PerformerType.PLATFORM_USER, meta);
+        recordActivity(updated, "ONBOARDING_VERIFIED", prevStatus, newStatus.name(), meta);
 
         return onboardingMapper.toResponse(updated);
     }
@@ -340,11 +339,12 @@ public class OnboardingServiceImpl implements OnboardingService {
         log.info("Approving onboarding application: [{}]", id);
         SchoolOnboarding onboarding = findOnboardingOrThrow(id);
 
-        if (onboarding.getStatus() != OnboardingStatus.VERIFIED &&
-                onboarding.getStatus() != OnboardingStatus.PLAN_SELECTED &&
-                onboarding.getStatus() != OnboardingStatus.PAYMENT_COMPLETED) {
+        // Approval requires a settled (PAYMENT_COMPLETED) or explicitly waived (PAYMENT_WAIVED) payment.
+        // Re-approving an already APPROVED onboarding is rejected rather than silently re-recorded.
+        if (onboarding.getStatus() == OnboardingStatus.APPROVED) {
             throw new InvalidStateTransitionException("SchoolOnboarding", onboarding.getStatus().name(), "APPROVED");
         }
+        onboarding.getStatus().validateTransitionTo(OnboardingStatus.APPROVED);
 
         String prevStatus = onboarding.getStatus().name();
         onboarding.setStatus(OnboardingStatus.APPROVED);
@@ -355,7 +355,7 @@ public class OnboardingServiceImpl implements OnboardingService {
         if (notes != null) {
             meta.put("notes", notes);
         }
-        recordActivity(updated, "ONBOARDING_APPROVED", prevStatus, OnboardingStatus.APPROVED.name(), null, PerformerType.PLATFORM_USER, meta);
+        recordActivity(updated, "ONBOARDING_APPROVED", prevStatus, OnboardingStatus.APPROVED.name(), meta);
 
         return onboardingMapper.toResponse(updated);
     }
@@ -365,6 +365,12 @@ public class OnboardingServiceImpl implements OnboardingService {
         log.info("Rejecting onboarding [{}] reason: [{}]", id, request.rejectionReason());
         SchoolOnboarding onboarding = findOnboardingOrThrow(id);
 
+        // ACTIVE / REJECTED / CANCELLED onboardings and in-flight provisioning cannot be rejected.
+        if (onboarding.getStatus() == OnboardingStatus.REJECTED) {
+            throw new InvalidStateTransitionException("SchoolOnboarding", onboarding.getStatus().name(), "REJECTED");
+        }
+        onboarding.getStatus().validateTransitionTo(OnboardingStatus.REJECTED);
+
         String prevStatus = onboarding.getStatus().name();
         onboarding.setStatus(OnboardingStatus.REJECTED);
         onboarding.setRejectionReason(request.rejectionReason());
@@ -372,7 +378,7 @@ public class OnboardingServiceImpl implements OnboardingService {
         SchoolOnboarding updated = schoolOnboardingRepository.save(onboarding);
 
         recordActivity(updated, "ONBOARDING_REJECTED", prevStatus, OnboardingStatus.REJECTED.name(),
-                null, PerformerType.PLATFORM_USER, Map.of("reason", request.rejectionReason()));
+                Map.of("reason", request.rejectionReason()));
 
         return onboardingMapper.toResponse(updated);
     }
@@ -397,20 +403,22 @@ public class OnboardingServiceImpl implements OnboardingService {
         }
     }
 
+    /**
+     * Records an audit activity. The actor is resolved exclusively from the SecurityContext
+     * via {@link OnboardingActor}; request-supplied identities are never used.
+     */
     private void recordActivity(SchoolOnboarding onboarding,
                                 String action,
                                 String previousStatus,
                                 String newStatus,
-                                UUID performedBy,
-                                PerformerType performedByType,
                                 Map<String, Object> metadata) {
         OnboardingActivity activity = new OnboardingActivity(
                 onboarding,
                 action,
                 previousStatus,
                 newStatus,
-                performedBy,
-                performedByType,
+                OnboardingActor.currentUserId(),
+                OnboardingActor.currentPerformerType(),
                 metadata
         );
         onboardingActivityRepository.save(activity);

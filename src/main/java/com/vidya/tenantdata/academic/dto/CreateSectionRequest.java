@@ -42,4 +42,7 @@ public class CreateSectionRequest {
     @Positive(message = "capacity must be greater than zero")
     @Schema(description = "Maximum student capacity (optional)", example = "40")
     private Integer capacity;
+
+    @Schema(description = "Stream of the section (only for classes with streams)")
+    private UUID streamId;
 }

@@ -33,4 +33,15 @@ public class CreateAcademicClassRequest {
 
     @Schema(description = "Sort order for UI / listings", example = "5")
     private int sortOrder;
+
+    @jakarta.validation.constraints.Min(-3)
+    @jakarta.validation.constraints.Max(12)
+    @Schema(description = "Numeric level: Pre-Nursery -3, Nursery -2, LKG -1, UKG 0, Class I 1 … XII 12", example = "5")
+    private Integer gradeLevel;
+
+    @Schema(description = "School stage; defaults from gradeLevel", example = "PRIMARY")
+    private com.vidya.tenantdata.academic.enums.ClassStage stage;
+
+    @Schema(description = "Sections are split into streams (XI–XII)")
+    private Boolean hasStreams;
 }

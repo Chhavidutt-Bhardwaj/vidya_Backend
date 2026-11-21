@@ -39,6 +39,7 @@ public class CurriculumSubjectServiceImpl implements CurriculumSubjectService {
     private final SubjectRepository subjectRepository;
     private final AcademicClassRepository academicClassRepository;
     private final CurriculumSubjectRepository curriculumSubjectRepository;
+    private final com.vidya.tenantdata.academic.repository.StreamRepository streamRepository;
 
     @Override
     @Transactional(transactionManager = "tenantTransactionManager")
@@ -66,9 +67,18 @@ public class CurriculumSubjectServiceImpl implements CurriculumSubjectService {
         AcademicClass academicClass = academicClassRepository.findByIdAndNotDeleted(request.getAcademicClassId())
                 .orElseThrow(() -> new ResourceNotFoundException("AcademicClass", request.getAcademicClassId()));
 
-        // 4. Check for duplicate active mapping
-        if (curriculumSubjectRepository.existsActiveByCurriculumSubjectClass(
-                curriculumId, request.getSubjectId(), request.getAcademicClassId(), null)) {
+        // 3b. Stream (classes with streams only)
+        if (request.getStreamId() != null) {
+            if (!academicClass.isHasStreams()) {
+                throw new BusinessException("Class " + academicClass.getName() + " does not use streams");
+            }
+            streamRepository.findByIdAndNotDeleted(request.getStreamId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Stream", request.getStreamId()));
+        }
+
+        // 4. Check for duplicate active mapping (same subject may appear once per stream)
+        if (curriculumSubjectRepository.existsActiveForStream(curriculumId, request.getSubjectId(), request.getAcademicClassId(),
+                request.getStreamId() != null ? request.getStreamId() : new UUID(0, 0))) {
             throw new DuplicateResourceException(
                     "CurriculumSubject",
                     "curriculumId, subjectId, academicClassId",
@@ -87,6 +97,7 @@ public class CurriculumSubjectServiceImpl implements CurriculumSubjectService {
                 displayOrder
         );
 
+        curriculumSubject.setStreamId(request.getStreamId());
         CurriculumSubject saved = curriculumSubjectRepository.save(curriculumSubject);
         log.info("Added subject mapping id: [{}] to curriculum [{}]", saved.getId(), curriculum.getCurriculumCode());
         return CurriculumMapper.toCurriculumSubjectResponse(saved);

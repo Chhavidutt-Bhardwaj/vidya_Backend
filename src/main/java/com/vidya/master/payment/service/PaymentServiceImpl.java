@@ -152,6 +152,18 @@ public class PaymentServiceImpl implements PaymentService {
             throw new InvalidStateTransitionException("PaymentTransaction", tx.getStatus().name(), PaymentStatus.SUCCESS.name());
         }
 
+        // Offline payments are settled only via /manual/confirm (PAYMENT_MANUAL_CONFIRM), never via client verify.
+        if (tx.getPaymentProvider() == PaymentProvider.MANUAL) {
+            throw new BusinessException(ApiResponseCode.BUSINESS_ERROR,
+                    "Manual payments cannot be verified by the client; they must be confirmed by authorized staff");
+        }
+        // The signature binds order|payment ids, so the order must be the one created for this transaction.
+        if (request.getProviderOrderId() != null && tx.getProviderOrderId() != null
+                && !request.getProviderOrderId().equals(tx.getProviderOrderId())) {
+            throw new BusinessException(ApiResponseCode.BUSINESS_ERROR,
+                    "Provider order id does not match this transaction");
+        }
+
         PaymentGatewayProvider gateway = gatewayRegistry.getGateway(tx.getPaymentProvider());
         PaymentVerificationRequest verifyRequest = PaymentVerificationRequest.builder()
                 .transactionCode(tx.getTransactionCode())
@@ -197,7 +209,9 @@ public class PaymentServiceImpl implements PaymentService {
 
         Map<String, Object> callbackMap = new HashMap<>();
         callbackMap.put("referenceNumber", request.getReferenceNumber());
-        callbackMap.put("confirmedBy", request.getConfirmedBy());
+        // The confirmer is the authenticated user; request.confirmedBy is ignored (deprecated).
+        callbackMap.put("confirmedBy", com.vidya.common.util.SecurityUtils.getCurrentUserId()
+                .map(UUID::toString).orElse("UNAUTHENTICATED"));
         callbackMap.put("notes", request.getNotes());
         callbackMap.put("confirmedAt", Instant.now().toString());
 

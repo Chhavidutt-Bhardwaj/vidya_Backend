@@ -104,6 +104,35 @@ public class StudentAttendanceServiceImpl implements StudentAttendanceService {
         }
     }
 
+    /** The school's attendance rules (operations-config). Without it: no back-date limit, LATE counts as not present. */
+    private com.vidya.tenantdata.operations.service.AttendancePolicyService attendancePolicy;
+
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    public void setAttendancePolicy(com.vidya.tenantdata.operations.service.AttendancePolicyService attendancePolicy) {
+        this.attendancePolicy = attendancePolicy;
+    }
+
+    /**
+     * Teachers may mark or correct only as far back as the school allows. Staff who work on the whole
+     * school's attendance (office, admin) are not limited.
+     */
+    private void requireWithinBackdateWindow(LocalDate attendanceDate) {
+        if (attendancePolicy == null || attendanceDate == null) {
+            return;
+        }
+        Integer days = attendancePolicy.policy().backdateDays();
+        if (days == null) {
+            return;
+        }
+        LocalDate earliest = LocalDate.now(clock).minusDays(days);
+        if (attendanceDate.isBefore(earliest) && !SecurityUtils.hasAnyAuthority("ATTENDANCE_SCOPE_ALL", "ROLE_SCHOOL_ADMIN",
+                "ROLE_SCHOOL_OWNER", "ROLE_PLATFORM_ADMIN", "ROLE_PLATFORM_SUPER_ADMIN")) {
+            throw new BusinessException("ATTENDANCE_BACKDATE_LIMIT", "Attendance of " + attendanceDate + " can no longer be changed: the school allows "
+                    + (days == 0 ? "marking on the same day only" : "going back " + days + " day(s), to " + earliest)
+                    + ". Ask the school office to correct it.");
+        }
+    }
+
     // ── Mark individual attendance ─────────────────────────────────────────────
 
     @Override
@@ -177,6 +206,7 @@ public class StudentAttendanceServiceImpl implements StudentAttendanceService {
 
         StudentAttendance attendance = attendanceRepository.findByIdAndNotDeleted(id)
                 .orElseThrow(() -> new ResourceNotFoundException("StudentAttendance", id));
+        requireWithinBackdateWindow(attendance.getAttendanceDate());
 
         Staff markerStaff = resolveMarkerStaff(markerStaffId);
         if (markerStaff != null) {
@@ -199,6 +229,7 @@ public class StudentAttendanceServiceImpl implements StudentAttendanceService {
 
         StudentAttendance attendance = attendanceRepository.findByIdAndNotDeleted(id)
                 .orElseThrow(() -> new ResourceNotFoundException("StudentAttendance", id));
+        requireWithinBackdateWindow(attendance.getAttendanceDate());
 
         Staff markerStaff = resolveMarkerStaff(markerStaffId);
         if (markerStaff != null) {
@@ -339,10 +370,13 @@ public class StudentAttendanceServiceImpl implements StudentAttendanceService {
         long halfDay  = attendanceRepository.countByStudentAndYearAndStatus(studentId, academicYearId, AttendanceStatus.HALF_DAY);
         long excused  = attendanceRepository.countByStudentAndYearAndStatus(studentId, academicYearId, AttendanceStatus.EXCUSED);
 
-        // Attendance % = (present + 0.5*halfDay + excused) / total * 100  — standard school formula
+        // Attendance % = (present + 0.5*halfDay + excused + late × the school's late weight) / total * 100
+        var policy = attendancePolicy != null ? attendancePolicy.policy() : null;
+        BigDecimal lateWeight = policy != null ? policy.lateCountsAs().weight() : BigDecimal.ZERO;
         BigDecimal percentage = BigDecimal.ZERO;
         if (total > 0) {
             BigDecimal effectivePresent = BigDecimal.valueOf(present)
+                    .add(BigDecimal.valueOf(late).multiply(lateWeight))
                     .add(BigDecimal.valueOf(halfDay).divide(BigDecimal.valueOf(2), 2, RoundingMode.HALF_UP))
                     .add(BigDecimal.valueOf(excused));
             percentage = effectivePresent
@@ -408,6 +442,8 @@ public class StudentAttendanceServiceImpl implements StudentAttendanceService {
                         presentWeightedDays = presentWeightedDays.add(new BigDecimal("0.5"));
                     } else if (sa.getStatus() == AttendanceStatus.EXCUSED) {
                         presentWeightedDays = presentWeightedDays.add(BigDecimal.ONE);
+                    } else if (sa.getStatus() == AttendanceStatus.LATE) {
+                        presentWeightedDays = presentWeightedDays.add(lateWeight);
                     }
                 }
             }
@@ -443,6 +479,8 @@ public class StudentAttendanceServiceImpl implements StudentAttendanceService {
                 .unmarkedWorkingDays(unmarkedWorkingDays)
                 .percentageOfWorkingDays(percentageOfWorkingDays)
                 .excludedNonWorkingDayRecords(excludedNonWorkingDayRecords)
+                .minimumRequiredPercentage(policy != null ? policy.minimumPercent() : null)
+                .belowMinimum(policy != null && total > 0 && percentage.compareTo(policy.minimumPercent()) < 0)
                 .build();
     }
 
@@ -686,6 +724,7 @@ public class StudentAttendanceServiceImpl implements StudentAttendanceService {
                     "Cannot mark attendance for a future date: " + attendanceDate
                             + ". Today is " + today);
         }
+        requireWithinBackdateWindow(attendanceDate);
 
         if (academicYear.getStartDate() != null && attendanceDate.isBefore(academicYear.getStartDate())) {
             throw new BusinessException(

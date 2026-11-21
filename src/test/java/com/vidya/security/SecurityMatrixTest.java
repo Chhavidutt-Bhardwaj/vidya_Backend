@@ -15,7 +15,8 @@ import com.vidya.master.school.repository.SchoolRepository;
 import com.vidya.master.tenant.entity.Tenant;
 import com.vidya.master.tenant.entity.TenantStatus;
 import com.vidya.master.tenant.repository.TenantRepository;
-import com.vidya.security.entity.PlatformPermission;
+import com.vidya.security.access.SeedRoleMatrix;
+import com.vidya.security.access.service.EffectiveAccessService;
 import com.vidya.security.entity.PlatformRole;
 import com.vidya.security.entity.PlatformUser;
 import com.vidya.security.jwt.JwtTokenProvider;
@@ -40,6 +41,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -62,6 +64,9 @@ class SecurityMatrixTest {
 
     @Mock
     private SecurityAuditService securityAuditService;
+
+    @Mock
+    private EffectiveAccessService effectiveAccessService;
 
     private JwtTokenProvider jwtTokenProvider;
     private TenantAuthorizationServiceImpl tenantAuthorizationService;
@@ -93,8 +98,11 @@ class SecurityMatrixTest {
                 schoolRepository,
                 onboardingRepository,
                 communityMemberRepository,
-                securityAuditService
+                securityAuditService,
+                effectiveAccessService
         );
+        lenient().when(effectiveAccessService.getAccess(any(PlatformUser.class)))
+                .thenAnswer(inv -> SeedRoleMatrix.accessFor(inv.getArgument(0)));
 
         UUID schoolAId = UUID.randomUUID();
         schoolA = new School("SCH-001", "School A", "School A Legal", "REG-01", SchoolBoard.CBSE, SchoolType.ALL, "a@sch.com", "9999999991", "https://a.sch.com", SchoolStatus.ACTIVE);
@@ -173,11 +181,11 @@ class SecurityMatrixTest {
     // ── Role and Authorization Matrix ────────────────────────────────────────
 
     @Test
-    @DisplayName("Role: PLATFORM_SUPER_ADMIN has all permissions")
+    @DisplayName("Role: PLATFORM_SUPER_ADMIN has all permissions (seeded grants_all role)")
     void role_PlatformSuperAdmin_HasAllPermissions() {
         when(userRepository.findById(platformSuperAdmin.getId())).thenReturn(Optional.of(platformSuperAdmin));
 
-        for (PlatformPermission perm : PlatformPermission.values()) {
+        for (String perm : SeedRoleMatrix.allPermissionCodes()) {
             assertThat(tenantAuthorizationService.hasPermission(platformSuperAdmin.getId(), perm))
                     .as("Platform Super Admin should have permission: %s", perm)
                     .isTrue();
@@ -189,9 +197,9 @@ class SecurityMatrixTest {
     void role_PlatformAdmin_HasAdminPermissions() {
         when(userRepository.findById(platformAdmin.getId())).thenReturn(Optional.of(platformAdmin));
 
-        assertThat(tenantAuthorizationService.hasPermission(platformAdmin.getId(), PlatformPermission.TENANT_PROVISION)).isTrue();
-        assertThat(tenantAuthorizationService.hasPermission(platformAdmin.getId(), PlatformPermission.ONBOARDING_APPROVE)).isTrue();
-        assertThat(tenantAuthorizationService.hasPermission(platformAdmin.getId(), PlatformPermission.PAYMENT_REFUND)).isTrue();
+        assertThat(tenantAuthorizationService.hasPermission(platformAdmin.getId(), "TENANT_PROVISION")).isTrue();
+        assertThat(tenantAuthorizationService.hasPermission(platformAdmin.getId(), "ONBOARDING_APPROVE")).isTrue();
+        assertThat(tenantAuthorizationService.hasPermission(platformAdmin.getId(), "PAYMENT_REFUND")).isTrue();
     }
 
     @Test
@@ -199,10 +207,10 @@ class SecurityMatrixTest {
     void role_CommunityAdmin_HasSpecificPermissions() {
         when(userRepository.findById(communityAdmin.getId())).thenReturn(Optional.of(communityAdmin));
 
-        assertThat(tenantAuthorizationService.hasPermission(communityAdmin.getId(), PlatformPermission.COMMUNITY_READ)).isTrue();
-        assertThat(tenantAuthorizationService.hasPermission(communityAdmin.getId(), PlatformPermission.ONBOARDING_READ)).isTrue();
+        assertThat(tenantAuthorizationService.hasPermission(communityAdmin.getId(), "COMMUNITY_READ")).isTrue();
+        assertThat(tenantAuthorizationService.hasPermission(communityAdmin.getId(), "ONBOARDING_READ")).isTrue();
         // Should NOT have tenant provision permission
-        assertThat(tenantAuthorizationService.hasPermission(communityAdmin.getId(), PlatformPermission.TENANT_PROVISION)).isFalse();
+        assertThat(tenantAuthorizationService.hasPermission(communityAdmin.getId(), "TENANT_PROVISION")).isFalse();
     }
 
     @Test
@@ -210,11 +218,11 @@ class SecurityMatrixTest {
     void role_FieldAgent_HasFieldPermissions() {
         when(userRepository.findById(fieldAgent.getId())).thenReturn(Optional.of(fieldAgent));
 
-        assertThat(tenantAuthorizationService.hasPermission(fieldAgent.getId(), PlatformPermission.ONBOARDING_CREATE)).isTrue();
-        assertThat(tenantAuthorizationService.hasPermission(fieldAgent.getId(), PlatformPermission.ONBOARDING_UPDATE)).isTrue();
+        assertThat(tenantAuthorizationService.hasPermission(fieldAgent.getId(), "ONBOARDING_CREATE")).isTrue();
+        assertThat(tenantAuthorizationService.hasPermission(fieldAgent.getId(), "ONBOARDING_UPDATE")).isTrue();
         // Should NOT have tenant suspend or payment refund permissions
-        assertThat(tenantAuthorizationService.hasPermission(fieldAgent.getId(), PlatformPermission.TENANT_SUSPEND)).isFalse();
-        assertThat(tenantAuthorizationService.hasPermission(fieldAgent.getId(), PlatformPermission.PAYMENT_REFUND)).isFalse();
+        assertThat(tenantAuthorizationService.hasPermission(fieldAgent.getId(), "TENANT_SUSPEND")).isFalse();
+        assertThat(tenantAuthorizationService.hasPermission(fieldAgent.getId(), "PAYMENT_REFUND")).isFalse();
     }
 
     @Test
@@ -222,9 +230,9 @@ class SecurityMatrixTest {
     void role_SchoolOwner_HasOwnerPermissions() {
         when(userRepository.findById(schoolOwner.getId())).thenReturn(Optional.of(schoolOwner));
 
-        assertThat(tenantAuthorizationService.hasPermission(schoolOwner.getId(), PlatformPermission.SCHOOL_UPDATE)).isTrue();
-        assertThat(tenantAuthorizationService.hasPermission(schoolOwner.getId(), PlatformPermission.USER_CREATE)).isTrue();
-        assertThat(tenantAuthorizationService.hasPermission(schoolOwner.getId(), PlatformPermission.PAYMENT_CREATE)).isTrue();
+        assertThat(tenantAuthorizationService.hasPermission(schoolOwner.getId(), "SCHOOL_UPDATE")).isTrue();
+        assertThat(tenantAuthorizationService.hasPermission(schoolOwner.getId(), "USER_CREATE")).isTrue();
+        assertThat(tenantAuthorizationService.hasPermission(schoolOwner.getId(), "PAYMENT_CREATE")).isTrue();
     }
 
     @Test
@@ -232,10 +240,10 @@ class SecurityMatrixTest {
     void role_SchoolAdmin_HasSchoolAdminPermissions() {
         when(userRepository.findById(schoolAdmin.getId())).thenReturn(Optional.of(schoolAdmin));
 
-        assertThat(tenantAuthorizationService.hasPermission(schoolAdmin.getId(), PlatformPermission.SCHOOL_READ)).isTrue();
-        assertThat(tenantAuthorizationService.hasPermission(schoolAdmin.getId(), PlatformPermission.SUBSCRIPTION_READ)).isTrue();
+        assertThat(tenantAuthorizationService.hasPermission(schoolAdmin.getId(), "SCHOOL_READ")).isTrue();
+        assertThat(tenantAuthorizationService.hasPermission(schoolAdmin.getId(), "SUBSCRIPTION_READ")).isTrue();
         // Should NOT have platform community creation
-        assertThat(tenantAuthorizationService.hasPermission(schoolAdmin.getId(), PlatformPermission.COMMUNITY_CREATE)).isFalse();
+        assertThat(tenantAuthorizationService.hasPermission(schoolAdmin.getId(), "COMMUNITY_CREATE")).isFalse();
     }
 
     // ── Tenant Isolation and Boundary Enforcement ────────────────────────────
@@ -280,24 +288,24 @@ class SecurityMatrixTest {
     @DisplayName("RBAC: Substitution permissions - School Admin/Owner have MANAGE and READ; Teacher has READ only; others have neither")
     void rbac_substitutionPermissions() {
         // Platform Super Admin has both
-        assertThat(PlatformRole.PLATFORM_SUPER_ADMIN.getPermissions()).contains(PlatformPermission.SUBSTITUTION_READ, PlatformPermission.SUBSTITUTION_MANAGE);
+        assertThat(SeedRoleMatrix.permissionsOf("PLATFORM_SUPER_ADMIN")).contains("SUBSTITUTION_READ", "SUBSTITUTION_MANAGE");
 
         // Platform Admin has both
-        assertThat(PlatformRole.PLATFORM_ADMIN.getPermissions()).contains(PlatformPermission.SUBSTITUTION_READ, PlatformPermission.SUBSTITUTION_MANAGE);
+        assertThat(SeedRoleMatrix.permissionsOf("PLATFORM_ADMIN")).contains("SUBSTITUTION_READ", "SUBSTITUTION_MANAGE");
 
         // School Owner has both
-        assertThat(PlatformRole.SCHOOL_OWNER.getPermissions()).contains(PlatformPermission.SUBSTITUTION_READ, PlatformPermission.SUBSTITUTION_MANAGE);
+        assertThat(SeedRoleMatrix.permissionsOf("SCHOOL_OWNER")).contains("SUBSTITUTION_READ", "SUBSTITUTION_MANAGE");
 
         // School Admin has both
-        assertThat(PlatformRole.SCHOOL_ADMIN.getPermissions()).contains(PlatformPermission.SUBSTITUTION_READ, PlatformPermission.SUBSTITUTION_MANAGE);
+        assertThat(SeedRoleMatrix.permissionsOf("SCHOOL_ADMIN")).contains("SUBSTITUTION_READ", "SUBSTITUTION_MANAGE");
 
         // Teacher has READ only, NOT MANAGE
-        assertThat(PlatformRole.TEACHER.getPermissions()).contains(PlatformPermission.SUBSTITUTION_READ);
-        assertThat(PlatformRole.TEACHER.getPermissions()).doesNotContain(PlatformPermission.SUBSTITUTION_MANAGE);
+        assertThat(SeedRoleMatrix.permissionsOf("TEACHER")).contains("SUBSTITUTION_READ");
+        assertThat(SeedRoleMatrix.permissionsOf("TEACHER")).doesNotContain("SUBSTITUTION_MANAGE");
 
         // Community roles have neither
-        assertThat(PlatformRole.COMMUNITY_ADMIN.getPermissions()).doesNotContain(PlatformPermission.SUBSTITUTION_READ, PlatformPermission.SUBSTITUTION_MANAGE);
-        assertThat(PlatformRole.COMMUNITY_MANAGER.getPermissions()).doesNotContain(PlatformPermission.SUBSTITUTION_READ, PlatformPermission.SUBSTITUTION_MANAGE);
-        assertThat(PlatformRole.FIELD_AGENT.getPermissions()).doesNotContain(PlatformPermission.SUBSTITUTION_READ, PlatformPermission.SUBSTITUTION_MANAGE);
+        assertThat(SeedRoleMatrix.permissionsOf("COMMUNITY_ADMIN")).doesNotContain("SUBSTITUTION_READ", "SUBSTITUTION_MANAGE");
+        assertThat(SeedRoleMatrix.permissionsOf("COMMUNITY_MANAGER")).doesNotContain("SUBSTITUTION_READ", "SUBSTITUTION_MANAGE");
+        assertThat(SeedRoleMatrix.permissionsOf("FIELD_AGENT")).doesNotContain("SUBSTITUTION_READ", "SUBSTITUTION_MANAGE");
     }
 }

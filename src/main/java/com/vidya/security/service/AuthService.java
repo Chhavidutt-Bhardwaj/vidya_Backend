@@ -20,4 +20,15 @@ public interface AuthService {
     void logout(RefreshTokenRequest request, String ipAddress, String correlationId);
 
     PlatformUserResponse getCurrentUser();
+
+    // ---- session-aware variants (client = IP + user agent) ----
+
+    AuthResponse login(LoginRequest request, com.vidya.security.session.service.ClientInfo client, String correlationId);
+
+    AuthResponse refreshToken(RefreshTokenRequest request, com.vidya.security.session.service.ClientInfo client, String correlationId);
+
+    void logout(RefreshTokenRequest request, com.vidya.security.session.service.ClientInfo client, String correlationId);
+
+    /** Ends every session of the current user on every device. */
+    void logoutAll(com.vidya.security.session.service.ClientInfo client, String correlationId);
 }

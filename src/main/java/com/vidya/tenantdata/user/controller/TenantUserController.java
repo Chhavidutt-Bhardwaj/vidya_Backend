@@ -46,7 +46,7 @@ public class TenantUserController {
     private final TenantUserService tenantUserService;
 
     @PostMapping
-    @PreAuthorize("hasAuthority('USER_CREATE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('USER_CREATE') and @dataAccess.hasFullScope(authentication, 'USER')")
     @Operation(summary = "Create tenant operational user", description = "Creates a new staff, teacher, student, or admin user within the current tenant database")
     public ResponseEntity<ApiResponse<TenantUserDetailResponse>> createTenantUser(
             @Valid @RequestBody CreateTenantUserRequest request) {
@@ -57,7 +57,7 @@ public class TenantUserController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('USER_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('USER_READ') and @dataAccess.canAccessTenantUser(authentication, #id, 'USER')")
     @Operation(summary = "Get tenant user by ID", description = "Retrieves tenant operational user and profile by unique UUID")
     public ResponseEntity<ApiResponse<TenantUserDetailResponse>> getTenantUserById(
             @PathVariable UUID id) {
@@ -67,7 +67,7 @@ public class TenantUserController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAuthority('USER_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('USER_READ') and @dataAccess.hasFullScope(authentication, 'USER')")
     @Operation(summary = "List tenant users", description = "Lists active operational users in the current tenant database with pagination")
     public ResponseEntity<PagedApiResponse<TenantUserResponse>> listTenantUsers(
             @RequestParam(required = false) TenantUserStatus status,
@@ -80,7 +80,7 @@ public class TenantUserController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAuthority('USER_UPDATE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('USER_UPDATE') and @dataAccess.canAccessTenantUser(authentication, #id, 'USER')")
     @Operation(summary = "Update tenant user", description = "Updates profile and contact details of a tenant user")
     public ResponseEntity<ApiResponse<TenantUserDetailResponse>> updateTenantUser(
             @PathVariable UUID id,
@@ -91,7 +91,7 @@ public class TenantUserController {
     }
 
     @PatchMapping("/{id}/status")
-    @PreAuthorize("hasAuthority('USER_UPDATE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('USER_UPDATE') and @dataAccess.hasFullScope(authentication, 'USER')")
     @Operation(summary = "Update tenant user status", description = "Changes lifecycle status of a tenant user")
     public ResponseEntity<ApiResponse<TenantUserDetailResponse>> updateTenantUserStatus(
             @PathVariable UUID id,
@@ -102,7 +102,7 @@ public class TenantUserController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('USER_DELETE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('USER_DELETE') and @dataAccess.hasFullScope(authentication, 'USER')")
     @Operation(summary = "Soft delete tenant user", description = "Soft deletes a tenant operational user")
     public ResponseEntity<ApiResponse<Void>> deleteTenantUser(@PathVariable UUID id) {
         log.info("REST: Delete tenant user ID: {}", id);

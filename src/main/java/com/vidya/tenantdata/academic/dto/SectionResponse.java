@@ -46,6 +46,9 @@ public class SectionResponse {
     @Schema(description = "Student capacity", example = "40")
     private Integer capacity;
 
+    @Schema(description = "Stream of the section (XI–XII), null otherwise")
+    private UUID streamId;
+
     @Schema(description = "Current active student enrollment count", example = "35")
     private long activeStudentCount;
 

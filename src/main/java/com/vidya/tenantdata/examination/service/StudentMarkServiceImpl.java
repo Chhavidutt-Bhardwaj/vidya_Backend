@@ -42,6 +42,7 @@ public class StudentMarkServiceImpl implements StudentMarkService {
     private final StudentRepository studentRepository;
     private final StaffRepository staffRepository;
     private final GradingScaleTierRepository gradingScaleTierRepository;
+    private final com.vidya.tenantdata.examination.repository.GradingScaleRepository gradingScaleRepository;
     private final StudentMarkMapper studentMarkMapper;
 
     @Override
@@ -196,9 +197,14 @@ public class StudentMarkServiceImpl implements StudentMarkService {
             BigDecimal percentage = marks.multiply(BigDecimal.valueOf(100))
                     .divide(config.getMaxMarks(), 2, RoundingMode.HALF_UP);
 
-            if (config.getExamSchedule() != null && config.getExamSchedule().getGradingScale() != null) {
-                UUID scaleId = config.getExamSchedule().getGradingScale().getId();
+            UUID scaleId = gradingScaleId(config);
+            if (scaleId != null) {
                 Optional<GradingScaleTier> tierOpt = gradingScaleTierRepository.findMatchingTier(scaleId, percentage);
+                if (tierOpt.isEmpty()) {
+                    // Between two whole-number bands (90.5 with 81–90 / 91–100): the lower band.
+                    tierOpt = com.vidya.tenantdata.examination.grading.GradingTiers.match(
+                            gradingScaleTierRepository.findByGradingScaleIdOrderByMinPercentageDesc(scaleId), percentage);
+                }
                 if (tierOpt.isPresent()) {
                     entry.setGrade(tierOpt.get().getGrade());
                     entry.setGradePoint(tierOpt.get().getGradePoint());
@@ -208,5 +214,22 @@ public class StudentMarkServiceImpl implements StudentMarkService {
                 }
             }
         }
+    }
+
+    /** Exam schedule's scale → class's scale → school default (same order as GradingConfigService). */
+    private UUID gradingScaleId(ExamSubjectConfig config) {
+        var schedule = config.getExamSchedule();
+        if (schedule == null) {
+            return null;
+        }
+        if (schedule.getGradingScale() != null && schedule.getGradingScale().getDeletedAt() == null) {
+            return schedule.getGradingScale().getId();
+        }
+        var cls = schedule.getAcademicClass();
+        if (cls != null && cls.getGradingScaleId() != null
+                && gradingScaleRepository.findActiveById(cls.getGradingScaleId()).isPresent()) {
+            return cls.getGradingScaleId();
+        }
+        return gradingScaleRepository.findDefaultScale().map(com.vidya.tenantdata.examination.entity.GradingScale::getId).orElse(null);
     }
 }

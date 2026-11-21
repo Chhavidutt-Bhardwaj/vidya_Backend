@@ -22,6 +22,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -36,9 +38,47 @@ import java.util.UUID;
 public class GradingScaleController {
 
     private final GradingScaleService gradingScaleService;
+    private final com.vidya.tenantdata.examination.grading.GradingConfigService gradingConfigService;
+
+    @GetMapping("/presets")
+    @PreAuthorize("hasAuthority('GRADING_SCALE_READ')")
+    @Operation(summary = "Ready-made grading scales",
+            description = "CBSE 9-point (IX–XII), 8-point (I–VIII), descriptive (pre-primary) and percentage divisions")
+    public ResponseEntity<ApiResponse<java.util.List<com.vidya.tenantdata.examination.grading.GradingPresets.Preset>>> presets() {
+        return ResponseEntity.ok(ApiResponse.success("GRADING_PRESETS_FETCHED", "Grading presets", gradingConfigService.presets()));
+    }
+
+    @PostMapping("/presets/{key}")
+    @PreAuthorize("hasAuthority('GRADING_SCALE_MANAGE')")
+    @Operation(summary = "Create a grading scale from a preset")
+    public ResponseEntity<ApiResponse<GradingScaleResponse>> createFromPreset(
+            @PathVariable String key,
+            @RequestParam(required = false) String name,
+            @RequestParam(defaultValue = "false") boolean makeDefault) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success("GRADING_SCALE_CREATED",
+                "Grading scale created from preset", gradingConfigService.createFromPreset(key, name, makeDefault)));
+    }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('GRADING_SCALE_MANAGE')")
+    @Operation(summary = "Update a grading scale",
+            description = "Replaces name, description and all tiers. Tiers must cover 0–100 without overlaps (gaps up to 1 point allowed).")
+    public ResponseEntity<ApiResponse<GradingScaleResponse>> update(@PathVariable UUID id, @Valid @RequestBody CreateGradingScaleRequest request) {
+        return ResponseEntity.ok(ApiResponse.success("GRADING_SCALE_UPDATED", "Grading scale updated", gradingConfigService.update(id, request)));
+    }
+
+    @GetMapping("/effective")
+    @PreAuthorize("hasAuthority('GRADING_SCALE_READ')")
+    @Operation(summary = "Scale that will grade a class or exam schedule",
+            description = "Exam schedule's scale, else the class's scale, else the school default")
+    public ResponseEntity<ApiResponse<com.vidya.tenantdata.examination.grading.GradingConfigService.EffectiveScale>> effective(
+            @RequestParam(required = false) UUID academicClassId, @RequestParam(required = false) UUID examScheduleId) {
+        return ResponseEntity.ok(ApiResponse.success("GRADING_SCALE_EFFECTIVE", "Effective grading scale",
+                gradingConfigService.effective(academicClassId, examScheduleId)));
+    }
 
     @PostMapping
-    @PreAuthorize("hasAuthority('GRADING_SCALE_MANAGE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('GRADING_SCALE_MANAGE')")
     @Operation(summary = "Create grading scale", description = "Defines a new grading scale with percentage boundaries and grade points")
     public ResponseEntity<ApiResponse<GradingScaleResponse>> createGradingScale(
             @Valid @RequestBody CreateGradingScaleRequest request) {
@@ -49,7 +89,7 @@ public class GradingScaleController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('GRADING_SCALE_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN') or hasRole('TEACHER')")
+    @PreAuthorize("hasAuthority('GRADING_SCALE_READ')")
     @Operation(summary = "Get grading scale by ID")
     public ResponseEntity<ApiResponse<GradingScaleResponse>> getGradingScaleById(@PathVariable UUID id) {
         log.info("REST: Get grading scale by ID: {}", id);
@@ -58,7 +98,7 @@ public class GradingScaleController {
     }
 
     @GetMapping("/default")
-    @PreAuthorize("hasAuthority('GRADING_SCALE_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN') or hasRole('TEACHER')")
+    @PreAuthorize("hasAuthority('GRADING_SCALE_READ')")
     @Operation(summary = "Get default active grading scale")
     public ResponseEntity<ApiResponse<GradingScaleResponse>> getDefaultGradingScale() {
         GradingScaleResponse response = gradingScaleService.getDefaultGradingScale();
@@ -66,7 +106,7 @@ public class GradingScaleController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAuthority('GRADING_SCALE_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN') or hasRole('TEACHER')")
+    @PreAuthorize("hasAuthority('GRADING_SCALE_READ')")
     @Operation(summary = "List all grading scales with pagination")
     public ResponseEntity<PagedApiResponse<GradingScaleResponse>> listGradingScales(
             @Parameter(hidden = true)
@@ -76,7 +116,7 @@ public class GradingScaleController {
     }
 
     @PatchMapping("/{id}/default")
-    @PreAuthorize("hasAuthority('GRADING_SCALE_MANAGE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('GRADING_SCALE_MANAGE')")
     @Operation(summary = "Set grading scale as school default")
     public ResponseEntity<ApiResponse<Void>> setDefaultScale(@PathVariable UUID id) {
         log.info("REST: Set grading scale default: {}", id);
@@ -85,7 +125,7 @@ public class GradingScaleController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('GRADING_SCALE_MANAGE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('GRADING_SCALE_MANAGE')")
     @Operation(summary = "Delete grading scale")
     public ResponseEntity<ApiResponse<Void>> deleteGradingScale(@PathVariable UUID id) {
         log.info("REST: Delete grading scale: {}", id);

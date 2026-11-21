@@ -39,6 +39,8 @@ public class StaffServiceImpl implements StaffService {
 
     private final StaffRepository staffRepository;
     private final TenantUserRepository tenantUserRepository;
+    private final com.vidya.tenantdata.staff.repository.DesignationRepository designationRepository;
+    private final com.vidya.tenantdata.staff.repository.DepartmentRepository departmentRepository;
 
     @Override
     @Transactional(transactionManager = "tenantTransactionManager")
@@ -82,6 +84,7 @@ public class StaffServiceImpl implements StaffService {
 
         // 7. Persist staff record
         Staff staff = StaffMapper.toEntity(request, tenantUser, staffCode);
+        linkOrgUnits(staff);
         Staff saved = staffRepository.save(staff);
 
         log.info("Successfully created staff ID: [{}] with code: [{}] for tenantUser: [{}]",
@@ -145,6 +148,7 @@ public class StaffServiceImpl implements StaffService {
             staff.setDepartment(request.getDepartment().trim());
         }
 
+        linkOrgUnits(staff);
         Staff saved = staffRepository.save(staff);
         log.info("Successfully updated staff ID: [{}]", saved.getId());
         return StaffMapper.toDetailResponse(saved);
@@ -159,6 +163,7 @@ public class StaffServiceImpl implements StaffService {
                 .orElseThrow(() -> new ResourceNotFoundException("Staff", id));
 
         staff.updateStatus(request.getStatus());
+        linkOrgUnits(staff);
         Staff saved = staffRepository.save(staff);
 
         log.info("Successfully transitioned staff ID: [{}] to employment status: [{}]",
@@ -186,5 +191,16 @@ public class StaffServiceImpl implements StaffService {
                                             String searchQuery, Pageable pageable) {
         return staffRepository.searchStaff(status, staffType, department, designation, searchQuery, pageable)
                 .map(StaffMapper::toResponse);
+    }
+
+    /** Free-text designation / department (older API) → the matching designation / department row, if any. */
+    private void linkOrgUnits(Staff staff) {
+        if (designationRepository == null || departmentRepository == null) {
+            return;
+        }
+        staff.setDesignationId(staff.getDesignation() == null ? null
+                : designationRepository.findByName(staff.getDesignation().trim()).map(d -> d.getId()).orElse(null));
+        staff.setDepartmentId(staff.getDepartment() == null ? null
+                : departmentRepository.findByName(staff.getDepartment().trim()).map(d -> d.getId()).orElse(null));
     }
 }

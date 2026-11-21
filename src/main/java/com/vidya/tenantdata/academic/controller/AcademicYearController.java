@@ -46,7 +46,7 @@ public class AcademicYearController {
     private final TimetableService timetableService;
 
     @GetMapping("/{id}/sections/{sectionId}/timetable")
-    @PreAuthorize("hasAuthority('TIMETABLE_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('TIMETABLE_READ') and @dataAccess.canViewSectionTimetable(authentication, #sectionId)")
     @Operation(summary = "Get active section timetable for academic year", description = "Retrieves the active timetable weekly grid for a section within an academic year")
     public ResponseEntity<ApiResponse<TimetableGridResponse>> getActiveSectionTimetable(
             @PathVariable UUID id,
@@ -57,7 +57,7 @@ public class AcademicYearController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAuthority('ACADEMIC_YEAR_CREATE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('ACADEMIC_YEAR_CREATE')")
     @Operation(summary = "Create academic year", description = "Creates a new academic year in the tenant database")
     public ResponseEntity<ApiResponse<AcademicYearResponse>> createAcademicYear(
             @Valid @RequestBody CreateAcademicYearRequest request) {
@@ -68,7 +68,7 @@ public class AcademicYearController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('ACADEMIC_YEAR_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('ACADEMIC_YEAR_READ')")
     @Operation(summary = "Get academic year by ID")
     public ResponseEntity<ApiResponse<AcademicYearResponse>> getAcademicYearById(@PathVariable UUID id) {
         log.info("REST: Get academic year ID: [{}]", id);
@@ -77,7 +77,7 @@ public class AcademicYearController {
     }
 
     @GetMapping("/current")
-    @PreAuthorize("hasAuthority('ACADEMIC_YEAR_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('ACADEMIC_YEAR_READ')")
     @Operation(summary = "Get current operational academic year")
     public ResponseEntity<ApiResponse<AcademicYearResponse>> getCurrentAcademicYear() {
         log.info("REST: Get current academic year");
@@ -86,7 +86,7 @@ public class AcademicYearController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAuthority('ACADEMIC_YEAR_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('ACADEMIC_YEAR_READ')")
     @Operation(summary = "List academic years with pagination and filters")
     public ResponseEntity<PagedApiResponse<AcademicYearResponse>> listAcademicYears(
             @RequestParam(required = false) AcademicYearStatus status,
@@ -99,7 +99,7 @@ public class AcademicYearController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAuthority('ACADEMIC_YEAR_UPDATE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('ACADEMIC_YEAR_UPDATE')")
     @Operation(summary = "Update academic year details")
     public ResponseEntity<ApiResponse<AcademicYearResponse>> updateAcademicYear(
             @PathVariable UUID id,
@@ -110,7 +110,7 @@ public class AcademicYearController {
     }
 
     @PatchMapping("/{id}/activate")
-    @PreAuthorize("hasAuthority('ACADEMIC_YEAR_UPDATE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('ACADEMIC_YEAR_UPDATE')")
     @Operation(summary = "Activate academic year")
     public ResponseEntity<ApiResponse<AcademicYearResponse>> activateAcademicYear(@PathVariable UUID id) {
         log.info("REST: Activate academic year ID: [{}]", id);
@@ -119,7 +119,7 @@ public class AcademicYearController {
     }
 
     @PatchMapping("/{id}/close")
-    @PreAuthorize("hasAuthority('ACADEMIC_YEAR_UPDATE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('ACADEMIC_YEAR_UPDATE')")
     @Operation(summary = "Close academic year")
     public ResponseEntity<ApiResponse<AcademicYearResponse>> closeAcademicYear(@PathVariable UUID id) {
         log.info("REST: Close academic year ID: [{}]", id);
@@ -128,7 +128,7 @@ public class AcademicYearController {
     }
 
     @PatchMapping("/{id}/current")
-    @PreAuthorize("hasAuthority('ACADEMIC_YEAR_UPDATE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('ACADEMIC_YEAR_UPDATE')")
     @Operation(summary = "Set academic year as the current operational year")
     public ResponseEntity<ApiResponse<AcademicYearResponse>> setCurrentAcademicYear(@PathVariable UUID id) {
         log.info("REST: Set academic year ID: [{}] as current", id);
@@ -137,7 +137,7 @@ public class AcademicYearController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('ACADEMIC_YEAR_DELETE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('ACADEMIC_YEAR_DELETE')")
     @Operation(summary = "Soft delete academic year")
     public ResponseEntity<ApiResponse<Void>> deleteAcademicYear(@PathVariable UUID id) {
         log.info("REST: Delete academic year ID: [{}]", id);

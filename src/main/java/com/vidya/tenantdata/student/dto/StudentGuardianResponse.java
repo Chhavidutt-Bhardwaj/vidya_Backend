@@ -42,6 +42,9 @@ public class StudentGuardianResponse {
     @Schema(description = "Email address", example = "ramesh.sharma@example.com")
     private String email;
 
+    @Schema(description = "Linked parent login (tenant_user id), if any")
+    private java.util.UUID guardianUserId;
+
     @Schema(description = "Occupation", example = "Software Engineer")
     private String occupation;
 

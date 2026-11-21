@@ -48,4 +48,12 @@ public interface AcademicYearRepository extends JpaRepository<AcademicYear, UUID
     @Modifying
     @Query("UPDATE AcademicYear y SET y.isCurrent = false WHERE y.isCurrent = true")
     void unsetAllCurrent();
+
+    /** Years (not cancelled / deleted) whose dates overlap [start, end], excluding {@code excludeId}. */
+    @Query("SELECT y FROM AcademicYear y WHERE y.deletedAt IS NULL " +
+           "AND y.status NOT IN (com.vidya.tenantdata.academic.enums.AcademicYearStatus.CANCELLED, com.vidya.tenantdata.academic.enums.AcademicYearStatus.DELETED) " +
+           "AND y.startDate <= :endDate AND y.endDate >= :startDate AND y.id <> :excludeId")
+    java.util.List<AcademicYear> findOverlapping(@Param("startDate") java.time.LocalDate startDate,
+                                                 @Param("endDate") java.time.LocalDate endDate,
+                                                 @Param("excludeId") UUID excludeId);
 }

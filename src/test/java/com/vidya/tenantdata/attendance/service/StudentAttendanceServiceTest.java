@@ -1071,4 +1071,76 @@ class StudentAttendanceServiceTest {
         a.setId(attendanceId);
         return a;
     }
+
+    // ── Attendance rules (operations-config) ──────────────────────────────────
+
+    private void attendanceRules(Integer backdateDays, com.vidya.tenantdata.operations.enums.LateCountsAs late, String minimum) {
+        var policyService = org.mockito.Mockito.mock(com.vidya.tenantdata.operations.service.AttendancePolicyService.class);
+        when(policyService.policy()).thenReturn(new com.vidya.tenantdata.operations.service.AttendancePolicyService.Policy(
+                backdateDays, late, new java.math.BigDecimal(minimum)));
+        service.setAttendancePolicy(policyService);
+    }
+
+    @Test
+    @DisplayName("Back-date limit — a teacher cannot mark further back than the school allows")
+    void markAttendance_beyondBackdateLimit_rejected() {
+        attendanceRules(2, com.vidya.tenantdata.operations.enums.LateCountsAs.PRESENT, "75");
+        when(academicYearRepository.findByIdAndNotDeleted(yearId)).thenReturn(Optional.of(activeYear));
+        when(academicClassRepository.findByIdAndNotDeleted(classId)).thenReturn(Optional.of(academicClass));
+        when(sectionRepository.findByIdAndNotDeleted(sectionId)).thenReturn(Optional.of(section));
+
+        MarkAttendanceRequest request = new MarkAttendanceRequest(
+                studentId, yearId, classId, sectionId, TODAY.minusDays(5), AttendanceStatus.PRESENT, null);
+        assertThatThrownBy(() -> service.markAttendance(request, null))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("going back 2 day(s)");
+    }
+
+    @Test
+    @DisplayName("Back-date limit — does not apply to whole-school attendance staff, nor inside the window")
+    void markAttendance_backdateLimit_allowsOfficeAndRecentDates() {
+        attendanceRules(2, com.vidya.tenantdata.operations.enums.LateCountsAs.PRESENT, "75");
+        setupStandardMocks();
+        when(attendanceRepository.existsByAttendanceCode(any())).thenReturn(false);
+        when(attendanceRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+        lenient().when(calendarService.getDayStatus(any()))
+                .thenReturn(new DayStatusResponse(TODAY, TODAY.getDayOfWeek(), DayStatus.WORKING, null, null));
+
+        // inside the window: no special authority needed
+        assertThat(service.markAttendance(new MarkAttendanceRequest(
+                studentId, yearId, classId, sectionId, YESTERDAY, AttendanceStatus.PRESENT, null), null)).isNotNull();
+
+        SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(
+                "office", "pass", List.of(new SimpleGrantedAuthority("ATTENDANCE_SCOPE_ALL"))));
+        try {
+            assertThat(service.markAttendance(new MarkAttendanceRequest(
+                    studentId, yearId, classId, sectionId, TODAY.minusDays(5), AttendanceStatus.PRESENT, null), null)).isNotNull();
+        } finally {
+            SecurityContextHolder.clearContext();
+        }
+    }
+
+    @Test
+    @DisplayName("Attendance summary — LATE counts as the school decides, and the minimum is flagged")
+    void getAttendanceSummary_usesAttendanceRules() {
+        when(studentRepository.findByIdAndNotDeleted(studentId)).thenReturn(Optional.of(student));
+        when(academicYearRepository.findByIdAndNotDeleted(yearId)).thenReturn(Optional.of(activeYear));
+        when(attendanceRepository.countTotalByStudentAndYear(studentId, yearId)).thenReturn(10L);
+        when(attendanceRepository.countByStudentAndYearAndStatus(studentId, yearId, AttendanceStatus.PRESENT)).thenReturn(7L);
+        when(attendanceRepository.countByStudentAndYearAndStatus(studentId, yearId, AttendanceStatus.ABSENT)).thenReturn(1L);
+        when(attendanceRepository.countByStudentAndYearAndStatus(studentId, yearId, AttendanceStatus.LATE)).thenReturn(2L);
+
+        // (7 + 2 late as present) / 10 = 90%, minimum 75
+        attendanceRules(null, com.vidya.tenantdata.operations.enums.LateCountsAs.PRESENT, "75");
+        AttendanceSummaryResponse summary = service.getAttendanceSummary(studentId, yearId);
+        assertThat(summary.getAttendancePercentage()).isEqualByComparingTo("90.00");
+        assertThat(summary.getMinimumRequiredPercentage()).isEqualByComparingTo("75");
+        assertThat(summary.isBelowMinimum()).isFalse();
+
+        // (7 + 2 late as half days) / 10 = 80%, minimum 85
+        attendanceRules(null, com.vidya.tenantdata.operations.enums.LateCountsAs.HALF_DAY, "85");
+        summary = service.getAttendanceSummary(studentId, yearId);
+        assertThat(summary.getAttendancePercentage()).isEqualByComparingTo("80.00");
+        assertThat(summary.isBelowMinimum()).isTrue();
+    }
 }

@@ -17,7 +17,8 @@ import com.vidya.master.school.repository.SchoolRepository;
 import com.vidya.master.tenant.entity.Tenant;
 import com.vidya.master.tenant.entity.TenantStatus;
 import com.vidya.master.tenant.repository.TenantRepository;
-import com.vidya.security.entity.PlatformPermission;
+import com.vidya.security.access.SeedRoleMatrix;
+import com.vidya.security.access.service.EffectiveAccessService;
 import com.vidya.security.entity.PlatformRole;
 import com.vidya.security.entity.PlatformUser;
 import com.vidya.security.entity.UserStatus;
@@ -35,6 +36,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -57,6 +59,9 @@ class TenantAuthorizationServiceTest {
 
     @Mock
     private SecurityAuditService securityAuditService;
+
+    @Mock
+    private EffectiveAccessService effectiveAccessService;
 
     private TenantAuthorizationServiceImpl authorizationService;
 
@@ -84,8 +89,11 @@ class TenantAuthorizationServiceTest {
                 schoolRepository,
                 onboardingRepository,
                 communityMemberRepository,
-                securityAuditService
+                securityAuditService,
+                effectiveAccessService
         );
+        lenient().when(effectiveAccessService.getAccess(any(PlatformUser.class)))
+                .thenAnswer(inv -> SeedRoleMatrix.accessFor(inv.getArgument(0)));
 
         superAdminId = UUID.randomUUID();
         superAdmin = new PlatformUser("USR-SUPER", "super@vidya.io", "hash", "Super", "Admin", null, PlatformRole.PLATFORM_SUPER_ADMIN);
@@ -123,7 +131,7 @@ class TenantAuthorizationServiceTest {
 
         assertThat(authorizationService.canAccessTenant(superAdminId, "TNT-001")).isTrue();
         assertThat(authorizationService.canAccessSchool(superAdminId, schoolAId)).isTrue();
-        assertThat(authorizationService.hasPermission(superAdminId, PlatformPermission.TENANT_SUSPEND)).isTrue();
+        assertThat(authorizationService.hasPermission(superAdminId, "TENANT_SUSPEND")).isTrue();
     }
 
     @Test
@@ -155,6 +163,37 @@ class TenantAuthorizationServiceTest {
 
         boolean allowed = authorizationService.canAccessTenant(schoolAdminAId, "TNT-002");
         assertThat(allowed).isFalse();
+    }
+
+    @Test
+    @DisplayName("Parent of School A reaches Tenant A only; never Tenant B, a suspended tenant, or master school admin APIs")
+    void parent_OwnSchoolTenantOnly() {
+        UUID parentId = UUID.randomUUID();
+        PlatformUser parent = new PlatformUser("USR-PARENT", "parent@a.com", "hash", "Pat", "Parent", null, PlatformRole.PARENT, schoolAId);
+        parent.setId(parentId);
+        when(userRepository.findById(parentId)).thenReturn(Optional.of(parent));
+        when(tenantRepository.findByTenantCode("TNT-001")).thenReturn(Optional.of(tenantA));
+        when(tenantRepository.findByTenantCode("TNT-002")).thenReturn(Optional.of(tenantB));
+        when(schoolRepository.findById(schoolAId)).thenReturn(Optional.of(schoolA));
+
+        assertThat(authorizationService.canAccessTenant(parentId, "TNT-001")).isTrue();
+        assertThat(authorizationService.canAccessTenant(parentId, "TNT-002")).isFalse();
+        assertThat(authorizationService.canAccessSchool(parentId, schoolAId)).isFalse();
+
+        tenantA.setStatus(TenantStatus.SUSPENDED);
+        assertThat(authorizationService.canAccessTenant(parentId, "TNT-001")).isFalse();
+    }
+
+    @Test
+    @DisplayName("Student and parent accounts without a school are denied")
+    void portalUserWithoutSchool_Denied() {
+        UUID studentId = UUID.randomUUID();
+        PlatformUser student = new PlatformUser("USR-STU", "stu@a.com", "hash", "Sam", "Student", null, PlatformRole.STUDENT);
+        student.setId(studentId);
+        when(userRepository.findById(studentId)).thenReturn(Optional.of(student));
+        when(tenantRepository.findByTenantCode("TNT-001")).thenReturn(Optional.of(tenantA));
+
+        assertThat(authorizationService.canAccessTenant(studentId, "TNT-001")).isFalse();
     }
 
     @Test
@@ -230,12 +269,12 @@ class TenantAuthorizationServiceTest {
     void permissionChecks() {
         when(userRepository.findById(schoolAdminAId)).thenReturn(Optional.of(schoolAdminA));
 
-        assertThat(authorizationService.hasPermission(schoolAdminAId, PlatformPermission.SCHOOL_READ)).isTrue();
-        assertThat(authorizationService.hasPermission(schoolAdminAId, PlatformPermission.SUBSCRIPTION_READ)).isTrue();
+        assertThat(authorizationService.hasPermission(schoolAdminAId, "SCHOOL_READ")).isTrue();
+        assertThat(authorizationService.hasPermission(schoolAdminAId, "SUBSCRIPTION_READ")).isTrue();
         // School Admin should NOT have permission to suspend tenants
-        assertThat(authorizationService.hasPermission(schoolAdminAId, PlatformPermission.TENANT_SUSPEND)).isFalse();
+        assertThat(authorizationService.hasPermission(schoolAdminAId, "TENANT_SUSPEND")).isFalse();
         // School Admin should NOT have permission to create communities
-        assertThat(authorizationService.hasPermission(schoolAdminAId, PlatformPermission.COMMUNITY_CREATE)).isFalse();
+        assertThat(authorizationService.hasPermission(schoolAdminAId, "COMMUNITY_CREATE")).isFalse();
     }
 
     @Test

@@ -47,7 +47,7 @@ public class TenantUser {
     @Column(name = "master_user_id")
     private UUID masterUserId;
 
-    @Column(name = "email", nullable = false, unique = true, length = 255)
+    @Column(name = "email", unique = true, length = 255)
     private String email;
 
     @Column(name = "phone", length = 20)

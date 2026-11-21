@@ -36,7 +36,7 @@ public class StudentAcademicAssignmentController {
     private final StudentAcademicAssignmentService assignmentService;
 
     @PostMapping
-    @PreAuthorize("hasAuthority('STUDENT_ACADEMIC_ASSIGNMENT_CREATE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('STUDENT_ACADEMIC_ASSIGNMENT_CREATE') and @dataAccess.canAccessStudent(authentication, #studentId, 'STUDENT')")
     @Operation(summary = "Assign student to class & section", description = "Places student into an academic year class and section")
     public ResponseEntity<ApiResponse<StudentAcademicAssignmentResponse>> assignStudent(
             @PathVariable UUID studentId,
@@ -48,7 +48,7 @@ public class StudentAcademicAssignmentController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAuthority('STUDENT_ACADEMIC_ASSIGNMENT_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('STUDENT_ACADEMIC_ASSIGNMENT_READ') and @dataAccess.canAccessStudent(authentication, #studentId, 'STUDENT')")
     @Operation(summary = "Get all academic placement history for a student")
     public ResponseEntity<ApiResponse<List<StudentAcademicAssignmentResponse>>> getStudentAssignments(
             @PathVariable UUID studentId) {
@@ -58,7 +58,7 @@ public class StudentAcademicAssignmentController {
     }
 
     @GetMapping("/current")
-    @PreAuthorize("hasAuthority('STUDENT_ACADEMIC_ASSIGNMENT_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('STUDENT_ACADEMIC_ASSIGNMENT_READ') and @dataAccess.canAccessStudent(authentication, #studentId, 'STUDENT')")
     @Operation(summary = "Get current active academic assignment for a student")
     public ResponseEntity<ApiResponse<StudentAcademicAssignmentResponse>> getCurrentAssignment(
             @PathVariable UUID studentId) {
@@ -68,7 +68,7 @@ public class StudentAcademicAssignmentController {
     }
 
     @GetMapping("/{assignmentId}")
-    @PreAuthorize("hasAuthority('STUDENT_ACADEMIC_ASSIGNMENT_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('STUDENT_ACADEMIC_ASSIGNMENT_READ') and @dataAccess.canAccessStudent(authentication, #studentId, 'STUDENT')")
     @Operation(summary = "Get student assignment by ID")
     public ResponseEntity<ApiResponse<StudentAcademicAssignmentResponse>> getAssignmentById(
             @PathVariable UUID studentId,
@@ -79,7 +79,7 @@ public class StudentAcademicAssignmentController {
     }
 
     @PutMapping("/{assignmentId}")
-    @PreAuthorize("hasAuthority('STUDENT_ACADEMIC_ASSIGNMENT_UPDATE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('STUDENT_ACADEMIC_ASSIGNMENT_UPDATE') and @dataAccess.canAccessStudent(authentication, #studentId, 'STUDENT')")
     @Operation(summary = "Update student assignment details (roll number/dates)")
     public ResponseEntity<ApiResponse<StudentAcademicAssignmentResponse>> updateAssignment(
             @PathVariable UUID studentId,
@@ -91,7 +91,7 @@ public class StudentAcademicAssignmentController {
     }
 
     @PatchMapping("/{assignmentId}/transfer")
-    @PreAuthorize("hasAuthority('STUDENT_ACADEMIC_ASSIGNMENT_UPDATE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('STUDENT_ACADEMIC_ASSIGNMENT_UPDATE') and @dataAccess.canAccessStudent(authentication, #studentId, 'STUDENT')")
     @Operation(summary = "Transfer student to a new section or class", description = "Marks current assignment as TRANSFERRED and opens a new active placement")
     public ResponseEntity<ApiResponse<StudentAcademicAssignmentResponse>> transferStudent(
             @PathVariable UUID studentId,
