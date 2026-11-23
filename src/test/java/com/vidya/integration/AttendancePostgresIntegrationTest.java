@@ -178,6 +178,16 @@ class AttendancePostgresIntegrationTest extends AbstractTenantPostgresIntegratio
     @AfterEach
     void clearSecurity() {
         SecurityContextHolder.clearContext();
+        ((StudentAttendanceServiceImpl) attendanceService).setClock(java.time.Clock.systemDefaultZone());
+    }
+
+    /**
+     * Fixtures use fixed far-future years so they never collide with other tests' data. The service
+     * rejects future-dated marks and clamps summaries to "today", so pin its clock inside that year.
+     */
+    private static void pinToday(LocalDate today) {
+        ((StudentAttendanceServiceImpl) attendanceService).setClock(java.time.Clock.fixed(
+                today.atStartOfDay(java.time.ZoneId.systemDefault()).toInstant(), java.time.ZoneId.systemDefault()));
     }
 
     @Test
@@ -228,6 +238,7 @@ class AttendancePostgresIntegrationTest extends AbstractTenantPostgresIntegratio
     void bulkAttendance_holidayDate_writesNothing() {
         String suffix = UUID.randomUUID().toString().substring(0, 8);
         LocalDate holidayDate = LocalDate.of(2042, 10, 15);
+        pinToday(holidayDate);
 
         UUID yearId = UUID.randomUUID();
         jdbcTemplate.update(
@@ -365,6 +376,7 @@ class AttendancePostgresIntegrationTest extends AbstractTenantPostgresIntegratio
         String suffix = UUID.randomUUID().toString().substring(0, 8);
         LocalDate yearStart = LocalDate.of(2044, 1, 1);
         LocalDate yearEnd = LocalDate.of(2044, 12, 31);
+        pinToday(yearEnd);
 
         UUID yearId = UUID.randomUUID();
         jdbcTemplate.update(
@@ -441,6 +453,7 @@ class AttendancePostgresIntegrationTest extends AbstractTenantPostgresIntegratio
     void statementCountInvariance_bulkUpsert_50vs200Students() {
         String suffix = UUID.randomUUID().toString().substring(0, 8);
         LocalDate workingDate = LocalDate.of(2045, 3, 15); // Wednesday
+        pinToday(workingDate);
 
         UUID yearId = UUID.randomUUID();
         jdbcTemplate.update(

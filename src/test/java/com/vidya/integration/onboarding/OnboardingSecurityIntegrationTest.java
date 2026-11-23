@@ -20,6 +20,7 @@ import com.vidya.security.entity.PlatformRole;
 import com.vidya.security.entity.PlatformUser;
 import com.vidya.security.jwt.JwtTokenProvider;
 import com.vidya.security.repository.PlatformUserRepository;
+import com.vidya.security.session.service.SessionService;
 import com.vidya.tenant.datasource.CredentialResolver;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -47,6 +48,8 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -122,6 +125,7 @@ class OnboardingSecurityIntegrationTest {
 
     @Autowired private WebApplicationContext context;
     @Autowired private JwtTokenProvider jwtTokenProvider;
+    @Autowired private SessionService sessionService;
     @Autowired private PasswordEncoder passwordEncoder;
     @Autowired private PlatformUserRepository userRepository;
     @Autowired private SchoolOnboardingRepository onboardingRepository;
@@ -619,8 +623,10 @@ class OnboardingSecurityIntegrationTest {
     }
 
     private String token(PlatformUser user) {
+        // The JWT filter only accepts access tokens bound (via "sid") to an ACTIVE server-side session.
+        UUID sessionId = sessionService.open(user, null, Instant.now().plus(Duration.ofHours(1))).getId();
         return jwtTokenProvider.generateAccessToken(user.getId(), user.getEmail(), user.getUserCode(),
-                user.getPlatformRole().name(), user.getSchoolId());
+                user.getPlatformRole().name(), user.getSchoolId(), null, sessionId);
     }
 
     private static boolean tenantTableExists(String databaseName, String table) throws Exception {

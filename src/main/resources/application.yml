@@ -6,7 +6,7 @@ spring:
     name: vidya
 
   profiles:
-    active: ${SPRING_PROFILES_ACTIVE:dev}
+    active: ${SPRING_PROFILES_ACTIVE:prod}
 
   # Disable Spring Boot autoconfiguration for datasource (we configure manually)
   autoconfigure:

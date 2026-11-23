@@ -418,18 +418,28 @@ class TimetableStatementCountPostgresIntegrationTest extends AbstractTenantPostg
                 sectionId, yearId, classId, "SEC-VAL-A", "Section A"
         );
 
-        UUID pId = UUID.randomUUID();
-        jdbcTemplate.update(
-                "INSERT INTO bell_schedule_period (id, period_code, bell_schedule_id, name, period_sequence, start_time, end_time, period_type) VALUES (?, ?, ?, ?, 1, '08:00:00', '08:45:00', 'TEACHING')",
-                pId, "PRD-VAL-01", scheduleId, "Period 1"
-        );
+        // 40 periods x 5 weekdays = 200 distinct slots; idx_tte_class_clash forbids two entries for the
+        // same class/section in one (day, period), so every seeded entry needs its own slot.
+        String[] days = {"MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"};
+        int periodCount = 40;
+        List<UUID> periodIds = new ArrayList<>();
+        for (int p = 0; p < periodCount; p++) {
+            UUID periodId = UUID.randomUUID();
+            java.time.LocalTime start = java.time.LocalTime.of(0, 0).plusMinutes(30L * p);
+            jdbcTemplate.update(
+                    "INSERT INTO bell_schedule_period (id, period_code, bell_schedule_id, name, period_sequence, start_time, end_time, period_type) VALUES (?, ?, ?, ?, ?, ?, ?, 'TEACHING')",
+                    periodId, "PRD-VAL-" + (p + 1), scheduleId, "Period " + (p + 1), p + 1,
+                    java.sql.Time.valueOf(start), java.sql.Time.valueOf(start.plusMinutes(25))
+            );
+            periodIds.add(periodId);
+        }
 
         // Seed 5 entries for timetable 5
         for (int i = 0; i < 5; i++) {
             jdbcTemplate.update(
                     "INSERT INTO timetable_entry (id, entry_code, timetable_id, academic_year_id, period_id, day_of_week, academic_class_id, section_id, entry_type) " +
-                    "VALUES (?, ?, ?, ?, ?, 'MONDAY', ?, ?, 'REGULAR')",
-                    UUID.randomUUID(), "TTE-V5-" + i, timetable5Id, yearId, pId, classId, sectionId
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'REGULAR')",
+                    UUID.randomUUID(), "TTE-V5-" + i, timetable5Id, yearId, periodIds.get(i % periodCount), days[i / periodCount], classId, sectionId
             );
         }
 
@@ -437,8 +447,8 @@ class TimetableStatementCountPostgresIntegrationTest extends AbstractTenantPostg
         for (int i = 0; i < 200; i++) {
             jdbcTemplate.update(
                     "INSERT INTO timetable_entry (id, entry_code, timetable_id, academic_year_id, period_id, day_of_week, academic_class_id, section_id, entry_type) " +
-                    "VALUES (?, ?, ?, ?, ?, 'MONDAY', ?, ?, 'REGULAR')",
-                    UUID.randomUUID(), "TTE-V200-" + i, timetable200Id, yearId, pId, classId, sectionId
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'REGULAR')",
+                    UUID.randomUUID(), "TTE-V200-" + i, timetable200Id, yearId, periodIds.get(i % periodCount), days[i / periodCount], classId, sectionId
             );
         }
 
