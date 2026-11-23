@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<!--
+  Sample screen for: School users & accounts
+  Plain HTML + CSS with static sample data generated from the API (APiReqDoc/samples/api/user/).
+  Each section names the endpoints that feed it. Rebuild it in the frontend framework; this file is not served by any controller.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>School users &amp; accounts</title>
+<link rel="stylesheet" href="samples.css">
+</head>
+<body>
+<header class="topbar"><a class="brand" href="index.html">Vidya</a><h1>School users &amp; accounts</h1></header>
+<div class="layout">
+<nav class="side">
+<a href="security.html">Login, sessions, roles &amp; access</a>
+<a href="dashboard.html">Overview dashboard</a>
+<a href="student.html">Students (SIS, admission, enrolment, guardians)</a>
+<a href="staff.html">Staff &amp; HR set-up</a>
+<a href="user.html" class="on">School users &amp; accounts</a>
+<a href="academic.html">Academic years, classes, sections, set-up</a>
+<a href="subject.html">Subjects &amp; curriculum</a>
+<a href="assignment.html">Class teachers &amp; subject teachers</a>
+<a href="timetable.html">Timetable, bells, rooms, substitutions</a>
+<a href="calendar.html">Calendar &amp; holidays</a>
+<a href="attendance.html">Student attendance</a>
+<a href="examination.html">Exams, schedules, marks, grading</a>
+<a href="assessment.html">Assessments, question bank, report cards</a>
+<a href="fee.html">Fees &amp; finance (counter, online, auto-debit)</a>
+<a href="engagement.html">Communication, homework, daily report, parent portal</a>
+<a href="operations.html">Operations set-up (fees, attendance, transport, library)</a>
+<a href="readiness.html">School readiness</a>
+<a href="platform-school.html">Platform: schools &amp; campuses</a>
+<a href="platform-onboarding.html">Platform: onboarding</a>
+<a href="platform-workflow.html">Platform: onboarding workflow</a>
+<a href="platform-subscription.html">Platform: subscriptions &amp; plans</a>
+<a href="platform-payment.html">Platform: subscription payments</a>
+<a href="platform-community.html">Platform: communities (trusts / groups)</a>
+<a href="platform-hub.html">Platform: hub</a>
+<a href="platform-analytics.html">Platform: analytics</a>
+<a href="platform-support.html">Platform: support queries</a>
+</nav>
+<main>
+<div class="tabs"><a href="#TenantUserAccountController">Accounts</a><a href="#TenantUserController">Tenant Users</a></div>
+
+<!-- TenantUserAccountController · samples/api/user/TenantUserAccountController.md -->
+<section class="card" id="TenantUserAccountController">
+<h2>Accounts</h2>
+<p class="muted">Logins and roles of the school's people (staff, teachers, students, parents)</p>
+<!-- GET /api/v1/tenant/users/{id}/account -->
+<h3>Details</h3>
+<dl class="details">
+<div><dt>User code</dt><dd>A-001</dd></div>
+<div><dt>Name</dt><dd>Account 1</dd></div>
+<div><dt>User type</dt><dd><span class="pill ">ADMIN</span></dd></div>
+<div><dt>Has login</dt><dd><span class="pill ok">Yes</span></dd></div>
+</dl>
+<p class="muted small">Source: <code>GET /api/v1/tenant/users/{id}/account</code></p>
+<!-- POST /api/v1/tenant/users/{id}/account -->
+<details class="form"><summary>Give a person a login</summary>
+<form>
+<label>Email<input type="email" name="email" value="asha.rao@example.com"></label>
+<label>Role<select name="role"><option value="">Any</option><option>PLATFORM_SUPER_ADMIN</option><option>PLATFORM_ADMIN</option><option>PLATFORM_STAFF</option><option>COMMUNITY_ADMIN</option><option>COMMUNITY_ROLE_MANAGER</option><option>COMMUNITY_MANAGER</option><option>FIELD_AGENT</option><option>SCHOOL_OWNER</option><option>SCHOOL_ADMIN</option><option>SCHOOL_STAFF</option><option>TEACHER</option><option>PRINCIPAL</option><option>COORDINATOR</option><option>SUBJECT_TEACHER</option><option>ACCOUNTS</option><option>PARENT</option><option>STUDENT</option></select></label>
+<label class="wide">Extra role ids<span class="muted small">array of uuid (see the API file)</span></label>
+<div class="wide"><button type="button" class="btn primary">Save</button> <button type="reset" class="btn">Reset</button></div>
+</form>
+</details>
+<details class="endpoints"><summary>All endpoints of this section (4)</summary>
+<table>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/tenant/users/{id}/account</code></td><td>Give a person a login</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/tenant/users/{id}/account</code></td><td>Login and roles of a person</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/tenant/users/{id}/account/roles</code></td><td>Set account type and extra roles</td></tr>
+<tr><td><span class="verb patch">PATCH</span></td><td><code>/api/v1/tenant/users/{id}/account/status</code></td><td>Enable or disable a login</td></tr>
+</table>
+</details>
+</section>
+
+<!-- TenantUserController · samples/api/user/TenantUserController.md -->
+<section class="card" id="TenantUserController">
+<h2>Tenant Users</h2>
+<p class="muted">Operational user management for the active school tenant</p>
+<!-- GET /api/v1/tenant/users -->
+<form class="filters">
+<label>Status<select name="status"><option value="">Any</option><option>ACTIVE</option><option>INACTIVE</option><option>SUSPENDED</option><option>LOCKED</option><option>DELETED</option></select></label>
+<label>User type<select name="userType"><option value="">Any</option><option>ADMIN</option><option>STAFF</option><option>TEACHER</option><option>STUDENT</option><option>PARENT</option></select></label>
+<button type="button" class="btn primary">Apply</button>
+</form>
+<div class="scroll"><table>
+<thead><tr><th>User code</th><th>Email</th><th>Phone</th><th>Full name</th><th>User type</th><th>Status</th><th>Created at</th><th>Updated at</th><th></th></tr></thead>
+<tbody>
+<tr><td>TU-001</td><td>asha.rao@example.com</td><td>9811111121</td><td>Riya Rao</td><td><span class="pill ">ADMIN</span></td><td><span class="pill ok">ACTIVE</span></td><td>2026-11-22T04:30:00Z</td><td>2026-11-22T04:30:00Z</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>TU-002</td><td>rakesh.verma@example.com</td><td>9822222232</td><td>Aman Verma</td><td><span class="pill ">STAFF</span></td><td><span class="pill bad">INACTIVE</span></td><td>2026-11-21T04:30:00Z</td><td>2026-11-21T04:30:00Z</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>TU-003</td><td>meena.iyer@example.com</td><td>9833333343</td><td>Kavya Iyer</td><td><span class="pill ">TEACHER</span></td><td><span class="pill bad">SUSPENDED</span></td><td>2026-11-20T04:30:00Z</td><td>2026-11-20T04:30:00Z</td><td class="actions"><a href="#">Open</a></td></tr>
+</tbody>
+</table></div>
+<p class="muted small">Source: <code>GET /api/v1/tenant/users</code></p>
+<!-- GET /api/v1/tenant/users/{id} -->
+<h3>Details</h3>
+<dl class="details">
+<div><dt>User code</dt><dd>TU-001</dd></div>
+<div><dt>Email</dt><dd>asha.rao@example.com</dd></div>
+<div><dt>Phone</dt><dd>9811111121</dd></div>
+<div><dt>User type</dt><dd><span class="pill ">ADMIN</span></dd></div>
+<div><dt>Status</dt><dd><span class="pill ok">ACTIVE</span></dd></div>
+<div><dt>Created at</dt><dd>2026-11-22T04:30:00Z</dd></div>
+<div><dt>Updated at</dt><dd>2026-11-22T04:30:00Z</dd></div>
+<div><dt>Version</dt><dd>0</dd></div>
+</dl>
+<p class="muted small">Source: <code>GET /api/v1/tenant/users/{id}</code></p>
+<!-- POST /api/v1/tenant/users -->
+<details class="form"><summary>Create tenant operational user</summary>
+<form>
+<label>Email *<input type="email" name="email" value="asha.rao@example.com" required></label>
+<label>Phone<input type="tel" name="phone" value="9811111121"></label>
+<label>First name *<input type="text" name="firstName" value="Riya" required></label>
+<label>Last name<input type="text" name="lastName" value="Rao"></label>
+<label>User type<select name="userType"><option value="">Any</option><option>ADMIN</option><option>STAFF</option><option>TEACHER</option><option>STUDENT</option><option>PARENT</option></select></label>
+<label>Gender<input type="text" name="gender" value="FEMALE"></label>
+<label>Date of birth<input type="date" name="dateOfBirth" value="2012-05-14"></label>
+<label>Master user id<input type="text" name="masterUserId" value="b2934e43-87f6-3c3f-a59c-b663d7526b3f"></label>
+<label>Address line1<input type="text" name="addressLine1" value="12 MG Road"></label>
+<label>City<input type="text" name="city" value="Gurugram"></label>
+<label>State<input type="text" name="state" value="Haryana"></label>
+<label>Postal code<input type="text" name="postalCode" value="122003"></label>
+<div class="wide"><button type="button" class="btn primary">Save</button> <button type="reset" class="btn">Reset</button></div>
+</form>
+</details>
+<details class="endpoints"><summary>All endpoints of this section (6)</summary>
+<table>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/tenant/users</code></td><td>Create tenant operational user</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/tenant/users/{id}</code></td><td>Get tenant user by ID</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/tenant/users</code></td><td>List tenant users</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/tenant/users/{id}</code></td><td>Update tenant user</td></tr>
+<tr><td><span class="verb patch">PATCH</span></td><td><code>/api/v1/tenant/users/{id}/status</code></td><td>Update tenant user status</td></tr>
+<tr><td><span class="verb delete">DELETE</span></td><td><code>/api/v1/tenant/users/{id}</code></td><td>Soft delete tenant user</td></tr>
+</table>
+</details>
+</section>
+</main>
+</div>
+</body>
+</html>

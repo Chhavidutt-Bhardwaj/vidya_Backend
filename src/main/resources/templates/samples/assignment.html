@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<!--
+  Sample screen for: Class teachers & subject teachers
+  Plain HTML + CSS with static sample data generated from the API (APiReqDoc/samples/api/assignment/).
+  Each section names the endpoints that feed it. Rebuild it in the frontend framework; this file is not served by any controller.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Class teachers &amp; subject teachers</title>
+<link rel="stylesheet" href="samples.css">
+</head>
+<body>
+<header class="topbar"><a class="brand" href="index.html">Vidya</a><h1>Class teachers &amp; subject teachers</h1></header>
+<div class="layout">
+<nav class="side">
+<a href="security.html">Login, sessions, roles &amp; access</a>
+<a href="dashboard.html">Overview dashboard</a>
+<a href="student.html">Students (SIS, admission, enrolment, guardians)</a>
+<a href="staff.html">Staff &amp; HR set-up</a>
+<a href="user.html">School users &amp; accounts</a>
+<a href="academic.html">Academic years, classes, sections, set-up</a>
+<a href="subject.html">Subjects &amp; curriculum</a>
+<a href="assignment.html" class="on">Class teachers &amp; subject teachers</a>
+<a href="timetable.html">Timetable, bells, rooms, substitutions</a>
+<a href="calendar.html">Calendar &amp; holidays</a>
+<a href="attendance.html">Student attendance</a>
+<a href="examination.html">Exams, schedules, marks, grading</a>
+<a href="assessment.html">Assessments, question bank, report cards</a>
+<a href="fee.html">Fees &amp; finance (counter, online, auto-debit)</a>
+<a href="engagement.html">Communication, homework, daily report, parent portal</a>
+<a href="operations.html">Operations set-up (fees, attendance, transport, library)</a>
+<a href="readiness.html">School readiness</a>
+<a href="platform-school.html">Platform: schools &amp; campuses</a>
+<a href="platform-onboarding.html">Platform: onboarding</a>
+<a href="platform-workflow.html">Platform: onboarding workflow</a>
+<a href="platform-subscription.html">Platform: subscriptions &amp; plans</a>
+<a href="platform-payment.html">Platform: subscription payments</a>
+<a href="platform-community.html">Platform: communities (trusts / groups)</a>
+<a href="platform-hub.html">Platform: hub</a>
+<a href="platform-analytics.html">Platform: analytics</a>
+<a href="platform-support.html">Platform: support queries</a>
+</nav>
+<main>
+<div class="tabs"><a href="#ClassSubjectAssignmentController">Class Subject Assignments</a><a href="#ClassTeacherAssignmentController">Class Teacher Assignments</a><a href="#TeacherSubjectAssignmentController">Teacher Subject Assignments</a></div>
+
+<!-- ClassSubjectAssignmentController · samples/api/assignment/ClassSubjectAssignmentController.md -->
+<section class="card" id="ClassSubjectAssignmentController">
+<h2>Class Subject Assignments</h2>
+<p class="muted">Class-level subject academic deployment management for the active school tenant</p>
+<!-- GET /api/v1/tenant/class-subject-assignments -->
+<form class="filters">
+<label>Academic year id<input type="text" name="academicYearId" value="e007272e-5984-3753-9104-2d899e58fb35"></label>
+<label>Academic class id<input type="text" name="academicClassId" value="544208c0-8100-3d80-a220-cccbfc29768b"></label>
+<label>Section id<input type="text" name="sectionId" value="1c35581b-02b2-3f00-bdbc-29ea5acdbfba"></label>
+<label>Subject id<input type="text" name="subjectId" value="9802ac29-d6e2-3a81-b8c9-08ed66ecb32b"></label>
+<label>Status<select name="status"><option value="">Any</option><option>ACTIVE</option><option>INACTIVE</option><option>DELETED</option></select></label>
+<label class="check"><input type="checkbox" name="isCompulsory" checked> Is compulsory</label>
+<button type="button" class="btn primary">Apply</button>
+</form>
+<div class="scroll"><table>
+<thead><tr><th>Assignment code</th><th>Academic year code</th><th>Academic class code</th><th>Academic class name</th><th>Section code</th><th>Section name</th><th>Subject code</th><th>Subject name</th><th></th></tr></thead>
+<tbody>
+<tr><td>CSA-001</td><td>CSA-001</td><td>Class 9</td><td>Class 9</td><td>CSA-001</td><td>A</td><td>CSA-001</td><td>Mathematics</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>CSA-002</td><td>CSA-002</td><td>Class 4</td><td>Class 4</td><td>CSA-002</td><td>B</td><td>CSA-002</td><td>Science</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>CSA-003</td><td>CSA-003</td><td>Class 10</td><td>Class 10</td><td>CSA-003</td><td>C</td><td>CSA-003</td><td>English</td><td class="actions"><a href="#">Open</a></td></tr>
+</tbody>
+</table></div>
+<p class="muted small">Source: <code>GET /api/v1/tenant/class-subject-assignments</code></p>
+<!-- GET /api/v1/tenant/class-subject-assignments/{id} -->
+<h3>Details</h3>
+<dl class="details">
+<div><dt>Assignment code</dt><dd>CSA-001</dd></div>
+<div><dt>Academic year code</dt><dd>CSA-001</dd></div>
+<div><dt>Academic class code</dt><dd>Class 9</dd></div>
+<div><dt>Academic class name</dt><dd>Class 9</dd></div>
+<div><dt>Section code</dt><dd>CSA-001</dd></div>
+<div><dt>Section name</dt><dd>A</dd></div>
+<div><dt>Subject code</dt><dd>CSA-001</dd></div>
+<div><dt>Subject name</dt><dd>Mathematics</dd></div>
+<div><dt>Curriculum code</dt><dd>CSA-001</dd></div>
+<div><dt>Compulsory</dt><dd><span class="pill ok">Yes</span></dd></div>
+<div><dt>Display order</dt><dd>1</dd></div>
+<div><dt>Periods per week</dt><dd>1</dd></div>
+</dl>
+<p class="muted small">Source: <code>GET /api/v1/tenant/class-subject-assignments/{id}</code></p>
+<!-- POST /api/v1/tenant/class-subject-assignments -->
+<details class="form"><summary>Create class subject deployment</summary>
+<form>
+<label>Academic year id *<input type="text" name="academicYearId" value="e007272e-5984-3753-9104-2d899e58fb35" required></label>
+<label>Academic class id *<input type="text" name="academicClassId" value="544208c0-8100-3d80-a220-cccbfc29768b" required></label>
+<label>Section id<input type="text" name="sectionId" value="1c35581b-02b2-3f00-bdbc-29ea5acdbfba"></label>
+<label>Subject id *<input type="text" name="subjectId" value="9802ac29-d6e2-3a81-b8c9-08ed66ecb32b" required></label>
+<label>Curriculum id<input type="text" name="curriculumId" value="9f4d94db-9048-35c9-b7d8-c1aa06b5670b"></label>
+<label class="check"><input type="checkbox" name="isCompulsory" checked> Is compulsory</label>
+<label>Display order<input type="number" name="displayOrder" value="1"></label>
+<label>Periods per week<input type="number" name="periodsPerWeek" value="1"></label>
+<div class="wide"><button type="button" class="btn primary">Save</button> <button type="reset" class="btn">Reset</button></div>
+</form>
+</details>
+<details class="endpoints"><summary>All endpoints of this section (8)</summary>
+<table>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/tenant/class-subject-assignments</code></td><td>Create class subject deployment</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/tenant/class-subject-assignments</code></td><td>Search class subject deployments</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/tenant/class-subject-assignments/{id}</code></td><td>Get class subject assignment by ID</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/tenant/class-subject-assignments/code/{assignmentCode}</code></td><td>Get class subject assignment by code</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/tenant/class-subject-assignments/class/{academicClassId}</code></td><td>Get active subjects for class/section</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/tenant/class-subject-assignments/{id}</code></td><td>Update class subject assignment</td></tr>
+<tr><td><span class="verb patch">PATCH</span></td><td><code>/api/v1/tenant/class-subject-assignments/{id}/status</code></td><td>Update class subject assignment status</td></tr>
+<tr><td><span class="verb delete">DELETE</span></td><td><code>/api/v1/tenant/class-subject-assignments/{id}</code></td><td>Delete class subject assignment</td></tr>
+</table>
+</details>
+</section>
+
+<!-- ClassTeacherAssignmentController · samples/api/assignment/ClassTeacherAssignmentController.md -->
+<section class="card" id="ClassTeacherAssignmentController">
+<h2>Class Teacher Assignments</h2>
+<p class="muted">Class/Section Teacher designations for the active school tenant</p>
+<!-- GET /api/v1/tenant/class-teacher-assignments -->
+<form class="filters">
+<label>Staff id<input type="text" name="staffId" value="5780e798-8206-3fa4-b9f8-bf9069c45336"></label>
+<label>Academic year id<input type="text" name="academicYearId" value="e007272e-5984-3753-9104-2d899e58fb35"></label>
+<label>Academic class id<input type="text" name="academicClassId" value="544208c0-8100-3d80-a220-cccbfc29768b"></label>
+<label>Section id<input type="text" name="sectionId" value="1c35581b-02b2-3f00-bdbc-29ea5acdbfba"></label>
+<label>Status<select name="status"><option value="">Any</option><option>ACTIVE</option><option>INACTIVE</option><option>COMPLETED</option><option>CANCELLED</option><option>DELETED</option></select></label>
+<button type="button" class="btn primary">Apply</button>
+</form>
+<div class="scroll"><table>
+<thead><tr><th>Assignment code</th><th>Staff code</th><th>Staff name</th><th>Staff email</th><th>Academic year code</th><th>Academic class code</th><th>Academic class name</th><th>Section code</th><th></th></tr></thead>
+<tbody>
+<tr><td>CTA-001</td><td>EMP-42</td><td>Neha Sharma</td><td>asha.rao@example.com</td><td>CTA-001</td><td>Class 9</td><td>Class 9</td><td>CTA-001</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>CTA-002</td><td>EMP-43</td><td>Vikram Singh</td><td>rakesh.verma@example.com</td><td>CTA-002</td><td>Class 4</td><td>Class 4</td><td>CTA-002</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>CTA-003</td><td>EMP-44</td><td>Farah Khan</td><td>meena.iyer@example.com</td><td>CTA-003</td><td>Class 10</td><td>Class 10</td><td>CTA-003</td><td class="actions"><a href="#">Open</a></td></tr>
+</tbody>
+</table></div>
+<p class="muted small">Source: <code>GET /api/v1/tenant/class-teacher-assignments</code></p>
+<!-- GET /api/v1/tenant/class-teacher-assignments/{id} -->
+<h3>Details</h3>
+<dl class="details">
+<div><dt>Assignment code</dt><dd>CTA-001</dd></div>
+<div><dt>Staff code</dt><dd>EMP-42</dd></div>
+<div><dt>Staff name</dt><dd>Neha Sharma</dd></div>
+<div><dt>Staff email</dt><dd>asha.rao@example.com</dd></div>
+<div><dt>Academic year code</dt><dd>CTA-001</dd></div>
+<div><dt>Academic class code</dt><dd>Class 9</dd></div>
+<div><dt>Academic class name</dt><dd>Class 9</dd></div>
+<div><dt>Section code</dt><dd>CTA-001</dd></div>
+<div><dt>Section name</dt><dd>A</dd></div>
+<div><dt>Start date</dt><dd>2026-04-01</dd></div>
+<div><dt>End date</dt><dd>2027-03-31</dd></div>
+<div><dt>Notes</dt><dd>Parent informed on phone</dd></div>
+</dl>
+<p class="muted small">Source: <code>GET /api/v1/tenant/class-teacher-assignments/{id}</code></p>
+<!-- POST /api/v1/tenant/class-teacher-assignments -->
+<details class="form"><summary>Create class teacher assignment</summary>
+<form>
+<label>Staff id *<input type="text" name="staffId" value="5780e798-8206-3fa4-b9f8-bf9069c45336" required></label>
+<label>Academic year id *<input type="text" name="academicYearId" value="e007272e-5984-3753-9104-2d899e58fb35" required></label>
+<label>Academic class id *<input type="text" name="academicClassId" value="544208c0-8100-3d80-a220-cccbfc29768b" required></label>
+<label>Section id *<input type="text" name="sectionId" value="1c35581b-02b2-3f00-bdbc-29ea5acdbfba" required></label>
+<label>Start date<input type="date" name="startDate" value="2026-04-01"></label>
+<label class="wide">Notes<textarea name="notes" rows="2">Parent informed on phone</textarea></label>
+<div class="wide"><button type="button" class="btn primary">Save</button> <button type="reset" class="btn">Reset</button></div>
+</form>
+</details>
+<details class="endpoints"><summary>All endpoints of this section (12)</summary>
+<table>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/tenant/class-teacher-assignments</code></td><td>Create class teacher assignment</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/tenant/class-teacher-assignments</code></td><td>Search class teacher assignments</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/tenant/class-teacher-assignments/{id}</code></td><td>Get class teacher assignment by ID</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/tenant/class-teacher-assignments/code/{assignmentCode}</code></td><td>Get class teacher assignment by code</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/tenant/class-teacher-assignments/academic-year/{academicYearId}</code></td><td>Get class teacher assignments by academic year</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/tenant/class-teacher-assignments/section/{sectionId}</code></td><td>Get class teacher history for a section</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/tenant/class-teacher-assignments/section/{sectionId}/current</code></td><td>Get current class teacher for a section</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/tenant/class-teacher-assignments/staff/{staffId}</code></td><td>Get active class teacher assignments for a staff member</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/tenant/class-teacher-assignments/{id}</code></td><td>Update class teacher assignment</td></tr>
+<tr><td><span class="verb patch">PATCH</span></td><td><code>/api/v1/tenant/class-teacher-assignments/{id}/status</code></td><td>Update class teacher assignment status</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/tenant/class-teacher-assignments/{id}/replace</code></td><td>Replace class teacher</td></tr>
+<tr><td><span class="verb delete">DELETE</span></td><td><code>/api/v1/tenant/class-teacher-assignments/{id}</code></td><td>Delete class teacher assignment</td></tr>
+</table>
+</details>
+</section>
+
+<!-- TeacherSubjectAssignmentController · samples/api/assignment/TeacherSubjectAssignmentController.md -->
+<section class="card" id="TeacherSubjectAssignmentController">
+<h2>Teacher Subject Assignments</h2>
+<p class="muted">Teacher to Subject academic assignments for the active school tenant</p>
+<!-- GET /api/v1/tenant/teacher-assignments -->
+<form class="filters">
+<label>Teacher id<input type="text" name="teacherId" value="64150973-9b29-3d23-9f86-9620ae588407"></label>
+<label>Subject id<input type="text" name="subjectId" value="9802ac29-d6e2-3a81-b8c9-08ed66ecb32b"></label>
+<label>Academic year id<input type="text" name="academicYearId" value="e007272e-5984-3753-9104-2d899e58fb35"></label>
+<label>Academic class id<input type="text" name="academicClassId" value="544208c0-8100-3d80-a220-cccbfc29768b"></label>
+<label>Section id<input type="text" name="sectionId" value="1c35581b-02b2-3f00-bdbc-29ea5acdbfba"></label>
+<label>Status<select name="status"><option value="">Any</option><option>DRAFT</option><option>ACTIVE</option><option>INACTIVE</option><option>COMPLETED</option><option>CANCELLED</option><option>DELETED</option></select></label>
+<label class="check"><input type="checkbox" name="isPrimary" checked> Is primary</label>
+<button type="button" class="btn primary">Apply</button>
+</form>
+<div class="scroll"><table>
+<thead><tr><th>Assignment code</th><th>Teacher staff code</th><th>Teacher name</th><th>Teacher email</th><th>Subject code</th><th>Subject name</th><th>Academic year code</th><th>Academic class code</th><th></th></tr></thead>
+<tbody>
+<tr><td>TA-001</td><td>EMP-42</td><td>Neha Sharma</td><td>asha.rao@example.com</td><td>TA-001</td><td>Mathematics</td><td>TA-001</td><td>Class 9</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>TA-002</td><td>EMP-43</td><td>Vikram Singh</td><td>rakesh.verma@example.com</td><td>TA-002</td><td>Science</td><td>TA-002</td><td>Class 4</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>TA-003</td><td>EMP-44</td><td>Farah Khan</td><td>meena.iyer@example.com</td><td>TA-003</td><td>English</td><td>TA-003</td><td>Class 10</td><td class="actions"><a href="#">Open</a></td></tr>
+</tbody>
+</table></div>
+<p class="muted small">Source: <code>GET /api/v1/tenant/teacher-assignments</code></p>
+<!-- GET /api/v1/tenant/teacher-assignments/{id} -->
+<h3>Details</h3>
+<dl class="details">
+<div><dt>Assignment code</dt><dd>TA-001</dd></div>
+<div><dt>Teacher staff code</dt><dd>EMP-42</dd></div>
+<div><dt>Teacher name</dt><dd>Neha Sharma</dd></div>
+<div><dt>Teacher email</dt><dd>asha.rao@example.com</dd></div>
+<div><dt>Subject code</dt><dd>TA-001</dd></div>
+<div><dt>Subject name</dt><dd>Mathematics</dd></div>
+<div><dt>Academic year code</dt><dd>TA-001</dd></div>
+<div><dt>Academic class code</dt><dd>Class 9</dd></div>
+<div><dt>Academic class name</dt><dd>Class 9</dd></div>
+<div><dt>Section code</dt><dd>TA-001</dd></div>
+<div><dt>Section name</dt><dd>A</dd></div>
+<div><dt>Curriculum code</dt><dd>TA-001</dd></div>
+</dl>
+<p class="muted small">Source: <code>GET /api/v1/tenant/teacher-assignments/{id}</code></p>
+<!-- POST /api/v1/tenant/teacher-assignments -->
+<details class="form"><summary>Create teacher subject assignment</summary>
+<form>
+<label>Teacher id *<input type="text" name="teacherId" value="64150973-9b29-3d23-9f86-9620ae588407" required></label>
+<label>Subject id *<input type="text" name="subjectId" value="9802ac29-d6e2-3a81-b8c9-08ed66ecb32b" required></label>
+<label>Academic year id *<input type="text" name="academicYearId" value="e007272e-5984-3753-9104-2d899e58fb35" required></label>
+<label>Academic class id *<input type="text" name="academicClassId" value="544208c0-8100-3d80-a220-cccbfc29768b" required></label>
+<label>Section id<input type="text" name="sectionId" value="1c35581b-02b2-3f00-bdbc-29ea5acdbfba"></label>
+<label>Curriculum id<input type="text" name="curriculumId" value="9f4d94db-9048-35c9-b7d8-c1aa06b5670b"></label>
+<label class="check"><input type="checkbox" name="isPrimary" checked> Is primary</label>
+<label>Start date<input type="date" name="startDate" value="2026-04-01"></label>
+<label>End date<input type="date" name="endDate" value="2027-03-31"></label>
+<div class="wide"><button type="button" class="btn primary">Save</button> <button type="reset" class="btn">Reset</button></div>
+</form>
+</details>
+<details class="endpoints"><summary>All endpoints of this section (9)</summary>
+<table>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/tenant/teacher-assignments</code></td><td>Create teacher subject assignment</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/tenant/teacher-assignments</code></td><td>Search teacher assignments</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/tenant/teacher-assignments/{id}</code></td><td>Get teacher assignment by ID</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/tenant/teacher-assignments/code/{assignmentCode}</code></td><td>Get teacher assignment by code</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/tenant/teacher-assignments/teacher/{teacherId}</code></td><td>Get active assignments for teacher</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/tenant/teacher-assignments/class/{academicClassId}</code></td><td>Get active assignments for class/section</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/tenant/teacher-assignments/{id}</code></td><td>Update teacher assignment</td></tr>
+<tr><td><span class="verb patch">PATCH</span></td><td><code>/api/v1/tenant/teacher-assignments/{id}/status</code></td><td>Update teacher assignment status</td></tr>
+<tr><td><span class="verb delete">DELETE</span></td><td><code>/api/v1/tenant/teacher-assignments/{id}</code></td><td>Delete teacher assignment</td></tr>
+</table>
+</details>
+</section>
+</main>
+</div>
+</body>
+</html>

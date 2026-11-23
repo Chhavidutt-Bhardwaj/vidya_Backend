@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<!--
+  Sample screen for: Platform: support queries
+  Plain HTML + CSS with static sample data generated from the API (APiReqDoc/samples/api/platform-support/).
+  Each section names the endpoints that feed it. Rebuild it in the frontend framework; this file is not served by any controller.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Platform: support queries</title>
+<link rel="stylesheet" href="samples.css">
+</head>
+<body>
+<header class="topbar"><a class="brand" href="index.html">Vidya</a><h1>Platform: support queries</h1></header>
+<div class="layout">
+<nav class="side">
+<a href="security.html">Login, sessions, roles &amp; access</a>
+<a href="dashboard.html">Overview dashboard</a>
+<a href="student.html">Students (SIS, admission, enrolment, guardians)</a>
+<a href="staff.html">Staff &amp; HR set-up</a>
+<a href="user.html">School users &amp; accounts</a>
+<a href="academic.html">Academic years, classes, sections, set-up</a>
+<a href="subject.html">Subjects &amp; curriculum</a>
+<a href="assignment.html">Class teachers &amp; subject teachers</a>
+<a href="timetable.html">Timetable, bells, rooms, substitutions</a>
+<a href="calendar.html">Calendar &amp; holidays</a>
+<a href="attendance.html">Student attendance</a>
+<a href="examination.html">Exams, schedules, marks, grading</a>
+<a href="assessment.html">Assessments, question bank, report cards</a>
+<a href="fee.html">Fees &amp; finance (counter, online, auto-debit)</a>
+<a href="engagement.html">Communication, homework, daily report, parent portal</a>
+<a href="operations.html">Operations set-up (fees, attendance, transport, library)</a>
+<a href="readiness.html">School readiness</a>
+<a href="platform-school.html">Platform: schools &amp; campuses</a>
+<a href="platform-onboarding.html">Platform: onboarding</a>
+<a href="platform-workflow.html">Platform: onboarding workflow</a>
+<a href="platform-subscription.html">Platform: subscriptions &amp; plans</a>
+<a href="platform-payment.html">Platform: subscription payments</a>
+<a href="platform-community.html">Platform: communities (trusts / groups)</a>
+<a href="platform-hub.html">Platform: hub</a>
+<a href="platform-analytics.html">Platform: analytics</a>
+<a href="platform-support.html" class="on">Platform: support queries</a>
+</nav>
+<main>
+
+<!-- SchoolSupportQueryController · samples/api/platform-support/SchoolSupportQueryController.md -->
+<section class="card" id="SchoolSupportQueryController">
+<h2>School support query</h2>
+<!-- GET /api/v1/support/queries -->
+<form class="filters">
+<label>School id<input type="text" name="schoolId" value="70dd3554-14d7-307b-a7ef-28f0e36922b6"></label>
+<label>Community id<input type="text" name="communityId" value="fbfb45a2-817d-35df-8158-1b2b7b1daa95"></label>
+<label>Hub id<input type="text" name="hubId" value="423bbc48-2b4c-3e37-a474-3d5d18f62a44"></label>
+<label>Status<select name="status"><option value="">Any</option><option>OPEN</option><option>IN_PROGRESS</option><option>ESCALATED_TO_HUB</option><option>ESCALATED_TO_PLATFORM</option><option>RESOLVED</option><option>CLOSED</option><option>REJECTED</option></select></label>
+<label>Category<select name="category"><option value="">Any</option><option>SOFTWARE_BUG</option><option>PAYMENT_GATEWAY</option><option>BILLING_FEES</option><option>ONBOARDING</option><option>ACCOUNT_ACCESS</option><option>FEATURE_REQUEST</option><option>HARDWARE_IOT</option><option>OTHER</option></select></label>
+<label>Priority<select name="priority"><option value="">Any</option><option>LOW</option><option>MEDIUM</option><option>HIGH</option><option>CRITICAL</option></select></label>
+<label>Current level<select name="currentLevel"><option value="">Any</option><option>COMMUNITY_RM</option><option>HUB_MANAGER</option><option>PLATFORM_ADMIN</option></select></label>
+<button type="button" class="btn primary">Apply</button>
+</form>
+<div class="scroll"><table>
+<thead><tr><th>Ticket number</th><th>School name</th><th>School code</th><th>Assigned community name</th><th>Hub name</th><th>Hub state</th><th>Category</th><th>Priority</th><th></th></tr></thead>
+<tbody>
+<tr><td>REF-2026-0001</td><td>Vidya Global School</td><td>SQ-001</td><td>Unit 4: Fractions</td><td>Support query 1</td><td>Haryana</td><td><span class="pill ">SOFTWARE_BUG</span></td><td><span class="pill ">LOW</span></td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>REF-2026-0002</td><td>Vidya Global School</td><td>SQ-002</td><td>Unit 4: Fractions</td><td>Support query 2</td><td>Haryana</td><td><span class="pill ">PAYMENT_GATEWAY</span></td><td><span class="pill ">MEDIUM</span></td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>REF-2026-0003</td><td>Vidya Global School</td><td>SQ-003</td><td>Unit 4: Fractions</td><td>Support query 3</td><td>Haryana</td><td><span class="pill ">BILLING_FEES</span></td><td><span class="pill ">HIGH</span></td><td class="actions"><a href="#">Open</a></td></tr>
+</tbody>
+</table></div>
+<p class="muted small">Source: <code>GET /api/v1/support/queries</code></p>
+<!-- GET /api/v1/support/queries/{id} -->
+<h3>Details</h3>
+<dl class="details">
+<div><dt>Ticket number</dt><dd>REF-2026-0001</dd></div>
+<div><dt>School name</dt><dd>Vidya Global School</dd></div>
+<div><dt>School code</dt><dd>SQ-001</dd></div>
+<div><dt>Assigned community name</dt><dd>Unit 4: Fractions</dd></div>
+<div><dt>Hub name</dt><dd>Support query 1</dd></div>
+<div><dt>Hub state</dt><dd>Haryana</dd></div>
+<div><dt>Category</dt><dd><span class="pill ">SOFTWARE_BUG</span></dd></div>
+<div><dt>Priority</dt><dd><span class="pill ">LOW</span></dd></div>
+<div><dt>Status</dt><dd><span class="pill ">OPEN</span></dd></div>
+<div><dt>Current level</dt><dd><span class="pill ">COMMUNITY_RM</span></dd></div>
+<div><dt>Subject</dt><dd>Fee reminder for November</dd></div>
+<div><dt>Description</dt><dd>Support query for the 2026-27 session</dd></div>
+</dl>
+<p class="muted small">Source: <code>GET /api/v1/support/queries/{id}</code></p>
+<!-- POST /api/v1/support/queries -->
+<details class="form"><summary>Create query</summary>
+<form>
+<label>School id *<input type="text" name="schoolId" value="70dd3554-14d7-307b-a7ef-28f0e36922b6" required></label>
+<label>Category *<select name="category"><option>SOFTWARE_BUG</option><option>PAYMENT_GATEWAY</option><option>BILLING_FEES</option><option>ONBOARDING</option><option>ACCOUNT_ACCESS</option><option>FEATURE_REQUEST</option><option>HARDWARE_IOT</option><option>OTHER</option></select></label>
+<label>Priority<select name="priority"><option value="">Any</option><option>LOW</option><option>MEDIUM</option><option>HIGH</option><option>CRITICAL</option></select></label>
+<label>Subject *<input type="text" name="subject" value="Fee reminder for November" required></label>
+<label class="wide">Description *<textarea name="description" rows="2">Support query for the 2026-27 session</textarea></label>
+<div class="wide"><button type="button" class="btn primary">Save</button> <button type="reset" class="btn">Reset</button></div>
+</form>
+</details>
+<details class="endpoints"><summary>All endpoints of this section (8)</summary>
+<table>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/support/queries</code></td><td>Create query</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/support/queries/{id}</code></td><td>Get query by id</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/support/queries/ticket/{ticketNumber}</code></td><td>Get query by ticket number</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/support/queries</code></td><td>List queries</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/support/queries/{id}/escalate</code></td><td>Escalate query</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/support/queries/{id}/resolve</code></td><td>Resolve query</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/support/queries/{id}/comments</code></td><td>Add comment</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/support/queries/{id}/comments</code></td><td>Get comments</td></tr>
+</table>
+</details>
+</section>
+</main>
+</div>
+</body>
+</html>

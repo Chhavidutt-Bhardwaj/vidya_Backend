@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<!--
+  Sample screen for: Exams, schedules, marks, grading
+  Plain HTML + CSS with static sample data generated from the API (APiReqDoc/samples/api/examination/).
+  Each section names the endpoints that feed it. Rebuild it in the frontend framework; this file is not served by any controller.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Exams, schedules, marks, grading</title>
+<link rel="stylesheet" href="samples.css">
+</head>
+<body>
+<header class="topbar"><a class="brand" href="index.html">Vidya</a><h1>Exams, schedules, marks, grading</h1></header>
+<div class="layout">
+<nav class="side">
+<a href="security.html">Login, sessions, roles &amp; access</a>
+<a href="dashboard.html">Overview dashboard</a>
+<a href="student.html">Students (SIS, admission, enrolment, guardians)</a>
+<a href="staff.html">Staff &amp; HR set-up</a>
+<a href="user.html">School users &amp; accounts</a>
+<a href="academic.html">Academic years, classes, sections, set-up</a>
+<a href="subject.html">Subjects &amp; curriculum</a>
+<a href="assignment.html">Class teachers &amp; subject teachers</a>
+<a href="timetable.html">Timetable, bells, rooms, substitutions</a>
+<a href="calendar.html">Calendar &amp; holidays</a>
+<a href="attendance.html">Student attendance</a>
+<a href="examination.html" class="on">Exams, schedules, marks, grading</a>
+<a href="assessment.html">Assessments, question bank, report cards</a>
+<a href="fee.html">Fees &amp; finance (counter, online, auto-debit)</a>
+<a href="engagement.html">Communication, homework, daily report, parent portal</a>
+<a href="operations.html">Operations set-up (fees, attendance, transport, library)</a>
+<a href="readiness.html">School readiness</a>
+<a href="platform-school.html">Platform: schools &amp; campuses</a>
+<a href="platform-onboarding.html">Platform: onboarding</a>
+<a href="platform-workflow.html">Platform: onboarding workflow</a>
+<a href="platform-subscription.html">Platform: subscriptions &amp; plans</a>
+<a href="platform-payment.html">Platform: subscription payments</a>
+<a href="platform-community.html">Platform: communities (trusts / groups)</a>
+<a href="platform-hub.html">Platform: hub</a>
+<a href="platform-analytics.html">Platform: analytics</a>
+<a href="platform-support.html">Platform: support queries</a>
+</nav>
+<main>
+<div class="tabs"><a href="#ExamScheduleController">Exam Schedules</a><a href="#ExamTermController">Exam Terms</a><a href="#GradingScaleController">Grading Scales</a><a href="#StudentMarkController">Student Marks &amp; Evaluation</a></div>
+
+<!-- ExamScheduleController · samples/api/examination/ExamScheduleController.md -->
+<section class="card" id="ExamScheduleController">
+<h2>Exam Schedules</h2>
+<p class="muted">Class-level exam timetable schedules and subject date/marks configuration</p>
+<!-- GET /api/v1/exams/schedules -->
+<form class="filters">
+<label>Term id<input type="text" name="termId" value="ae88005d-90ef-314f-a4f1-fe569d56108e"></label>
+<label>Class id<input type="text" name="classId" value="252772cc-cb7b-3270-a6ca-44f70c0449d3"></label>
+<label>Status<select name="status"><option value="">Any</option><option>DRAFT</option><option>PUBLISHED</option><option>IN_PROGRESS</option><option>CONCLUDED</option><option>LOCKED</option><option>CANCELLED</option></select></label>
+<button type="button" class="btn primary">Apply</button>
+</form>
+<div class="scroll"><table>
+<thead><tr><th>Schedule code</th><th>Exam term name</th><th>Academic class name</th><th>Grading scale name</th><th>Name</th><th>Status</th><th>Created at</th><th>Updated at</th><th></th></tr></thead>
+<tbody>
+<tr><td>ES-001</td><td>Term 1</td><td>Class 9</td><td>Exam schedule 1</td><td>Exam schedule 1</td><td><span class="pill warn">DRAFT</span></td><td>2026-11-22T04:30:00Z</td><td>2026-11-22T04:30:00Z</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>ES-002</td><td>Term 1</td><td>Class 4</td><td>Exam schedule 2</td><td>Exam schedule 2</td><td><span class="pill ok">PUBLISHED</span></td><td>2026-11-21T04:30:00Z</td><td>2026-11-21T04:30:00Z</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>ES-003</td><td>Term 1</td><td>Class 10</td><td>Exam schedule 3</td><td>Exam schedule 3</td><td><span class="pill ">IN_PROGRESS</span></td><td>2026-11-20T04:30:00Z</td><td>2026-11-20T04:30:00Z</td><td class="actions"><a href="#">Open</a></td></tr>
+</tbody>
+</table></div>
+<p class="muted small">Source: <code>GET /api/v1/exams/schedules</code></p>
+<!-- GET /api/v1/exams/schedules/{id} -->
+<h3>Details</h3>
+<dl class="details">
+<div><dt>Schedule code</dt><dd>ES-001</dd></div>
+<div><dt>Exam term name</dt><dd>Term 1</dd></div>
+<div><dt>Academic class name</dt><dd>Class 9</dd></div>
+<div><dt>Grading scale name</dt><dd>Exam schedule 1</dd></div>
+<div><dt>Name</dt><dd>Exam schedule 1</dd></div>
+<div><dt>Status</dt><dd><span class="pill warn">DRAFT</span></dd></div>
+<div><dt>Created at</dt><dd>2026-11-22T04:30:00Z</dd></div>
+<div><dt>Updated at</dt><dd>2026-11-22T04:30:00Z</dd></div>
+</dl>
+<p class="muted small">Source: <code>GET /api/v1/exams/schedules/{id}</code></p>
+<!-- POST /api/v1/exams/schedules -->
+<details class="form"><summary>Create exam schedule for a class</summary>
+<form>
+<label>Exam term id *<input type="text" name="examTermId" value="23a4db43-c2de-3139-b32e-1d991aea45e7" required></label>
+<label>Academic class id *<input type="text" name="academicClassId" value="544208c0-8100-3d80-a220-cccbfc29768b" required></label>
+<label>Grading scale id<input type="text" name="gradingScaleId" value="6d4d6da2-cd1a-3605-ad12-072285de6934"></label>
+<label>Name *<input type="text" name="name" value="Exam schedule 1" required></label>
+<div class="wide"><button type="button" class="btn primary">Save</button> <button type="reset" class="btn">Reset</button></div>
+</form>
+</details>
+<details class="endpoints"><summary>All endpoints of this section (8)</summary>
+<table>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/exams/schedules</code></td><td>Create exam schedule for a class</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/exams/schedules/{id}</code></td><td>Get exam schedule by ID</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/exams/schedules</code></td><td>Search exam schedules with filters</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/exams/schedules/{id}/subjects</code></td><td>Add subject to exam schedule</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/exams/schedules/{id}/subjects</code></td><td>Get configured subjects for an exam schedule</td></tr>
+<tr><td><span class="verb delete">DELETE</span></td><td><code>/api/v1/exams/schedules/{id}/subjects/{subjectConfigId}</code></td><td>Remove subject from exam schedule</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/exams/schedules/{id}/publish</code></td><td>Publish exam schedule</td></tr>
+<tr><td><span class="verb delete">DELETE</span></td><td><code>/api/v1/exams/schedules/{id}</code></td><td>Soft delete exam schedule</td></tr>
+</table>
+</details>
+</section>
+
+<!-- ExamTermController · samples/api/examination/ExamTermController.md -->
+<section class="card" id="ExamTermController">
+<h2>Exam Terms</h2>
+<p class="muted">Management of examination terms and evaluation cycles</p>
+<!-- GET /api/v1/exams/terms -->
+<form class="filters">
+<label>Academic year id<input type="text" name="academicYearId" value="e007272e-5984-3753-9104-2d899e58fb35"></label>
+<label>Status<select name="status"><option value="">Any</option><option>PLANNED</option><option>SCHEDULED</option><option>IN_PROGRESS</option><option>EVALUATING</option><option>COMPLETED</option><option>CANCELLED</option></select></label>
+<button type="button" class="btn primary">Apply</button>
+</form>
+<div class="scroll"><table>
+<thead><tr><th>Term code</th><th>Academic year name</th><th>Name</th><th>Start date</th><th>End date</th><th>Weightage percentage</th><th>Status</th><th>Created at</th><th></th></tr></thead>
+<tbody>
+<tr><td>ET-001</td><td>2026-27</td><td>Exam term 1</td><td>2026-04-01</td><td>2027-03-31</td><td>85.5</td><td><span class="pill ">PLANNED</span></td><td>2026-11-22T04:30:00Z</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>ET-002</td><td>2026-27</td><td>Exam term 2</td><td>2026-04-01</td><td>2027-03-31</td><td>92.0</td><td><span class="pill warn">SCHEDULED</span></td><td>2026-11-21T04:30:00Z</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>ET-003</td><td>2026-27</td><td>Exam term 3</td><td>2026-04-01</td><td>2027-03-31</td><td>76.3</td><td><span class="pill ">IN_PROGRESS</span></td><td>2026-11-20T04:30:00Z</td><td class="actions"><a href="#">Open</a></td></tr>
+</tbody>
+</table></div>
+<p class="muted small">Source: <code>GET /api/v1/exams/terms</code></p>
+<!-- GET /api/v1/exams/terms/{id} -->
+<h3>Details</h3>
+<dl class="details">
+<div><dt>Term code</dt><dd>ET-001</dd></div>
+<div><dt>Academic year name</dt><dd>2026-27</dd></div>
+<div><dt>Name</dt><dd>Exam term 1</dd></div>
+<div><dt>Start date</dt><dd>2026-04-01</dd></div>
+<div><dt>End date</dt><dd>2027-03-31</dd></div>
+<div><dt>Weightage percentage</dt><dd>85.5</dd></div>
+<div><dt>Status</dt><dd><span class="pill ">PLANNED</span></dd></div>
+<div><dt>Created at</dt><dd>2026-11-22T04:30:00Z</dd></div>
+<div><dt>Updated at</dt><dd>2026-11-22T04:30:00Z</dd></div>
+</dl>
+<p class="muted small">Source: <code>GET /api/v1/exams/terms/{id}</code></p>
+<!-- POST /api/v1/exams/terms -->
+<details class="form"><summary>Create exam term</summary>
+<form>
+<label>Academic year id *<input type="text" name="academicYearId" value="e007272e-5984-3753-9104-2d899e58fb35" required></label>
+<label>Name *<input type="text" name="name" value="Exam term 1" required></label>
+<label>Start date *<input type="date" name="startDate" value="2026-04-01" required></label>
+<label>End date *<input type="date" name="endDate" value="2027-03-31" required></label>
+<label>Weightage percentage<input type="number" name="weightagePercentage" value="85.5"></label>
+<div class="wide"><button type="button" class="btn primary">Save</button> <button type="reset" class="btn">Reset</button></div>
+</form>
+</details>
+<details class="endpoints"><summary>All endpoints of this section (7)</summary>
+<table>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/exams/terms</code></td><td>Create exam term</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/exams/terms/{id}</code></td><td>Get exam term by ID</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/exams/terms/academic-year/{academicYearId}</code></td><td>List exam terms for an academic year</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/exams/terms</code></td><td>Search exam terms with pagination</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/exams/terms/{id}</code></td><td>Update exam term details</td></tr>
+<tr><td><span class="verb patch">PATCH</span></td><td><code>/api/v1/exams/terms/{id}/status</code></td><td>Update exam term lifecycle status</td></tr>
+<tr><td><span class="verb delete">DELETE</span></td><td><code>/api/v1/exams/terms/{id}</code></td><td>Soft delete exam term</td></tr>
+</table>
+</details>
+</section>
+
+<!-- GradingScaleController · samples/api/examination/GradingScaleController.md -->
+<section class="card" id="GradingScaleController">
+<h2>Grading Scales</h2>
+<p class="muted">Grading scales and tier configuration for school examinations</p>
+<!-- GET /api/v1/exams/grading-scales -->
+<div class="scroll"><table>
+<thead><tr><th>Scale code</th><th>Name</th><th>Description</th><th>Default</th><th>Created at</th><th>Updated at</th><th></th></tr></thead>
+<tbody>
+<tr><td>GS-001</td><td>Grading scale 1</td><td>Grading scale for the 2026-27 session</td><td><span class="pill ok">Yes</span></td><td>2026-11-22T04:30:00Z</td><td>2026-11-22T04:30:00Z</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>GS-002</td><td>Grading scale 2</td><td>Grading scale for the 2026-27 session</td><td><span class="pill ok">Yes</span></td><td>2026-11-21T04:30:00Z</td><td>2026-11-21T04:30:00Z</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>GS-003</td><td>Grading scale 3</td><td>Grading scale for the 2026-27 session</td><td><span class="pill">No</span></td><td>2026-11-20T04:30:00Z</td><td>2026-11-20T04:30:00Z</td><td class="actions"><a href="#">Open</a></td></tr>
+</tbody>
+</table></div>
+<p class="muted small">Source: <code>GET /api/v1/exams/grading-scales</code></p>
+<!-- GET /api/v1/exams/grading-scales/{id} -->
+<h3>Details</h3>
+<dl class="details">
+<div><dt>Scale code</dt><dd>GS-001</dd></div>
+<div><dt>Name</dt><dd>Grading scale 1</dd></div>
+<div><dt>Description</dt><dd>Grading scale for the 2026-27 session</dd></div>
+<div><dt>Default</dt><dd><span class="pill ok">Yes</span></dd></div>
+<div><dt>Created at</dt><dd>2026-11-22T04:30:00Z</dd></div>
+<div><dt>Updated at</dt><dd>2026-11-22T04:30:00Z</dd></div>
+</dl>
+<p class="muted small">Source: <code>GET /api/v1/exams/grading-scales/{id}</code></p>
+<!-- POST /api/v1/exams/grading-scales -->
+<details class="form"><summary>Create grading scale</summary>
+<form>
+<label>Name *<input type="text" name="name" value="Grading scale 1" required></label>
+<label class="wide">Description<textarea name="description" rows="2">Grading scale for the 2026-27 session</textarea></label>
+<label class="check"><input type="checkbox" name="default" checked> Default</label>
+<label class="wide">Tiers *<span class="muted small">array of object GradingScaleTierDto (see the API file)</span></label>
+<div class="wide"><button type="button" class="btn primary">Save</button> <button type="reset" class="btn">Reset</button></div>
+</form>
+</details>
+<details class="endpoints"><summary>All endpoints of this section (10)</summary>
+<table>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/exams/grading-scales/presets</code></td><td>Ready-made grading scales</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/exams/grading-scales/presets/{key}</code></td><td>Create a grading scale from a preset</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/exams/grading-scales/{id}</code></td><td>Update a grading scale</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/exams/grading-scales/effective</code></td><td>Scale that will grade a class or exam schedule</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/exams/grading-scales</code></td><td>Create grading scale</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/exams/grading-scales/{id}</code></td><td>Get grading scale by ID</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/exams/grading-scales/default</code></td><td>Get default active grading scale</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/exams/grading-scales</code></td><td>List all grading scales with pagination</td></tr>
+<tr><td><span class="verb patch">PATCH</span></td><td><code>/api/v1/exams/grading-scales/{id}/default</code></td><td>Set grading scale as school default</td></tr>
+<tr><td><span class="verb delete">DELETE</span></td><td><code>/api/v1/exams/grading-scales/{id}</code></td><td>Delete grading scale</td></tr>
+</table>
+</details>
+</section>
+
+<!-- StudentMarkController · samples/api/examination/StudentMarkController.md -->
+<section class="card" id="StudentMarkController">
+<h2>Student Marks &amp; Evaluation</h2>
+<p class="muted">Student examination marks entry, automated grading, and marks verification</p>
+<!-- GET /api/v1/exams/marks/student/{studentId} -->
+<div class="scroll"><table>
+<thead><tr><th>Entry code</th><th>Subject name</th><th>Subject code</th><th>Student name</th><th>Admission number</th><th>Marks obtained</th><th>Max marks</th><th>Theory marks obtained</th><th></th></tr></thead>
+<tbody>
+<tr><td>SM-001</td><td>Mathematics</td><td>SM-001</td><td>Riya Rao</td><td>VGS/2019/101</td><td>78.5</td><td>78.5</td><td>78.5</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>SM-002</td><td>Science</td><td>SM-002</td><td>Aman Verma</td><td>VGS/2019/102</td><td>64.0</td><td>64.0</td><td>64.0</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>SM-003</td><td>English</td><td>SM-003</td><td>Kavya Iyer</td><td>VGS/2019/103</td><td>91.0</td><td>91.0</td><td>91.0</td><td class="actions"><a href="#">Open</a></td></tr>
+</tbody>
+</table></div>
+<p class="muted small">Source: <code>GET /api/v1/exams/marks/student/{studentId}</code></p>
+<!-- GET /api/v1/exams/marks/{id} -->
+<h3>Details</h3>
+<dl class="details">
+<div><dt>Entry code</dt><dd>SM-001</dd></div>
+<div><dt>Subject name</dt><dd>Mathematics</dd></div>
+<div><dt>Subject code</dt><dd>SM-001</dd></div>
+<div><dt>Student name</dt><dd>Riya Rao</dd></div>
+<div><dt>Admission number</dt><dd>VGS/2019/101</dd></div>
+<div><dt>Marks obtained</dt><dd>78.5</dd></div>
+<div><dt>Max marks</dt><dd>78.5</dd></div>
+<div><dt>Theory marks obtained</dt><dd>78.5</dd></div>
+<div><dt>Practical marks obtained</dt><dd>78.5</dd></div>
+<div><dt>Percentage</dt><dd>85.5</dd></div>
+<div><dt>Grade</dt><dd>A1</dd></div>
+<div><dt>Grade point</dt><dd>10.5</dd></div>
+</dl>
+<p class="muted small">Source: <code>GET /api/v1/exams/marks/{id}</code></p>
+<!-- POST /api/v1/exams/marks/bulk -->
+<details class="form"><summary>Bulk submit marks for a subject</summary>
+<form>
+<label>Exam subject config id *<input type="text" name="examSubjectConfigId" value="cb2dada2-e1c0-326e-852d-6e1124c53715" required></label>
+<label class="wide">Entries *<span class="muted small">array of object SubmitStudentMarkRequest (see the API file)</span></label>
+<div class="wide"><button type="button" class="btn primary">Save</button> <button type="reset" class="btn">Reset</button></div>
+</form>
+</details>
+<details class="endpoints"><summary>All endpoints of this section (6)</summary>
+<table>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/exams/marks/subject-config/{configId}</code></td><td>Submit mark for student</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/exams/marks/bulk</code></td><td>Bulk submit marks for a subject</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/exams/marks/{id}</code></td><td>Get student mark entry by ID</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/exams/marks/subject-config/{configId}</code></td><td>Search marks for an exam subject with pagination</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/exams/marks/student/{studentId}</code></td><td>Get all exam marks for a student</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/exams/marks/subject-config/{configId}/lock</code></td><td>Lock marks for subject</td></tr>
+</table>
+</details>
+</section>
+</main>
+</div>
+</body>
+</html>

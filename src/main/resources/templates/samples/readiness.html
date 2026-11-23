@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<!--
+  Sample screen for: School readiness
+  Plain HTML + CSS with static sample data generated from the API (APiReqDoc/samples/api/readiness/).
+  Each section names the endpoints that feed it. Rebuild it in the frontend framework; this file is not served by any controller.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>School readiness</title>
+<link rel="stylesheet" href="samples.css">
+</head>
+<body>
+<header class="topbar"><a class="brand" href="index.html">Vidya</a><h1>School readiness</h1></header>
+<div class="layout">
+<nav class="side">
+<a href="security.html">Login, sessions, roles &amp; access</a>
+<a href="dashboard.html">Overview dashboard</a>
+<a href="student.html">Students (SIS, admission, enrolment, guardians)</a>
+<a href="staff.html">Staff &amp; HR set-up</a>
+<a href="user.html">School users &amp; accounts</a>
+<a href="academic.html">Academic years, classes, sections, set-up</a>
+<a href="subject.html">Subjects &amp; curriculum</a>
+<a href="assignment.html">Class teachers &amp; subject teachers</a>
+<a href="timetable.html">Timetable, bells, rooms, substitutions</a>
+<a href="calendar.html">Calendar &amp; holidays</a>
+<a href="attendance.html">Student attendance</a>
+<a href="examination.html">Exams, schedules, marks, grading</a>
+<a href="assessment.html">Assessments, question bank, report cards</a>
+<a href="fee.html">Fees &amp; finance (counter, online, auto-debit)</a>
+<a href="engagement.html">Communication, homework, daily report, parent portal</a>
+<a href="operations.html">Operations set-up (fees, attendance, transport, library)</a>
+<a href="readiness.html" class="on">School readiness</a>
+<a href="platform-school.html">Platform: schools &amp; campuses</a>
+<a href="platform-onboarding.html">Platform: onboarding</a>
+<a href="platform-workflow.html">Platform: onboarding workflow</a>
+<a href="platform-subscription.html">Platform: subscriptions &amp; plans</a>
+<a href="platform-payment.html">Platform: subscription payments</a>
+<a href="platform-community.html">Platform: communities (trusts / groups)</a>
+<a href="platform-hub.html">Platform: hub</a>
+<a href="platform-analytics.html">Platform: analytics</a>
+<a href="platform-support.html">Platform: support queries</a>
+</nav>
+<main>
+
+<!-- ReadinessController · samples/api/readiness/ReadinessController.md -->
+<section class="card" id="ReadinessController">
+<h2>Validation &amp; Readiness</h2>
+<p class="muted">Configuration checks, conflicts, missing data and pending approvals for an academic year</p>
+<!-- GET /api/v1/academic-years/{id}/readiness -->
+<h3>Details</h3>
+<dl class="details">
+<div><dt>Code</dt><dd>RR-001</dd></div>
+<div><dt>Name</dt><dd>Readiness report 1</dd></div>
+<div><dt>Status</dt><dd><span class="pill warn">DRAFT</span></dd></div>
+<div><dt>Current</dt><dd><span class="pill ok">Yes</span></dd></div>
+<div><dt>Verdict</dt><dd><span class="pill ">READY</span></dd></div>
+<div><dt>Ready to go live</dt><dd><span class="pill ok">Yes</span></dd></div>
+<div><dt>Percent complete</dt><dd>1</dd></div>
+<div><dt>Checked at</dt><dd>2026-11-22T04:30:00Z</dd></div>
+</dl>
+<p class="muted small">Source: <code>GET /api/v1/academic-years/{id}/readiness</code></p>
+<details class="endpoints"><summary>All endpoints of this section (1)</summary>
+<table>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/academic-years/{id}/readiness</code></td><td>Is the year ready to go live?</td></tr>
+</table>
+</details>
+</section>
+</main>
+</div>
+</body>
+</html>

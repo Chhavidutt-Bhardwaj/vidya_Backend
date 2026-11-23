@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<!--
+  Sample screen for: Calendar & holidays
+  Plain HTML + CSS with static sample data generated from the API (APiReqDoc/samples/api/calendar/).
+  Each section names the endpoints that feed it. Rebuild it in the frontend framework; this file is not served by any controller.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calendar &amp; holidays</title>
+<link rel="stylesheet" href="samples.css">
+</head>
+<body>
+<header class="topbar"><a class="brand" href="index.html">Vidya</a><h1>Calendar &amp; holidays</h1></header>
+<div class="layout">
+<nav class="side">
+<a href="security.html">Login, sessions, roles &amp; access</a>
+<a href="dashboard.html">Overview dashboard</a>
+<a href="student.html">Students (SIS, admission, enrolment, guardians)</a>
+<a href="staff.html">Staff &amp; HR set-up</a>
+<a href="user.html">School users &amp; accounts</a>
+<a href="academic.html">Academic years, classes, sections, set-up</a>
+<a href="subject.html">Subjects &amp; curriculum</a>
+<a href="assignment.html">Class teachers &amp; subject teachers</a>
+<a href="timetable.html">Timetable, bells, rooms, substitutions</a>
+<a href="calendar.html" class="on">Calendar &amp; holidays</a>
+<a href="attendance.html">Student attendance</a>
+<a href="examination.html">Exams, schedules, marks, grading</a>
+<a href="assessment.html">Assessments, question bank, report cards</a>
+<a href="fee.html">Fees &amp; finance (counter, online, auto-debit)</a>
+<a href="engagement.html">Communication, homework, daily report, parent portal</a>
+<a href="operations.html">Operations set-up (fees, attendance, transport, library)</a>
+<a href="readiness.html">School readiness</a>
+<a href="platform-school.html">Platform: schools &amp; campuses</a>
+<a href="platform-onboarding.html">Platform: onboarding</a>
+<a href="platform-workflow.html">Platform: onboarding workflow</a>
+<a href="platform-subscription.html">Platform: subscriptions &amp; plans</a>
+<a href="platform-payment.html">Platform: subscription payments</a>
+<a href="platform-community.html">Platform: communities (trusts / groups)</a>
+<a href="platform-hub.html">Platform: hub</a>
+<a href="platform-analytics.html">Platform: analytics</a>
+<a href="platform-support.html">Platform: support queries</a>
+</nav>
+<main>
+<div class="tabs"><a href="#CalendarController">Academic Calendar</a><a href="#HolidayController">School Holidays</a></div>
+
+<!-- CalendarController · samples/api/calendar/CalendarController.md -->
+<section class="card" id="CalendarController">
+<h2>Academic Calendar</h2>
+<p class="muted">Endpoints for academic calendar and working day configuration</p>
+<!-- GET /api/v1/calendar/days -->
+<form class="filters">
+<label>From<input type="date" name="from" value="2026-04-01"></label>
+<label>To<input type="date" name="to" value="2027-03-31"></label>
+<button type="button" class="btn primary">Apply</button>
+</form>
+<div class="scroll"><table>
+<thead><tr><th>Date</th><th>Day of week</th><th>Status</th><th>Holiday name</th><th>Holiday type</th><th></th></tr></thead>
+<tbody>
+<tr><td>2026-11-22</td><td><span class="pill ">MONDAY</span></td><td><span class="pill ">WORKING</span></td><td>Day status 1</td><td><span class="pill ">PUBLIC_HOLIDAY</span></td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>2026-11-21</td><td><span class="pill ">TUESDAY</span></td><td><span class="pill ">WEEKLY_OFF</span></td><td>Day status 2</td><td><span class="pill ">SCHOOL_HOLIDAY</span></td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>2026-11-20</td><td><span class="pill ">WEDNESDAY</span></td><td><span class="pill ">HOLIDAY</span></td><td>Day status 3</td><td><span class="pill ">VACATION</span></td><td class="actions"><a href="#">Open</a></td></tr>
+</tbody>
+</table></div>
+<p class="muted small">Source: <code>GET /api/v1/calendar/days</code></p>
+<details class="endpoints"><summary>All endpoints of this section (4)</summary>
+<table>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/calendar/config</code></td><td>Get working day config</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/calendar/config</code></td><td>Update working day config</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/calendar/days</code></td><td>Get per-date calendar status</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/calendar/working-days/count</code></td><td>Count working days in range</td></tr>
+</table>
+</details>
+</section>
+
+<!-- HolidayController · samples/api/calendar/HolidayController.md -->
+<section class="card" id="HolidayController">
+<h2>School Holidays</h2>
+<p class="muted">Endpoints for managing school holidays and academic breaks</p>
+<!-- GET /api/v1/holidays -->
+<form class="filters">
+<label>Academic year id<input type="text" name="academicYearId" value="e007272e-5984-3753-9104-2d899e58fb35"></label>
+<label>Type<select name="type"><option value="">Any</option><option>PUBLIC_HOLIDAY</option><option>SCHOOL_HOLIDAY</option><option>VACATION</option><option>EXAM_BREAK</option></select></label>
+<label>Date from<input type="date" name="dateFrom" value="2026-11-22"></label>
+<label>Date to<input type="date" name="dateTo" value="2026-11-22"></label>
+<button type="button" class="btn primary">Apply</button>
+</form>
+<div class="scroll"><table>
+<thead><tr><th>Holiday code</th><th>Academic year name</th><th>Name</th><th>Holiday type</th><th>Start date</th><th>End date</th><th>Description</th><th></th></tr></thead>
+<tbody>
+<tr><td>H-001</td><td>2026-27</td><td>Holiday 1</td><td><span class="pill ">PUBLIC_HOLIDAY</span></td><td>2026-04-01</td><td>2027-03-31</td><td>Holiday for the 2026-27 session</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>H-002</td><td>2026-27</td><td>Holiday 2</td><td><span class="pill ">SCHOOL_HOLIDAY</span></td><td>2026-04-01</td><td>2027-03-31</td><td>Holiday for the 2026-27 session</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>H-003</td><td>2026-27</td><td>Holiday 3</td><td><span class="pill ">VACATION</span></td><td>2026-04-01</td><td>2027-03-31</td><td>Holiday for the 2026-27 session</td><td class="actions"><a href="#">Open</a></td></tr>
+</tbody>
+</table></div>
+<p class="muted small">Source: <code>GET /api/v1/holidays</code></p>
+<!-- GET /api/v1/holidays/{id} -->
+<h3>Details</h3>
+<dl class="details">
+<div><dt>Holiday code</dt><dd>H-001</dd></div>
+<div><dt>Academic year name</dt><dd>2026-27</dd></div>
+<div><dt>Name</dt><dd>Holiday 1</dd></div>
+<div><dt>Holiday type</dt><dd><span class="pill ">PUBLIC_HOLIDAY</span></dd></div>
+<div><dt>Start date</dt><dd>2026-04-01</dd></div>
+<div><dt>End date</dt><dd>2027-03-31</dd></div>
+<div><dt>Description</dt><dd>Holiday for the 2026-27 session</dd></div>
+</dl>
+<p class="muted small">Source: <code>GET /api/v1/holidays/{id}</code></p>
+<!-- POST /api/v1/holidays -->
+<details class="form"><summary>Create holiday</summary>
+<form>
+<label>Academic year id *<input type="text" name="academicYearId" value="e007272e-5984-3753-9104-2d899e58fb35" required></label>
+<label>Name *<input type="text" name="name" value="Holiday 1" required></label>
+<label>Holiday type *<select name="holidayType"><option>PUBLIC_HOLIDAY</option><option>SCHOOL_HOLIDAY</option><option>VACATION</option><option>EXAM_BREAK</option></select></label>
+<label>Start date *<input type="date" name="startDate" value="2026-04-01" required></label>
+<label>End date *<input type="date" name="endDate" value="2027-03-31" required></label>
+<label class="wide">Description<textarea name="description" rows="2">Holiday for the 2026-27 session</textarea></label>
+<div class="wide"><button type="button" class="btn primary">Save</button> <button type="reset" class="btn">Reset</button></div>
+</form>
+</details>
+<details class="endpoints"><summary>All endpoints of this section (5)</summary>
+<table>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/holidays</code></td><td>Create holiday</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/holidays/{id}</code></td><td>Get holiday by ID</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/holidays</code></td><td>Search holidays</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/holidays/{id}</code></td><td>Update holiday</td></tr>
+<tr><td><span class="verb delete">DELETE</span></td><td><code>/api/v1/holidays/{id}</code></td><td>Delete holiday</td></tr>
+</table>
+</details>
+</section>
+</main>
+</div>
+</body>
+</html>

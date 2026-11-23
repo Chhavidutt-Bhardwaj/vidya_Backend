@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<!--
+  Sample screen for: Login, sessions, roles & access
+  Plain HTML + CSS with static sample data generated from the API (APiReqDoc/samples/api/security/).
+  Each section names the endpoints that feed it. Rebuild it in the frontend framework; this file is not served by any controller.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login, sessions, roles &amp; access</title>
+<link rel="stylesheet" href="samples.css">
+</head>
+<body>
+<header class="topbar"><a class="brand" href="index.html">Vidya</a><h1>Login, sessions, roles &amp; access</h1></header>
+<div class="layout">
+<nav class="side">
+<a href="security.html" class="on">Login, sessions, roles &amp; access</a>
+<a href="dashboard.html">Overview dashboard</a>
+<a href="student.html">Students (SIS, admission, enrolment, guardians)</a>
+<a href="staff.html">Staff &amp; HR set-up</a>
+<a href="user.html">School users &amp; accounts</a>
+<a href="academic.html">Academic years, classes, sections, set-up</a>
+<a href="subject.html">Subjects &amp; curriculum</a>
+<a href="assignment.html">Class teachers &amp; subject teachers</a>
+<a href="timetable.html">Timetable, bells, rooms, substitutions</a>
+<a href="calendar.html">Calendar &amp; holidays</a>
+<a href="attendance.html">Student attendance</a>
+<a href="examination.html">Exams, schedules, marks, grading</a>
+<a href="assessment.html">Assessments, question bank, report cards</a>
+<a href="fee.html">Fees &amp; finance (counter, online, auto-debit)</a>
+<a href="engagement.html">Communication, homework, daily report, parent portal</a>
+<a href="operations.html">Operations set-up (fees, attendance, transport, library)</a>
+<a href="readiness.html">School readiness</a>
+<a href="platform-school.html">Platform: schools &amp; campuses</a>
+<a href="platform-onboarding.html">Platform: onboarding</a>
+<a href="platform-workflow.html">Platform: onboarding workflow</a>
+<a href="platform-subscription.html">Platform: subscriptions &amp; plans</a>
+<a href="platform-payment.html">Platform: subscription payments</a>
+<a href="platform-community.html">Platform: communities (trusts / groups)</a>
+<a href="platform-hub.html">Platform: hub</a>
+<a href="platform-analytics.html">Platform: analytics</a>
+<a href="platform-support.html">Platform: support queries</a>
+</nav>
+<main>
+<div class="tabs"><a href="#AccessControlAdminController">Access Control (Platform)</a><a href="#AuthController">Authentication</a><a href="#SchoolAccessControlController">Access Control (School)</a><a href="#SessionController">Sessions &amp; Login History</a></div>
+
+<!-- AccessControlAdminController · samples/api/security/AccessControlAdminController.md -->
+<section class="card" id="AccessControlAdminController">
+<h2>Access Control (Platform)</h2>
+<p class="muted">DB-driven roles, permissions and user role assignments</p>
+<!-- GET /api/v1/admin/access/roles -->
+<form class="filters">
+<label class="check"><input type="checkbox" name="includePermissions" checked> Include permissions</label>
+<button type="button" class="btn primary">Apply</button>
+</form>
+<div class="scroll"><table>
+<thead><tr><th>Code</th><th>Name</th><th>Description</th><th>Scope</th><th>System</th><th>Grants all permissions</th><th>Active</th><th>Updated at</th><th></th></tr></thead>
+<tbody>
+<tr><td>R-001</td><td>Role 1</td><td>Role for the 2026-27 session</td><td><span class="pill ">PLATFORM</span></td><td><span class="pill ok">Yes</span></td><td><span class="pill ok">Yes</span></td><td><span class="pill ok">Yes</span></td><td>2026-11-22T04:30:00Z</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>R-002</td><td>Role 2</td><td>Role for the 2026-27 session</td><td><span class="pill ">SCHOOL</span></td><td><span class="pill ok">Yes</span></td><td><span class="pill ok">Yes</span></td><td><span class="pill ok">Yes</span></td><td>2026-11-21T04:30:00Z</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>R-003</td><td>Role 3</td><td>Role for the 2026-27 session</td><td><span class="pill ">SCHOOL_PORTAL</span></td><td><span class="pill">No</span></td><td><span class="pill">No</span></td><td><span class="pill">No</span></td><td>2026-11-20T04:30:00Z</td><td class="actions"><a href="#">Open</a></td></tr>
+</tbody>
+</table></div>
+<p class="muted small">Source: <code>GET /api/v1/admin/access/roles</code></p>
+<!-- GET /api/v1/admin/access/roles/{roleId} -->
+<h3>Details</h3>
+<dl class="details">
+<div><dt>Code</dt><dd>R-001</dd></div>
+<div><dt>Name</dt><dd>Role 1</dd></div>
+<div><dt>Description</dt><dd>Role for the 2026-27 session</dd></div>
+<div><dt>Scope</dt><dd><span class="pill ">PLATFORM</span></dd></div>
+<div><dt>System</dt><dd><span class="pill ok">Yes</span></dd></div>
+<div><dt>Grants all permissions</dt><dd><span class="pill ok">Yes</span></dd></div>
+<div><dt>Active</dt><dd><span class="pill ok">Yes</span></dd></div>
+<div><dt>Updated at</dt><dd>2026-11-22T04:30:00Z</dd></div>
+</dl>
+<p class="muted small">Source: <code>GET /api/v1/admin/access/roles/{roleId}</code></p>
+<!-- POST /api/v1/admin/access/roles -->
+<details class="form"><summary>Create a global role (scope PLATFORM, SCHOOL, SCHOOL_PORTAL or COMMUNITY)</summary>
+<form>
+<label>Code<input type="text" name="code" value="R-001"></label>
+<label>Name *<input type="text" name="name" value="Role 1" required></label>
+<label class="wide">Description<textarea name="description" rows="2">Role for the 2026-27 session</textarea></label>
+<label>Scope<select name="scope"><option value="">Any</option><option>PLATFORM</option><option>SCHOOL</option><option>SCHOOL_PORTAL</option><option>COMMUNITY</option></select></label>
+<label class="check"><input type="checkbox" name="active" checked> Active</label>
+<label class="wide">Permission codes<span class="muted small">array of string (see the API file)</span></label>
+<div class="wide"><button type="button" class="btn primary">Save</button> <button type="reset" class="btn">Reset</button></div>
+</form>
+</details>
+<details class="endpoints"><summary>All endpoints of this section (19)</summary>
+<table>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/admin/access/permissions</code></td><td>List the permission catalog</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/admin/access/permissions</code></td><td>Create a permission (then reference it in @PreAuthorize or grant it to roles)</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/admin/access/permissions/{permissionId}</code></td><td>Update a permission (name, module, scope, feature gate, active)</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/admin/access/roles</code></td><td>List all roles (global and school custom)</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/admin/access/roles/{roleId}</code></td><td>Get role</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/admin/access/roles</code></td><td>Create a global role (scope PLATFORM, SCHOOL, SCHOOL_PORTAL or COMMUNITY)</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/admin/access/roles/{roleId}</code></td><td>Update role</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/admin/access/roles/{roleId}/permissions</code></td><td>Replace a role's permissions</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/admin/access/roles/{roleId}/permissions</code></td><td>Add permissions to a role</td></tr>
+<tr><td><span class="verb delete">DELETE</span></td><td><code>/api/v1/admin/access/roles/{roleId}/permissions/{permissionCode}</code></td><td>Remove role permission</td></tr>
+<tr><td><span class="verb delete">DELETE</span></td><td><code>/api/v1/admin/access/roles/{roleId}</code></td><td>Delete a non-system role (removes its assignments)</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/admin/access/users/{userId}/roles</code></td><td>List user roles</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/admin/access/users/{userId}/roles</code></td><td>Assign a role to a user (optionally time-boxed)</td></tr>
+<tr><td><span class="verb delete">DELETE</span></td><td><code>/api/v1/admin/access/users/{userId}/roles/{assignmentId}</code></td><td>Remove assignment</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/admin/access/users/{userId}/permission-overrides</code></td><td>List overrides</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/admin/access/users/{userId}/permission-overrides</code></td><td>Grant or deny one permission for one user, regardless of roles</td></tr>
+<tr><td><span class="verb delete">DELETE</span></td><td><code>/api/v1/admin/access/users/{userId}/permission-overrides/{overrideId}</code></td><td>Delete override</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/admin/access/users/{userId}/effective-access</code></td><td>What the user can do right now (roles, permissions after overrides and feature gating)</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/admin/access/cache/evict</code></td><td>Apply direct DB edits immediately on this instance (otherwise they apply within the cache TTL)</td></tr>
+</table>
+</details>
+</section>
+
+<!-- AuthController · samples/api/security/AuthController.md -->
+<section class="card" id="AuthController">
+<h2>Authentication</h2>
+<p class="muted">Platform authentication and session management APIs</p>
+<!-- POST /api/v1/auth/login -->
+<details class="form"><summary>Authenticate platform user and issue JWT tokens</summary>
+<form>
+<label>Email *<input type="email" name="email" value="asha.rao@example.com" required></label>
+<label>Password *<input type="text" name="password" value="Str0ng!Pass2026" required></label>
+<div class="wide"><button type="button" class="btn primary">Save</button> <button type="reset" class="btn">Reset</button></div>
+</form>
+</details>
+<details class="endpoints"><summary>All endpoints of this section (5)</summary>
+<table>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/auth/login</code></td><td>Authenticate platform user and issue JWT tokens</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/auth/refresh</code></td><td>Refresh JWT access token using a valid refresh token</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/auth/logout</code></td><td>Revoke refresh token and logout the user session</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/auth/logout-all</code></td><td>Log out of every device: ends all sessions of the current user</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/auth/me</code></td><td>Get current authenticated platform user details</td></tr>
+</table>
+</details>
+</section>
+
+<!-- SchoolAccessControlController · samples/api/security/SchoolAccessControlController.md -->
+<section class="card" id="SchoolAccessControlController">
+<h2>Access Control (School)</h2>
+<p class="muted">School custom roles and staff role assignments</p>
+<!-- GET /api/v1/schools/{schoolId}/access/roles -->
+<div class="scroll"><table>
+<thead><tr><th>Code</th><th>Name</th><th>Description</th><th>Scope</th><th>System</th><th>Grants all permissions</th><th>Active</th><th>Updated at</th><th></th></tr></thead>
+<tbody>
+<tr><td>R-001</td><td>Role 1</td><td>Role for the 2026-27 session</td><td><span class="pill ">PLATFORM</span></td><td><span class="pill ok">Yes</span></td><td><span class="pill ok">Yes</span></td><td><span class="pill ok">Yes</span></td><td>2026-11-22T04:30:00Z</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>R-002</td><td>Role 2</td><td>Role for the 2026-27 session</td><td><span class="pill ">SCHOOL</span></td><td><span class="pill ok">Yes</span></td><td><span class="pill ok">Yes</span></td><td><span class="pill ok">Yes</span></td><td>2026-11-21T04:30:00Z</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>R-003</td><td>Role 3</td><td>Role for the 2026-27 session</td><td><span class="pill ">SCHOOL_PORTAL</span></td><td><span class="pill">No</span></td><td><span class="pill">No</span></td><td><span class="pill">No</span></td><td>2026-11-20T04:30:00Z</td><td class="actions"><a href="#">Open</a></td></tr>
+</tbody>
+</table></div>
+<p class="muted small">Source: <code>GET /api/v1/schools/{schoolId}/access/roles</code></p>
+<!-- GET /api/v1/schools/{schoolId}/access/roles/{roleId} -->
+<h3>Details</h3>
+<dl class="details">
+<div><dt>Code</dt><dd>R-001</dd></div>
+<div><dt>Name</dt><dd>Role 1</dd></div>
+<div><dt>Description</dt><dd>Role for the 2026-27 session</dd></div>
+<div><dt>Scope</dt><dd><span class="pill ">PLATFORM</span></dd></div>
+<div><dt>System</dt><dd><span class="pill ok">Yes</span></dd></div>
+<div><dt>Grants all permissions</dt><dd><span class="pill ok">Yes</span></dd></div>
+<div><dt>Active</dt><dd><span class="pill ok">Yes</span></dd></div>
+<div><dt>Updated at</dt><dd>2026-11-22T04:30:00Z</dd></div>
+</dl>
+<p class="muted small">Source: <code>GET /api/v1/schools/{schoolId}/access/roles/{roleId}</code></p>
+<!-- POST /api/v1/schools/{schoolId}/access/roles -->
+<details class="form"><summary>Create a custom role for this school</summary>
+<form>
+<label>Code<input type="text" name="code" value="R-001"></label>
+<label>Name *<input type="text" name="name" value="Role 1" required></label>
+<label class="wide">Description<textarea name="description" rows="2">Role for the 2026-27 session</textarea></label>
+<label>Scope<select name="scope"><option value="">Any</option><option>PLATFORM</option><option>SCHOOL</option><option>SCHOOL_PORTAL</option><option>COMMUNITY</option></select></label>
+<label class="check"><input type="checkbox" name="active" checked> Active</label>
+<label class="wide">Permission codes<span class="muted small">array of string (see the API file)</span></label>
+<div class="wide"><button type="button" class="btn primary">Save</button> <button type="reset" class="btn">Reset</button></div>
+</form>
+</details>
+<details class="endpoints"><summary>All endpoints of this section (12)</summary>
+<table>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/schools/{schoolId}/access/permissions</code></td><td>Permissions the school can use in its custom roles</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/schools/{schoolId}/access/roles</code></td><td>Roles available to the school: global school roles + the school's custom roles</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/schools/{schoolId}/access/roles/{roleId}</code></td><td>Get role</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/schools/{schoolId}/access/roles</code></td><td>Create a custom role for this school</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/schools/{schoolId}/access/roles/{roleId}</code></td><td>Update role</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/schools/{schoolId}/access/roles/{roleId}/permissions</code></td><td>Replace role permissions</td></tr>
+<tr><td><span class="verb delete">DELETE</span></td><td><code>/api/v1/schools/{schoolId}/access/roles/{roleId}</code></td><td>Delete role</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/schools/{schoolId}/access/users</code></td><td>The school's users with the roles each one holds</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/schools/{schoolId}/access/users/{userId}/roles</code></td><td>List user roles</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/schools/{schoolId}/access/users/{userId}/roles</code></td><td>Assign a role to a user of this school</td></tr>
+<tr><td><span class="verb delete">DELETE</span></td><td><code>/api/v1/schools/{schoolId}/access/users/{userId}/roles/{assignmentId}</code></td><td>Remove assignment</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/schools/{schoolId}/access/users/{userId}/effective-access</code></td><td>Effective access</td></tr>
+</table>
+</details>
+</section>
+
+<!-- SessionController · samples/api/security/SessionController.md -->
+<section class="card" id="SessionController">
+<h2>Sessions &amp; Login History</h2>
+<p class="muted">Active devices, remote sign-out and login audit trail</p>
+<!-- GET /api/v1/auth/sessions -->
+<form class="filters">
+<label class="check"><input type="checkbox" name="activeOnly" checked> Active only</label>
+<button type="button" class="btn primary">Apply</button>
+</form>
+<div class="scroll"><table>
+<thead><tr><th>Status</th><th>Current</th><th>Ip address</th><th>Device type</th><th>Browser</th><th>Operating system</th><th>Created at</th><th>Last seen at</th><th></th></tr></thead>
+<tbody>
+<tr><td><span class="pill ok">ACTIVE</span></td><td><span class="pill ok">Yes</span></td><td>103.21.58.14</td><td>macOS</td><td>Chrome 131</td><td>macOS 14</td><td>2026-11-22T04:30:00Z</td><td>2026-11-22T04:30:00Z</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td><span class="pill ">LOGGED_OUT</span></td><td><span class="pill ok">Yes</span></td><td>103.21.58.15</td><td>Android</td><td>Safari 18</td><td>macOS 14</td><td>2026-11-21T04:30:00Z</td><td>2026-11-21T04:30:00Z</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td><span class="pill ">REVOKED</span></td><td><span class="pill">No</span></td><td>103.21.58.16</td><td>Windows</td><td>Firefox 133</td><td>macOS 14</td><td>2026-11-20T04:30:00Z</td><td>2026-11-20T04:30:00Z</td><td class="actions"><a href="#">Open</a></td></tr>
+</tbody>
+</table></div>
+<p class="muted small">Source: <code>GET /api/v1/auth/sessions</code></p>
+<details class="endpoints"><summary>All endpoints of this section (11)</summary>
+<table>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/auth/sessions</code></td><td>My sessions (devices). activeOnly=false includes ended sessions</td></tr>
+<tr><td><span class="verb delete">DELETE</span></td><td><code>/api/v1/auth/sessions/{sessionId}</code></td><td>Sign out one of my devices</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/auth/sessions/revoke-others</code></td><td>Sign out every device except this one</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/auth/login-history</code></td><td>My login history</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/admin/users/{userId}/sessions</code></td><td>User sessions</td></tr>
+<tr><td><span class="verb delete">DELETE</span></td><td><code>/api/v1/admin/users/{userId}/sessions/{sessionId}</code></td><td>Revoke user session</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/admin/users/{userId}/sessions/revoke-all</code></td><td>Force sign-out of a user on all devices</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/admin/users/{userId}/login-history</code></td><td>User login history</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/schools/{schoolId}/users/{userId}/sessions</code></td><td>School user sessions</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/schools/{schoolId}/users/{userId}/sessions/revoke-all</code></td><td>Force sign-out of a school user on all devices (e.g. staff member left)</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/schools/{schoolId}/login-history</code></td><td>Login history of all users of this school</td></tr>
+</table>
+</details>
+</section>
+</main>
+</div>
+</body>
+</html>

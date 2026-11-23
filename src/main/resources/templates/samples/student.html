@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<!--
+  Sample screen for: Students (SIS, admission, enrolment, guardians)
+  Plain HTML + CSS with static sample data generated from the API (APiReqDoc/samples/api/student/).
+  Each section names the endpoints that feed it. Rebuild it in the frontend framework; this file is not served by any controller.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Students (SIS, admission, enrolment, guardians)</title>
+<link rel="stylesheet" href="samples.css">
+</head>
+<body>
+<header class="topbar"><a class="brand" href="index.html">Vidya</a><h1>Students (SIS, admission, enrolment, guardians)</h1></header>
+<div class="layout">
+<nav class="side">
+<a href="security.html">Login, sessions, roles &amp; access</a>
+<a href="dashboard.html">Overview dashboard</a>
+<a href="student.html" class="on">Students (SIS, admission, enrolment, guardians)</a>
+<a href="staff.html">Staff &amp; HR set-up</a>
+<a href="user.html">School users &amp; accounts</a>
+<a href="academic.html">Academic years, classes, sections, set-up</a>
+<a href="subject.html">Subjects &amp; curriculum</a>
+<a href="assignment.html">Class teachers &amp; subject teachers</a>
+<a href="timetable.html">Timetable, bells, rooms, substitutions</a>
+<a href="calendar.html">Calendar &amp; holidays</a>
+<a href="attendance.html">Student attendance</a>
+<a href="examination.html">Exams, schedules, marks, grading</a>
+<a href="assessment.html">Assessments, question bank, report cards</a>
+<a href="fee.html">Fees &amp; finance (counter, online, auto-debit)</a>
+<a href="engagement.html">Communication, homework, daily report, parent portal</a>
+<a href="operations.html">Operations set-up (fees, attendance, transport, library)</a>
+<a href="readiness.html">School readiness</a>
+<a href="platform-school.html">Platform: schools &amp; campuses</a>
+<a href="platform-onboarding.html">Platform: onboarding</a>
+<a href="platform-workflow.html">Platform: onboarding workflow</a>
+<a href="platform-subscription.html">Platform: subscriptions &amp; plans</a>
+<a href="platform-payment.html">Platform: subscription payments</a>
+<a href="platform-community.html">Platform: communities (trusts / groups)</a>
+<a href="platform-hub.html">Platform: hub</a>
+<a href="platform-analytics.html">Platform: analytics</a>
+<a href="platform-support.html">Platform: support queries</a>
+</nav>
+<main>
+<div class="tabs"><a href="#ClassStudentController">Class Student Rosters</a><a href="#StudentAdmissionController">Student Admissions</a><a href="#StudentController">Students</a><a href="#StudentEnrollmentController">Student Academic Enrollments</a><a href="#StudentGuardianController">Student Guardians</a><a href="#StudentSetupController">Student Setup</a><a href="#StudentSubjectEnrollmentController">Student Subject Enrollments</a></div>
+
+<!-- ClassStudentController · samples/api/student/ClassStudentController.md -->
+<section class="card" id="ClassStudentController">
+<h2>Class Student Rosters</h2>
+<p class="muted">Student roster retrieval by class and section</p>
+<!-- GET /api/v1/classes/{classId}/students -->
+<form class="filters">
+<label>Academic year id<input type="text" name="academicYearId" value="e007272e-5984-3753-9104-2d899e58fb35"></label>
+<label>Status<select name="status"><option value="">Any</option><option>ADMITTED</option><option>ACTIVE</option><option>PROMOTED</option><option>TRANSFERRED</option><option>WITHDRAWN</option><option>COMPLETED</option><option>SUSPENDED</option><option>DELETED</option></select></label>
+<label>Q<input type="text" name="q" value="riya"></label>
+<button type="button" class="btn primary">Apply</button>
+</form>
+<div class="scroll"><table>
+<thead><tr><th>Enrollment code</th><th>Student code</th><th>Admission number</th><th>First name</th><th>Last name</th><th>Full name</th><th>Gender</th><th>Date of birth</th><th></th></tr></thead>
+<tbody>
+<tr><td>12</td><td>CSS-001</td><td>VGS/2019/101</td><td>Riya</td><td>Rao</td><td>Riya Rao</td><td>FEMALE</td><td>2012-05-14</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>13</td><td>CSS-002</td><td>VGS/2019/102</td><td>Aman</td><td>Verma</td><td>Aman Verma</td><td>MALE</td><td>2013-05-14</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>14</td><td>CSS-003</td><td>VGS/2019/103</td><td>Kavya</td><td>Iyer</td><td>Kavya Iyer</td><td>FEMALE</td><td>2014-05-14</td><td class="actions"><a href="#">Open</a></td></tr>
+</tbody>
+</table></div>
+<p class="muted small">Source: <code>GET /api/v1/classes/{classId}/students</code></p>
+<details class="endpoints"><summary>All endpoints of this section (4)</summary>
+<table>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/tenant/classes/{classId}/sections/{sectionId}/students</code></td><td>Get student roster for class and section</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/classes/{classId}/sections/{sectionId}/students</code></td><td>Get student roster for class and section</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/tenant/classes/{classId}/students</code></td><td>Get student roster for class</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/classes/{classId}/students</code></td><td>Get student roster for class</td></tr>
+</table>
+</details>
+</section>
+
+<!-- StudentAdmissionController · samples/api/student/StudentAdmissionController.md -->
+<section class="card" id="StudentAdmissionController">
+<h2>Student Admissions</h2>
+<p class="muted">Transactional student admission lifecycle foundation</p>
+<!-- POST /api/v1/tenant/admissions -->
+<details class="form"><summary>Complete student admission</summary>
+<form>
+<label>First name *<input type="text" name="firstName" value="Riya" required></label>
+<label>Last name<input type="text" name="lastName" value="Rao"></label>
+<label>Display name<input type="text" name="displayName" value="Riya Rao"></label>
+<label>Gender<input type="text" name="gender" value="FEMALE"></label>
+<label>Date of birth<input type="date" name="dateOfBirth" value="2012-05-14"></label>
+<label>Email<input type="email" name="email" value="asha.rao@example.com"></label>
+<label>Phone<input type="tel" name="phone" value="9811111121"></label>
+<label>Address line1<input type="text" name="addressLine1" value="12 MG Road"></label>
+<label>Address line2<input type="text" name="addressLine2" value="Near City Park"></label>
+<label>City<input type="text" name="city" value="Gurugram"></label>
+<label>State<input type="text" name="state" value="Haryana"></label>
+<label>Postal code<input type="text" name="postalCode" value="122003"></label>
+<label>Admission number *<input type="text" name="admissionNumber" value="VGS/2019/101" required></label>
+<label>Admission date *<input type="date" name="admissionDate" value="2026-04-01" required></label>
+<label>Academic year id *<input type="text" name="academicYearId" value="e007272e-5984-3753-9104-2d899e58fb35" required></label>
+<label>Academic class id *<input type="text" name="academicClassId" value="544208c0-8100-3d80-a220-cccbfc29768b" required></label>
+<div class="wide"><button type="button" class="btn primary">Save</button> <button type="reset" class="btn">Reset</button></div>
+</form>
+</details>
+<details class="endpoints"><summary>All endpoints of this section (1)</summary>
+<table>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/tenant/admissions</code></td><td>Complete student admission</td></tr>
+</table>
+</details>
+</section>
+
+<!-- StudentController · samples/api/student/StudentController.md -->
+<section class="card" id="StudentController">
+<h2>Students</h2>
+<p class="muted">Student domain operations for the active school tenant</p>
+<!-- GET /api/v1/tenant/students -->
+<form class="filters">
+<label>Status<select name="status"><option value="">Any</option><option>ACTIVE</option><option>INACTIVE</option><option>SUSPENDED</option><option>TRANSFERRED</option><option>GRADUATED</option><option>WITHDRAWN</option><option>DELETED</option></select></label>
+<label>Admission number<input type="text" name="admissionNumber" value="VGS/2019/101"></label>
+<label>Student code<input type="text" name="studentCode" value="I-001"></label>
+<label>Q<input type="text" name="q" value="riya"></label>
+<button type="button" class="btn primary">Apply</button>
+</form>
+<div class="scroll"><table>
+<thead><tr><th>Student code</th><th>Admission number</th><th>Admission date</th><th>Status</th><th>Full name</th><th>Email</th><th>Phone</th><th>Created at</th><th></th></tr></thead>
+<tbody>
+<tr><td>S-001</td><td>VGS/2019/101</td><td>2026-04-01</td><td><span class="pill ok">ACTIVE</span></td><td>Riya Rao</td><td>asha.rao@example.com</td><td>9811111121</td><td>2026-11-22T04:30:00Z</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>S-002</td><td>VGS/2019/102</td><td>2026-04-01</td><td><span class="pill bad">INACTIVE</span></td><td>Aman Verma</td><td>rakesh.verma@example.com</td><td>9822222232</td><td>2026-11-21T04:30:00Z</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>S-003</td><td>VGS/2019/103</td><td>2026-04-01</td><td><span class="pill bad">SUSPENDED</span></td><td>Kavya Iyer</td><td>meena.iyer@example.com</td><td>9833333343</td><td>2026-11-20T04:30:00Z</td><td class="actions"><a href="#">Open</a></td></tr>
+</tbody>
+</table></div>
+<p class="muted small">Source: <code>GET /api/v1/tenant/students</code></p>
+<!-- GET /api/v1/tenant/students/{id} -->
+<h3>Details</h3>
+<dl class="details">
+<div><dt>Student code</dt><dd>S-001</dd></div>
+<div><dt>Admission number</dt><dd>VGS/2019/101</dd></div>
+<div><dt>Admission date</dt><dd>2026-04-01</dd></div>
+<div><dt>Status</dt><dd><span class="pill ok">ACTIVE</span></dd></div>
+<div><dt>Created at</dt><dd>2026-11-22T04:30:00Z</dd></div>
+<div><dt>Updated at</dt><dd>2026-11-22T04:30:00Z</dd></div>
+<div><dt>Version</dt><dd>0</dd></div>
+</dl>
+<p class="muted small">Source: <code>GET /api/v1/tenant/students/{id}</code></p>
+<!-- POST /api/v1/tenant/students -->
+<details class="form"><summary>Enroll/create a student</summary>
+<form>
+<label>Tenant user id *<input type="text" name="tenantUserId" value="dd648ca3-1793-37b0-a826-e8addb64cabe" required></label>
+<label>Admission number *<input type="text" name="admissionNumber" value="VGS/2019/101" required></label>
+<label>Admission date *<input type="date" name="admissionDate" value="2026-04-01" required></label>
+<div class="wide"><button type="button" class="btn primary">Save</button> <button type="reset" class="btn">Reset</button></div>
+</form>
+</details>
+<details class="endpoints"><summary>All endpoints of this section (9)</summary>
+<table>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/tenant/students</code></td><td>Enroll/create a student</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/tenant/students/mine</code></td><td>Students linked to me</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/tenant/students/{id}</code></td><td>Get student by UUID</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/tenant/students/code/{studentCode}</code></td><td>Get student by code</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/tenant/students/{id}/profile</code></td><td>Get student profile</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/tenant/students</code></td><td>Search and list students</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/tenant/students/{id}</code></td><td>Update student</td></tr>
+<tr><td><span class="verb patch">PATCH</span></td><td><code>/api/v1/tenant/students/{id}/status</code></td><td>Update student status</td></tr>
+<tr><td><span class="verb delete">DELETE</span></td><td><code>/api/v1/tenant/students/{id}</code></td><td>Soft delete student</td></tr>
+</table>
+</details>
+</section>
+
+<!-- StudentEnrollmentController · samples/api/student/StudentEnrollmentController.md -->
+<section class="card" id="StudentEnrollmentController">
+<h2>Student Academic Enrollments</h2>
+<p class="muted">Student academic year placement, class/section enrollment, transfer and withdrawal operations</p>
+<!-- GET /api/v1/enrollments -->
+<form class="filters">
+<label>Student id<input type="text" name="studentId" value="6fb53156-1fd8-3f64-9c4f-f647e3d28066"></label>
+<label>Academic year id<input type="text" name="academicYearId" value="e007272e-5984-3753-9104-2d899e58fb35"></label>
+<label>Academic class id<input type="text" name="academicClassId" value="544208c0-8100-3d80-a220-cccbfc29768b"></label>
+<label>Section id<input type="text" name="sectionId" value="1c35581b-02b2-3f00-bdbc-29ea5acdbfba"></label>
+<label>Status<select name="status"><option value="">Any</option><option>ADMITTED</option><option>ACTIVE</option><option>PROMOTED</option><option>TRANSFERRED</option><option>WITHDRAWN</option><option>COMPLETED</option><option>SUSPENDED</option><option>DELETED</option></select></label>
+<label>Enrollment code<input type="text" name="enrollmentCode" value="12"></label>
+<button type="button" class="btn primary">Apply</button>
+</form>
+<div class="scroll"><table>
+<thead><tr><th>Enrollment code</th><th>Student code</th><th>Admission number</th><th>Student name</th><th>Academic year code</th><th>Academic year name</th><th>Academic class code</th><th>Academic class name</th><th></th></tr></thead>
+<tbody>
+<tr><td>12</td><td>E-001</td><td>VGS/2019/101</td><td>Riya Rao</td><td>E-001</td><td>2026-27</td><td>Class 9</td><td>Class 9</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>13</td><td>E-002</td><td>VGS/2019/102</td><td>Aman Verma</td><td>E-002</td><td>2026-27</td><td>Class 4</td><td>Class 4</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>14</td><td>E-003</td><td>VGS/2019/103</td><td>Kavya Iyer</td><td>E-003</td><td>2026-27</td><td>Class 10</td><td>Class 10</td><td class="actions"><a href="#">Open</a></td></tr>
+</tbody>
+</table></div>
+<p class="muted small">Source: <code>GET /api/v1/enrollments</code></p>
+<!-- GET /api/v1/enrollments/{id} -->
+<h3>Details</h3>
+<dl class="details">
+<div><dt>Enrollment code</dt><dd>12</dd></div>
+<div><dt>Academic year code</dt><dd>E-001</dd></div>
+<div><dt>Academic year name</dt><dd>2026-27</dd></div>
+<div><dt>Academic class code</dt><dd>Class 9</dd></div>
+<div><dt>Academic class name</dt><dd>Class 9</dd></div>
+<div><dt>Section code</dt><dd>E-001</dd></div>
+<div><dt>Section name</dt><dd>A</dd></div>
+<div><dt>Roll number</dt><dd>12</dd></div>
+<div><dt>Enrollment status</dt><dd><span class="pill ">ADMITTED</span></dd></div>
+<div><dt>Admission date</dt><dd>2026-04-01</dd></div>
+<div><dt>Enrollment date</dt><dd>2026-11-22</dd></div>
+<div><dt>Withdrawal date</dt><dd>2026-11-22</dd></div>
+</dl>
+<p class="muted small">Source: <code>GET /api/v1/enrollments/{id}</code></p>
+<!-- POST /api/v1/enrollments/{id}/withdraw -->
+<details class="form"><summary>Withdraw student enrollment</summary>
+<form>
+<label>Withdrawal date *<input type="date" name="withdrawalDate" value="2026-11-22" required></label>
+<label class="wide">Withdrawal reason<textarea name="withdrawalReason" rows="2">Requested by the parent</textarea></label>
+<label class="wide">Remarks<textarea name="remarks" rows="2">Checked and approved</textarea></label>
+<div class="wide"><button type="button" class="btn primary">Save</button> <button type="reset" class="btn">Reset</button></div>
+</form>
+</details>
+<details class="endpoints"><summary>All endpoints of this section (18)</summary>
+<table>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/tenant/students/{studentId}/enrollments</code></td><td>Create academic enrollment for student</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/students/{studentId}/enrollments</code></td><td>Create academic enrollment for student</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/tenant/students/{studentId}/enrollments</code></td><td>List academic enrollments for student</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/students/{studentId}/enrollments</code></td><td>List academic enrollments for student</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/tenant/students/{studentId}/current-enrollment</code></td><td>Get current active enrollment for student</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/students/{studentId}/current-enrollment</code></td><td>Get current active enrollment for student</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/tenant/enrollments/{id}</code></td><td>Get enrollment by UUID</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/enrollments/{id}</code></td><td>Get enrollment by UUID</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/tenant/enrollments/code/{code}</code></td><td>Get enrollment by business code</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/enrollments/code/{code}</code></td><td>Get enrollment by business code</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/tenant/enrollments/{id}</code></td><td>Update enrollment</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/enrollments/{id}</code></td><td>Update enrollment</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/tenant/enrollments/{id}/withdraw</code></td><td>Withdraw student enrollment</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/enrollments/{id}/withdraw</code></td><td>Withdraw student enrollment</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/tenant/enrollments/{id}/transfer</code></td><td>Transfer student enrollment</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/enrollments/{id}/transfer</code></td><td>Transfer student enrollment</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/tenant/enrollments</code></td><td>Search enrollments</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/enrollments</code></td><td>Search enrollments</td></tr>
+</table>
+</details>
+</section>
+
+<!-- StudentGuardianController · samples/api/student/StudentGuardianController.md -->
+<section class="card" id="StudentGuardianController">
+<h2>Student Guardians</h2>
+<p class="muted">Parent, guardian, and emergency contact management for students</p>
+<!-- GET /api/v1/tenant/students/{studentId}/guardians -->
+<div class="scroll"><table>
+<thead><tr><th>Guardian code</th><th>Guardian name</th><th>Relationship type</th><th>Phone</th><th>Email</th><th>Occupation</th><th>Annual income</th><th>Address line1</th><th></th></tr></thead>
+<tbody>
+<tr><td>SG-001</td><td>Asha Rao</td><td><span class="pill ">FATHER</span></td><td>9811111121</td><td>asha.rao@example.com</td><td>Engineer</td><td>10.5</td><td>12 MG Road</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>SG-002</td><td>Rakesh Verma</td><td><span class="pill ">MOTHER</span></td><td>9822222232</td><td>rakesh.verma@example.com</td><td>Doctor</td><td>8.0</td><td>12 MG Road</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>SG-003</td><td>Meena Iyer</td><td><span class="pill ">LEGAL_GUARDIAN</span></td><td>9833333343</td><td>meena.iyer@example.com</td><td>Business owner</td><td>12.25</td><td>12 MG Road</td><td class="actions"><a href="#">Open</a></td></tr>
+</tbody>
+</table></div>
+<p class="muted small">Source: <code>GET /api/v1/tenant/students/{studentId}/guardians</code></p>
+<!-- GET /api/v1/tenant/students/{studentId}/guardians/{guardianId} -->
+<h3>Details</h3>
+<dl class="details">
+<div><dt>Guardian code</dt><dd>SG-001</dd></div>
+<div><dt>Guardian name</dt><dd>Asha Rao</dd></div>
+<div><dt>Relationship type</dt><dd><span class="pill ">FATHER</span></dd></div>
+<div><dt>Phone</dt><dd>9811111121</dd></div>
+<div><dt>Email</dt><dd>asha.rao@example.com</dd></div>
+<div><dt>Occupation</dt><dd>Engineer</dd></div>
+<div><dt>Annual income</dt><dd>10.5</dd></div>
+<div><dt>Address line1</dt><dd>12 MG Road</dd></div>
+<div><dt>Address line2</dt><dd>Near City Park</dd></div>
+<div><dt>City</dt><dd>Gurugram</dd></div>
+<div><dt>State</dt><dd>Haryana</dd></div>
+<div><dt>Postal code</dt><dd>122003</dd></div>
+</dl>
+<p class="muted small">Source: <code>GET /api/v1/tenant/students/{studentId}/guardians/{guardianId}</code></p>
+<!-- POST /api/v1/tenant/students/{studentId}/guardians -->
+<details class="form"><summary>Add guardian for student</summary>
+<form>
+<label>Guardian name *<input type="text" name="guardianName" value="Asha Rao" required></label>
+<label>Relationship type *<select name="relationshipType"><option>FATHER</option><option>MOTHER</option><option>LEGAL_GUARDIAN</option><option>GRANDPARENT</option><option>SIBLING</option><option>OTHER</option></select></label>
+<label>Phone<input type="tel" name="phone" value="9811111121"></label>
+<label>Email<input type="email" name="email" value="asha.rao@example.com"></label>
+<label>Guardian user id<input type="text" name="guardianUserId" value="7e8ac25f-3e17-3335-8408-d41192f9be1a"></label>
+<label>Occupation<input type="text" name="occupation" value="Engineer"></label>
+<label>Annual income<input type="number" name="annualIncome" value="10.5"></label>
+<label>Address line1<input type="text" name="addressLine1" value="12 MG Road"></label>
+<label>Address line2<input type="text" name="addressLine2" value="Near City Park"></label>
+<label>City<input type="text" name="city" value="Gurugram"></label>
+<label>State<input type="text" name="state" value="Haryana"></label>
+<label>Postal code<input type="text" name="postalCode" value="122003"></label>
+<label class="check"><input type="checkbox" name="isPrimary" checked> Is primary</label>
+<label class="check"><input type="checkbox" name="isEmergencyContact" checked> Is emergency contact</label>
+<div class="wide"><button type="button" class="btn primary">Save</button> <button type="reset" class="btn">Reset</button></div>
+</form>
+</details>
+<details class="endpoints"><summary>All endpoints of this section (5)</summary>
+<table>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/tenant/students/{studentId}/guardians</code></td><td>Get guardians for student</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/tenant/students/{studentId}/guardians</code></td><td>Add guardian for student</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/tenant/students/{studentId}/guardians/{guardianId}</code></td><td>Get guardian by ID</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/tenant/students/{studentId}/guardians/{guardianId}</code></td><td>Update guardian</td></tr>
+<tr><td><span class="verb delete">DELETE</span></td><td><code>/api/v1/tenant/students/{studentId}/guardians/{guardianId}</code></td><td>Delete guardian</td></tr>
+</table>
+</details>
+</section>
+
+<!-- StudentSetupController · samples/api/student/StudentSetupController.md -->
+<section class="card" id="StudentSetupController">
+<h2>Student Setup</h2>
+<p class="muted">New admissions, student profiles, parent mapping and logins, leaving and re-admission. Promotion: /api/v1/academic-years/{id}/promotion</p>
+<!-- GET /api/v1/student-setup/parents -->
+<form class="filters">
+<label>Search<input type="text" name="search" value="riya"></label>
+<label class="check"><input type="checkbox" name="withLogin" checked> With login</label>
+<button type="button" class="btn primary">Apply</button>
+</form>
+<div class="scroll"><table>
+<thead><tr><th>User code</th><th>Name</th><th>Email</th><th>Phone</th><th>Has login</th><th></th></tr></thead>
+<tbody>
+<tr><td>P-001</td><td>Parent 1</td><td>asha.rao@example.com</td><td>9811111121</td><td><span class="pill ok">Yes</span></td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>P-002</td><td>Parent 2</td><td>rakesh.verma@example.com</td><td>9822222232</td><td><span class="pill ok">Yes</span></td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>P-003</td><td>Parent 3</td><td>meena.iyer@example.com</td><td>9833333343</td><td><span class="pill">No</span></td><td class="actions"><a href="#">Open</a></td></tr>
+</tbody>
+</table></div>
+<p class="muted small">Source: <code>GET /api/v1/student-setup/parents</code></p>
+<!-- GET /api/v1/student-setup/students/{studentId} -->
+<h3>Details</h3>
+<dl class="details">
+<div><dt>Has login</dt><dd><span class="pill ok">Yes</span></dd></div>
+</dl>
+<p class="muted small">Source: <code>GET /api/v1/student-setup/students/{studentId}</code></p>
+<!-- POST /api/v1/student-setup/admit -->
+<details class="form"><summary>Admit a new student</summary>
+<form>
+<label>First name *<input type="text" name="firstName" value="Riya" required></label>
+<label>Last name<input type="text" name="lastName" value="Rao"></label>
+<label>Gender<input type="text" name="gender" value="FEMALE"></label>
+<label>Date of birth<input type="date" name="dateOfBirth" value="2012-05-14"></label>
+<label>Email<input type="email" name="email" value="asha.rao@example.com"></label>
+<label>Phone<input type="tel" name="phone" value="9811111121"></label>
+<label>Address line1<input type="text" name="addressLine1" value="12 MG Road"></label>
+<label>Address line2<input type="text" name="addressLine2" value="Near City Park"></label>
+<label>City<input type="text" name="city" value="Gurugram"></label>
+<label>State<input type="text" name="state" value="Haryana"></label>
+<label>Postal code<input type="text" name="postalCode" value="122003"></label>
+<label>Admission number<input type="text" name="admissionNumber" value="VGS/2019/101"></label>
+<label>Admission date<input type="date" name="admissionDate" value="2026-04-01"></label>
+<label>Academic year id *<input type="text" name="academicYearId" value="e007272e-5984-3753-9104-2d899e58fb35" required></label>
+<label>Academic class id *<input type="text" name="academicClassId" value="544208c0-8100-3d80-a220-cccbfc29768b" required></label>
+<label>Section id<input type="text" name="sectionId" value="1c35581b-02b2-3f00-bdbc-29ea5acdbfba"></label>
+<div class="wide"><button type="button" class="btn primary">Save</button> <button type="reset" class="btn">Reset</button></div>
+</form>
+</details>
+<details class="endpoints"><summary>All endpoints of this section (16)</summary>
+<table>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/student-setup/overview</code></td><td>Enrollment overview</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/student-setup/admission-numbers</code></td><td>Admission number sequences</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/student-setup/admission-numbers</code></td><td>Configure admission numbers</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/student-setup/admit</code></td><td>Admit a new student</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/student-setup/admit/bulk</code></td><td>Admit many students</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/student-setup/students/{studentId}</code></td><td>Full student profile</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/student-setup/students/{studentId}</code></td><td>Update student profile</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/student-setup/students/{studentId}/siblings</code></td><td>Siblings</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/student-setup/parents</code></td><td>Parent directory</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/student-setup/families</code></td><td>Families</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/student-setup/parents/{parentUserId}/merge</code></td><td>Merge a duplicate parent record</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/student-setup/students/{studentId}/guardians</code></td><td>Guardians with parent records</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/student-setup/students/{studentId}/guardians/{guardianId}/parent</code></td><td>Link guardian to a parent record</td></tr>
+<tr><td><span class="verb delete">DELETE</span></td><td><code>/api/v1/student-setup/students/{studentId}/guardians/{guardianId}/parent</code></td><td>Unlink guardian from its parent record</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/student-setup/students/{studentId}/leave</code></td><td>Student leaves the school</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/student-setup/students/{studentId}/readmit</code></td><td>Re-admit a withdrawn student</td></tr>
+</table>
+</details>
+</section>
+
+<!-- StudentSubjectEnrollmentController · samples/api/student/StudentSubjectEnrollmentController.md -->
+<section class="card" id="StudentSubjectEnrollmentController">
+<h2>Student Subject Enrollments</h2>
+<p class="muted">Subject allocation and elective management for student academic enrollments</p>
+<!-- GET /api/v1/tenant/enrollments/{enrollmentId}/subjects -->
+<div class="scroll"><table>
+<thead><tr><th>Subject enrollment code</th><th>Subject code</th><th>Subject name</th><th>Subject type</th><th>Class subject assignment code</th><th>Is compulsory</th><th>Status</th><th>Effective from</th><th></th></tr></thead>
+<tbody>
+<tr><td>12</td><td>SSE-001</td><td>Mathematics</td><td><span class="pill ">CORE</span></td><td>Class 9</td><td><span class="pill ok">Yes</span></td><td><span class="pill ok">ACTIVE</span></td><td>2026-11-22</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>13</td><td>SSE-002</td><td>Science</td><td><span class="pill ">ELECTIVE</span></td><td>Class 4</td><td><span class="pill ok">Yes</span></td><td><span class="pill ">DROPPED</span></td><td>2026-11-21</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>14</td><td>SSE-003</td><td>English</td><td><span class="pill ">LANGUAGE</span></td><td>Class 10</td><td><span class="pill">No</span></td><td><span class="pill ">EXEMPTED</span></td><td>2026-11-20</td><td class="actions"><a href="#">Open</a></td></tr>
+</tbody>
+</table></div>
+<p class="muted small">Source: <code>GET /api/v1/tenant/enrollments/{enrollmentId}/subjects</code></p>
+<!-- GET /api/v1/tenant/enrollments/{enrollmentId}/subjects/{subjectEnrollmentId} -->
+<h3>Details</h3>
+<dl class="details">
+<div><dt>Subject enrollment code</dt><dd>12</dd></div>
+<div><dt>Subject code</dt><dd>SSE-001</dd></div>
+<div><dt>Subject name</dt><dd>Mathematics</dd></div>
+<div><dt>Subject type</dt><dd><span class="pill ">CORE</span></dd></div>
+<div><dt>Class subject assignment code</dt><dd>Class 9</dd></div>
+<div><dt>Is compulsory</dt><dd><span class="pill ok">Yes</span></dd></div>
+<div><dt>Status</dt><dd><span class="pill ok">ACTIVE</span></dd></div>
+<div><dt>Effective from</dt><dd>2026-11-22</dd></div>
+<div><dt>Effective to</dt><dd>2026-11-22</dd></div>
+<div><dt>Remarks</dt><dd>Checked and approved</dd></div>
+<div><dt>Created at</dt><dd>2026-11-22T04:30:00Z</dd></div>
+<div><dt>Updated at</dt><dd>2026-11-22T04:30:00Z</dd></div>
+</dl>
+<p class="muted small">Source: <code>GET /api/v1/tenant/enrollments/{enrollmentId}/subjects/{subjectEnrollmentId}</code></p>
+<!-- POST /api/v1/tenant/enrollments/{enrollmentId}/subjects -->
+<details class="form"><summary>Enroll student in a subject</summary>
+<form>
+<label>Subject id *<input type="text" name="subjectId" value="9802ac29-d6e2-3a81-b8c9-08ed66ecb32b" required></label>
+<label>Class subject assignment id<input type="text" name="classSubjectAssignmentId" value="b9307b1d-ee3d-359a-a055-44fd7b57fccb"></label>
+<label>Effective from<input type="date" name="effectiveFrom" value="2026-11-22"></label>
+<label class="wide">Remarks<textarea name="remarks" rows="2">Checked and approved</textarea></label>
+<div class="wide"><button type="button" class="btn primary">Save</button> <button type="reset" class="btn">Reset</button></div>
+</form>
+</details>
+<details class="endpoints"><summary>All endpoints of this section (6)</summary>
+<table>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/tenant/enrollments/{enrollmentId}/subjects</code></td><td>Get enrolled subjects for student enrollment</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/tenant/enrollments/{enrollmentId}/subjects</code></td><td>Enroll student in a subject</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/tenant/enrollments/{enrollmentId}/subjects/batch</code></td><td>Batch enroll student in subjects</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/tenant/enrollments/{enrollmentId}/subjects/{subjectEnrollmentId}</code></td><td>Get subject enrollment by ID</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/tenant/enrollments/{enrollmentId}/subjects/{subjectEnrollmentId}</code></td><td>Update subject enrollment</td></tr>
+<tr><td><span class="verb delete">DELETE</span></td><td><code>/api/v1/tenant/enrollments/{enrollmentId}/subjects/{subjectEnrollmentId}</code></td><td>Remove subject enrollment</td></tr>
+</table>
+</details>
+</section>
+</main>
+</div>
+</body>
+</html>

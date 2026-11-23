@@ -51,6 +51,19 @@ vidya:
     dispatch-interval: ${VIDYA_ENGAGEMENT_DISPATCH_INTERVAL:PT1M}
     dispatch-batch-size: 200
     daily-report-cron: "0 */5 * * * *"
+  # Online fees through each school's own Cashfree / Razorpay account: mandates, monthly auto-debit, links
+  # (see tenantdata/fee/online/ONLINE_FEES.md)
+  fees:
+    online:
+      # 32 random bytes, base64 (openssl rand -base64 32): encrypts the schools' gateway secrets. Without it they cannot be saved.
+      secret-key: ${VIDYA_FEES_GATEWAY_SECRET_KEY:}
+      # Public base URL of this API, for the webhook URLs shown to schools (…/api/v1/webhooks/fees/{tenant}/{gateway})
+      webhook-base-url: ${VIDYA_PUBLIC_API_URL:}
+      scheduler:
+        # Daily auto-debit job and hourly mandate poll. Safe on several servers.
+        enabled: ${VIDYA_FEES_ONLINE_SCHEDULER:true}
+      autodebit-cron: "0 30 7 * * *"
+      mandate-sync-cron: "0 20 * * * *"
   # Assessment engine (see tenantdata/assessment/ASSESSMENT_ENGINE.md)
   assessment:
     scheduler:
