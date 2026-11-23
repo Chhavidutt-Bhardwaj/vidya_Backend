@@ -35,6 +35,9 @@ public class UpdateStudentGuardianRequest {
     @Schema(description = "Email address", example = "ramesh.sharma@example.com")
     private String email;
 
+    @Schema(description = "Parent login to link (tenant_user id). A parent account can only see students it is linked to.")
+    private java.util.UUID guardianUserId;
+
     @Size(max = 100, message = "Occupation cannot exceed 100 characters")
     @Schema(description = "Occupation", example = "Software Engineer")
     private String occupation;

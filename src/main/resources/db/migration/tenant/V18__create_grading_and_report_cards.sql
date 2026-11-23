@@ -1,5 +1,10 @@
 -- V18: Grading Engine & Report Card Generation (Step 26)
 -- Creates report card generation, subject-level result aggregation, and teacher/principal remarks.
+--
+-- Corrected in place (onboarding I0): the section FK previously referenced a non-existent table
+-- `class_section`. Because PostgreSQL DDL is transactional, the broken version could never have been
+-- recorded as applied in any flyway_schema_history, so editing this file does not cause a checksum
+-- mismatch for any successfully migrated tenant.
 
 -- 1. Student Report Card Master
 CREATE TABLE student_report_card (
@@ -8,7 +13,7 @@ CREATE TABLE student_report_card (
     exam_term_id UUID NOT NULL REFERENCES exam_term(id) ON DELETE RESTRICT,
     academic_year_id UUID NOT NULL REFERENCES academic_year(id) ON DELETE RESTRICT,
     academic_class_id UUID NOT NULL REFERENCES academic_class(id) ON DELETE RESTRICT,
-    section_id UUID REFERENCES class_section(id) ON DELETE SET NULL,
+    section_id UUID REFERENCES section(id) ON DELETE SET NULL,
     student_id UUID NOT NULL REFERENCES student(id) ON DELETE RESTRICT,
     total_max_marks NUMERIC(8,2) NOT NULL DEFAULT 0.00,
     total_marks_obtained NUMERIC(8,2) NOT NULL DEFAULT 0.00,

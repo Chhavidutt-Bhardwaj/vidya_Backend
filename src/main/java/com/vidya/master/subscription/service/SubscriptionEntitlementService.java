@@ -27,6 +27,13 @@ public interface SubscriptionEntitlementService {
     boolean isFeatureEnabled(UUID schoolId, String featureCode);
 
     /**
+     * All feature codes currently enabled for the school (active plan features + overrides, limited to
+     * features ACTIVE in the catalog), plus the parent module code of every enabled feature, so a
+     * permission gated on a module (e.g. TRANSPORT) passes when any of its sub-features is enabled.
+     */
+    java.util.Set<String> getEnabledFeatureCodes(UUID schoolId);
+
+    /**
      * Checks if a functional module (e.g. STAFF_MANAGEMENT, STUDENT_MANAGEMENT) has at least one active feature for the school.
      */
     boolean isModuleEnabled(UUID schoolId, String moduleCode);

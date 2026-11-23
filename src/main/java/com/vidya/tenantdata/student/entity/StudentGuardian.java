@@ -58,6 +58,13 @@ public class StudentGuardian {
     @Column(name = "email", length = 255)
     private String email;
 
+    /**
+     * The parent's login (tenant_user.id, which links to the master platform_user). Drives
+     * data-level access: a parent account sees only students it is linked to here.
+     */
+    @Column(name = "guardian_user_id")
+    private java.util.UUID guardianUserId;
+
     @Column(name = "occupation", length = 100)
     private String occupation;
 

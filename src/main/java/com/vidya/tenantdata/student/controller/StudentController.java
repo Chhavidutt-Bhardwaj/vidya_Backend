@@ -43,9 +43,10 @@ import java.util.UUID;
 public class StudentController {
 
     private final StudentService studentService;
+    private final com.vidya.tenantdata.security.DataAccessService dataAccessService;
 
     @PostMapping
-    @PreAuthorize("hasAuthority('STUDENT_CREATE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('STUDENT_CREATE')")
     @Operation(summary = "Enroll/create a student", description = "Enrolls a new student linked to an existing tenant operational user")
     public ResponseEntity<ApiResponse<StudentDetailResponse>> createStudent(
             @Valid @RequestBody CreateStudentRequest request) {
@@ -55,8 +56,21 @@ public class StudentController {
                 .body(ApiResponse.success("STUDENT_CREATED", "Student successfully enrolled", response));
     }
 
+    @GetMapping("/mine")
+    @PreAuthorize("hasAuthority('STUDENT_READ')")
+    @Operation(summary = "Students linked to me",
+            description = "A student: themself. A parent: linked children. A teacher: students of the sections they teach. "
+                    + "Use this instead of the full list when the STUDENT data scope is OWN.")
+    public ResponseEntity<ApiResponse<java.util.List<StudentDetailResponse>>> myStudents(
+            org.springframework.security.core.Authentication authentication) {
+        java.util.List<StudentDetailResponse> students = dataAccessService.ownStudentIds(authentication).stream()
+                .map(studentService::getStudentById)
+                .toList();
+        return ResponseEntity.ok(ApiResponse.success("STUDENTS_FETCHED", "Students retrieved successfully", students));
+    }
+
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('STUDENT_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('STUDENT_READ') and @dataAccess.canAccessStudent(authentication, #id, 'STUDENT')")
     @Operation(summary = "Get student by UUID", description = "Retrieves student record including operational profile")
     public ResponseEntity<ApiResponse<StudentDetailResponse>> getStudentById(
             @PathVariable UUID id) {
@@ -66,7 +80,7 @@ public class StudentController {
     }
 
     @GetMapping("/code/{studentCode}")
-    @PreAuthorize("hasAuthority('STUDENT_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('STUDENT_READ') and @dataAccess.canAccessStudentCode(authentication, #studentCode, 'STUDENT')")
     @Operation(summary = "Get student by code", description = "Retrieves student record by human-readable student code (e.g. STU-A1B2C3D4)")
     public ResponseEntity<ApiResponse<StudentDetailResponse>> getStudentByCode(
             @PathVariable String studentCode) {
@@ -76,7 +90,7 @@ public class StudentController {
     }
 
     @GetMapping("/{id}/profile")
-    @PreAuthorize("hasAuthority('STUDENT_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('STUDENT_READ') and @dataAccess.canAccessStudent(authentication, #id, 'STUDENT')")
     @Operation(summary = "Get student profile", description = "Retrieves comprehensive student profile including identity, current active enrollment, subjects, and guardians")
     public ResponseEntity<ApiResponse<com.vidya.tenantdata.student.dto.StudentProfileResponse>> getStudentProfile(
             @PathVariable UUID id) {
@@ -86,7 +100,7 @@ public class StudentController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAuthority('STUDENT_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('STUDENT_READ') and @dataAccess.hasFullScope(authentication, 'STUDENT')")
     @Operation(summary = "Search and list students", description = "Lists students in current tenant database with search and pagination")
     public ResponseEntity<PagedApiResponse<StudentResponse>> listStudents(
             @RequestParam(required = false) StudentStatus status,
@@ -101,7 +115,7 @@ public class StudentController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAuthority('STUDENT_UPDATE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('STUDENT_UPDATE') and @dataAccess.canAccessStudent(authentication, #id, 'STUDENT')")
     @Operation(summary = "Update student", description = "Updates student admission number and date")
     public ResponseEntity<ApiResponse<StudentDetailResponse>> updateStudent(
             @PathVariable UUID id,
@@ -112,7 +126,7 @@ public class StudentController {
     }
 
     @PatchMapping("/{id}/status")
-    @PreAuthorize("hasAuthority('STUDENT_UPDATE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('STUDENT_UPDATE') and @dataAccess.canAccessStudent(authentication, #id, 'STUDENT')")
     @Operation(summary = "Update student status", description = "Transitions student lifecycle status")
     public ResponseEntity<ApiResponse<StudentDetailResponse>> updateStudentStatus(
             @PathVariable UUID id,
@@ -123,7 +137,7 @@ public class StudentController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('STUDENT_DELETE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('STUDENT_DELETE') and @dataAccess.canAccessStudent(authentication, #id, 'STUDENT')")
     @Operation(summary = "Soft delete student", description = "Soft deletes a student operational record")
     public ResponseEntity<ApiResponse<Void>> deleteStudent(@PathVariable UUID id) {
         log.info("REST: Delete student ID: [{}]", id);

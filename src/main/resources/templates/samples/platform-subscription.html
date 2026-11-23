@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<!--
+  Sample screen for: Platform: subscriptions & plans
+  Plain HTML + CSS with static sample data generated from the API (APiReqDoc/samples/api/platform-subscription/).
+  Each section names the endpoints that feed it. Rebuild it in the frontend framework; this file is not served by any controller.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Platform: subscriptions &amp; plans</title>
+<link rel="stylesheet" href="samples.css">
+</head>
+<body>
+<header class="topbar"><a class="brand" href="index.html">Vidya</a><h1>Platform: subscriptions &amp; plans</h1></header>
+<div class="layout">
+<nav class="side">
+<a href="security.html">Login, sessions, roles &amp; access</a>
+<a href="dashboard.html">Overview dashboard</a>
+<a href="student.html">Students (SIS, admission, enrolment, guardians)</a>
+<a href="staff.html">Staff &amp; HR set-up</a>
+<a href="user.html">School users &amp; accounts</a>
+<a href="academic.html">Academic years, classes, sections, set-up</a>
+<a href="subject.html">Subjects &amp; curriculum</a>
+<a href="assignment.html">Class teachers &amp; subject teachers</a>
+<a href="timetable.html">Timetable, bells, rooms, substitutions</a>
+<a href="calendar.html">Calendar &amp; holidays</a>
+<a href="attendance.html">Student attendance</a>
+<a href="examination.html">Exams, schedules, marks, grading</a>
+<a href="assessment.html">Assessments, question bank, report cards</a>
+<a href="fee.html">Fees &amp; finance (counter, online, auto-debit)</a>
+<a href="engagement.html">Communication, homework, daily report, parent portal</a>
+<a href="operations.html">Operations set-up (fees, attendance, transport, library)</a>
+<a href="readiness.html">School readiness</a>
+<a href="platform-school.html">Platform: schools &amp; campuses</a>
+<a href="platform-onboarding.html">Platform: onboarding</a>
+<a href="platform-workflow.html">Platform: onboarding workflow</a>
+<a href="platform-subscription.html" class="on">Platform: subscriptions &amp; plans</a>
+<a href="platform-payment.html">Platform: subscription payments</a>
+<a href="platform-community.html">Platform: communities (trusts / groups)</a>
+<a href="platform-hub.html">Platform: hub</a>
+<a href="platform-analytics.html">Platform: analytics</a>
+<a href="platform-support.html">Platform: support queries</a>
+</nav>
+<main>
+<div class="tabs"><a href="#SchoolSubscriptionController">School subscription</a><a href="#SubscriptionPlanController">Subscription plan</a></div>
+
+<!-- SchoolSubscriptionController · samples/api/platform-subscription/SchoolSubscriptionController.md -->
+<section class="card" id="SchoolSubscriptionController">
+<h2>School subscription</h2>
+<!-- GET /api/v1/schools/{schoolId}/subscriptions -->
+<div class="scroll"><table>
+<thead><tr><th>Subscription code</th><th>Plan code</th><th>Plan version</th><th>Start date</th><th>End date</th><th>Billing cycle</th><th>Base amount</th><th>Discount amount</th><th></th></tr></thead>
+<tbody>
+<tr><td>SS-001</td><td>SS-001</td><td>1</td><td>2026-04-01</td><td>2027-03-31</td><td><span class="pill ">MONTHLY</span></td><td>2500.00</td><td>2500.00</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>SS-002</td><td>SS-002</td><td>2</td><td>2026-04-01</td><td>2027-03-31</td><td><span class="pill ">QUARTERLY</span></td><td>1800.00</td><td>1800.00</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>SS-003</td><td>SS-003</td><td>3</td><td>2026-04-01</td><td>2027-03-31</td><td><span class="pill ">ANNUAL</span></td><td>3200.00</td><td>3200.00</td><td class="actions"><a href="#">Open</a></td></tr>
+</tbody>
+</table></div>
+<p class="muted small">Source: <code>GET /api/v1/schools/{schoolId}/subscriptions</code></p>
+<!-- GET /api/v1/schools/{schoolId}/subscriptions/active -->
+<h3>Details</h3>
+<dl class="details">
+<div><dt>Subscription code</dt><dd>SS-001</dd></div>
+<div><dt>Plan code</dt><dd>SS-001</dd></div>
+<div><dt>Plan version</dt><dd>1</dd></div>
+<div><dt>Start date</dt><dd>2026-04-01</dd></div>
+<div><dt>End date</dt><dd>2027-03-31</dd></div>
+<div><dt>Billing cycle</dt><dd><span class="pill ">MONTHLY</span></dd></div>
+<div><dt>Base amount</dt><dd>2500.00</dd></div>
+<div><dt>Discount amount</dt><dd>2500.00</dd></div>
+<div><dt>Tax amount</dt><dd>2500.00</dd></div>
+<div><dt>Final amount</dt><dd>2500.00</dd></div>
+<div><dt>Currency</dt><dd>INR</dd></div>
+<div><dt>Status</dt><dd><span class="pill ">TRIAL</span></dd></div>
+</dl>
+<p class="muted small">Source: <code>GET /api/v1/schools/{schoolId}/subscriptions/active</code></p>
+<!-- POST /api/v1/schools/{schoolId}/subscriptions -->
+<details class="form"><summary>Subscribe school</summary>
+<form>
+<label>School id *<input type="text" name="schoolId" value="70dd3554-14d7-307b-a7ef-28f0e36922b6" required></label>
+<label>Plan id *<input type="text" name="planId" value="c81a7f4f-a0ff-38ab-af15-53bd39f4efae" required></label>
+<label>Billing cycle<select name="billingCycle"><option value="">Any</option><option>MONTHLY</option><option>QUARTERLY</option><option>ANNUAL</option><option>ONE_TIME</option></select></label>
+<label>Discount amount<input type="number" name="discountAmount" value="2500.00"></label>
+<label class="check"><input type="checkbox" name="autoRenew" checked> Auto renew</label>
+<label class="check"><input type="checkbox" name="isTrial" checked> Is trial</label>
+<div class="wide"><button type="button" class="btn primary">Save</button> <button type="reset" class="btn">Reset</button></div>
+</form>
+</details>
+<details class="endpoints"><summary>All endpoints of this section (7)</summary>
+<table>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/schools/{schoolId}/subscriptions</code></td><td>Subscribe school</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/schools/{schoolId}/subscriptions/active</code></td><td>Get active subscription</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/schools/{schoolId}/subscriptions/entitlements</code></td><td>Get school entitlements</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/schools/{schoolId}/subscriptions/feature-overrides</code></td><td>Override feature</td></tr>
+<tr><td><span class="verb delete">DELETE</span></td><td><code>/api/v1/schools/{schoolId}/subscriptions/feature-overrides/{featureCode}</code></td><td>Remove feature override</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/schools/{schoolId}/subscriptions</code></td><td>Get subscription history</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/schools/{schoolId}/subscriptions/{subscriptionId}/cancel</code></td><td>Cancel subscription</td></tr>
+</table>
+</details>
+</section>
+
+<!-- SubscriptionPlanController · samples/api/platform-subscription/SubscriptionPlanController.md -->
+<section class="card" id="SubscriptionPlanController">
+<h2>Subscription plan</h2>
+<!-- GET /api/v1/subscription-plans -->
+<form class="filters">
+<label>Status<select name="status"><option value="">Any</option><option>DRAFT</option><option>ACTIVE</option><option>DEPRECATED</option><option>ARCHIVED</option></select></label>
+<button type="button" class="btn primary">Apply</button>
+</form>
+<div class="scroll"><table>
+<thead><tr><th>Plan code</th><th>Version</th><th>Name</th><th>Description</th><th>Billing cycle</th><th>Base price</th><th>Currency</th><th>Trial days</th><th></th></tr></thead>
+<tbody>
+<tr><td>SP-001</td><td>0</td><td>Subscription plan 1</td><td>Subscription plan for the 2026-27 session</td><td><span class="pill ">MONTHLY</span></td><td>2500.00</td><td>INR</td><td>10</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>SP-002</td><td>0</td><td>Subscription plan 2</td><td>Subscription plan for the 2026-27 session</td><td><span class="pill ">QUARTERLY</span></td><td>1800.00</td><td>INR</td><td>10</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>SP-003</td><td>0</td><td>Subscription plan 3</td><td>Subscription plan for the 2026-27 session</td><td><span class="pill ">ANNUAL</span></td><td>3200.00</td><td>INR</td><td>10</td><td class="actions"><a href="#">Open</a></td></tr>
+</tbody>
+</table></div>
+<p class="muted small">Source: <code>GET /api/v1/subscription-plans</code></p>
+<!-- GET /api/v1/subscription-plans/{id} -->
+<h3>Details</h3>
+<dl class="details">
+<div><dt>Plan code</dt><dd>SP-001</dd></div>
+<div><dt>Version</dt><dd>0</dd></div>
+<div><dt>Name</dt><dd>Subscription plan 1</dd></div>
+<div><dt>Description</dt><dd>Subscription plan for the 2026-27 session</dd></div>
+<div><dt>Billing cycle</dt><dd><span class="pill ">MONTHLY</span></dd></div>
+<div><dt>Base price</dt><dd>2500.00</dd></div>
+<div><dt>Currency</dt><dd>INR</dd></div>
+<div><dt>Trial days</dt><dd>10</dd></div>
+<div><dt>Status</dt><dd><span class="pill warn">DRAFT</span></dd></div>
+<div><dt>Effective from</dt><dd>2026-11-22</dd></div>
+<div><dt>Effective to</dt><dd>2026-11-22</dd></div>
+<div><dt>Tier</dt><dd><span class="pill ">FREE</span></dd></div>
+</dl>
+<p class="muted small">Source: <code>GET /api/v1/subscription-plans/{id}</code></p>
+<!-- POST /api/v1/subscription-plans -->
+<details class="form"><summary>Create plan</summary>
+<form>
+<label>Plan code *<input type="text" name="planCode" value="SP-001" required></label>
+<label>Name *<input type="text" name="name" value="Subscription plan 1" required></label>
+<label class="wide">Description<textarea name="description" rows="2">Subscription plan for the 2026-27 session</textarea></label>
+<label>Billing cycle *<select name="billingCycle"><option>MONTHLY</option><option>QUARTERLY</option><option>ANNUAL</option><option>ONE_TIME</option></select></label>
+<label>Base price *<input type="number" name="basePrice" value="2500.00" required></label>
+<label>Currency<input type="text" name="currency" value="INR"></label>
+<label>Trial days<input type="number" name="trialDays" value="10"></label>
+<label>Effective from<input type="date" name="effectiveFrom" value="2026-11-22"></label>
+<label>Tier<select name="tier"><option value="">Any</option><option>FREE</option><option>STARTER</option><option>PRO</option><option>MAX</option><option>TIER_1</option><option>TIER_2</option><option>TIER_3</option><option>CUSTOM</option></select></label>
+<label class="check"><input type="checkbox" name="isCustom" checked> Is custom</label>
+<label>Target school id<input type="text" name="targetSchoolId" value="1131734e-d6dc-3745-bbcb-b812727a2474"></label>
+<label class="wide">Features<span class="muted small">array of object PlanFeatureRequest (see the API file)</span></label>
+<div class="wide"><button type="button" class="btn primary">Save</button> <button type="reset" class="btn">Reset</button></div>
+</form>
+</details>
+<details class="endpoints"><summary>All endpoints of this section (13)</summary>
+<table>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/subscription-plans/tiers</code></td><td>Get available tiers</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/subscription-plans/tier/{tier}</code></td><td>Get plans by tier</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/subscription-plans/modules</code></td><td>Get modular catalog</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/subscription-plans/calculate-quote</code></td><td>Calculate quote</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/subscription-plans/custom-plan</code></td><td>Create custom school plan</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/subscription-plans/catalog</code></td><td>Get public catalog</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/subscription-plans/features</code></td><td>Get all features</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/subscription-plans/{id}</code></td><td>Get plan by id</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/subscription-plans/code/{planCode}</code></td><td>Get active plan by code</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/subscription-plans</code></td><td>Get all plans</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/subscription-plans</code></td><td>Create plan</td></tr>
+<tr><td><span class="verb patch">PATCH</span></td><td><code>/api/v1/subscription-plans/{id}/publish</code></td><td>Publish plan</td></tr>
+<tr><td><span class="verb patch">PATCH</span></td><td><code>/api/v1/subscription-plans/{id}/deprecate</code></td><td>Deprecate plan</td></tr>
+</table>
+</details>
+</section>
+</main>
+</div>
+</body>
+</html>

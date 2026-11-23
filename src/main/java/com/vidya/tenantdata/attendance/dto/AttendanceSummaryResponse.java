@@ -69,4 +69,10 @@ public class AttendanceSummaryResponse {
 
     @Schema(description = "Count of records on dates that are now non-working days without override", example = "1")
     private long excludedNonWorkingDayRecords;
+
+    @Schema(description = "Minimum attendance the school requires (attendance rules); null when not configured", example = "75.00")
+    private BigDecimal minimumRequiredPercentage;
+
+    @Schema(description = "attendancePercentage is below the school's minimum")
+    private boolean belowMinimum;
 }

@@ -183,7 +183,7 @@ Vidya is an enterprise-grade, multi-tenant SaaS School Management Platform. It a
 | Examination & Assessment | **Implemented** | `com.vidya.tenantdata.examination.*` (V17, Step 25) |
 | Grading & Report Cards | **Planned** | Step 26 |
 | Fee Structure & Invoicing | **Planned** | Step 27 |
-| Fee Collection & Online Pay | **Planned** | Step 28 |
+| Fee Collection & Online Pay | **Implemented** | `com.vidya.tenantdata.fee.*` (V29, V30): counter collection, school-own Cashfree / Razorpay, mandates and monthly auto-debit |
 | Parent & Student Portal | **Planned** | Step 31 |
 
 ---
@@ -877,6 +877,31 @@ Each module follows: Entity → Repository → DTO → Mapper → Service (inter
 - **Entities**: WorkingDayConfig, SchoolHoliday
 - **Saturday patterns**: ALL, FIRST_THIRD_FIFTH, SECOND_FOURTH
 - **Holiday types**: NATIONAL, REGIONAL, LOCAL, INSTITUTIONAL, EMERGENCY
+
+#### Overview Dashboard (`com.vidya.tenantdata.dashboard`)
+
+- **Read-only aggregates** over existing tenant modules (`DashboardQueries`, native SQL); owns only `dashboard_action_dismissal` (tenant V28).
+- **Access**: `DASHBOARD_READ` (master V39) plus, per block, the module's read permission and `*_SCOPE_ALL`; hidden blocks are listed in `unavailable`.
+- **Campuses** (`GET /api/v1/dashboard/campuses`) are served from master by `master.school.SchoolCampusController`, so neither side references the other.
+- See `tenantdata/dashboard/DASHBOARD.md`. **Implemented**, **Tested** (`DashboardServiceTest`, `DashboardQueriesPostgresIntegrationTest`).
+
+#### Fee Collection (`com.vidya.tenantdata.fee`)
+
+- **Ledgers** (one per student and year) with **lines** billed from the class fee structures of `tenantdata.operations` (tenant V29); counter **payments** allocated to lines, cheques held as pending until cleared, reversals instead of deletes; **concession requests** with maker-checker approval; **reminders** through the notification outbox.
+- **Money** is integer paise; set-up amounts (rupees) are converted on billing. Every change to a ledger's lines holds a pessimistic lock on the ledger row; the database checks concession + paid + pending ≤ amount per line.
+- **Access**: `FEE_READ` / `FEE_MANAGE` / `FEE_APPROVE` plus `FEE_SCOPE_ALL` for school-wide endpoints; single ledgers and receipts also go through `DataAccessService.canAccessStudent` (parents). Master V40 gives owners, admins and principals school-wide fee scope.
+- Feeds the overview dashboard (`FeeReportService`) and its `FEE_CONCESSION` action items.
+- See `tenantdata/fee/FEES.md`. **Implemented**, **Tested** (`FeeMathTest`, `FeeCollectionPostgresIntegrationTest`). Not built: exports, Tally, gateway refunds.
+
+#### Online Fees & Auto-debit (`com.vidya.tenantdata.fee.online`)
+
+- Each school's **own** Cashfree / Razorpay merchant account (keys in the tenant DB, secrets AES-GCM encrypted with `vidya.fees.online.secret-key`; the platform keys in `master.payment` stay for subscriptions). Gateways behind `FeeGateway` (plain REST over the JDK client, no SDKs), modelled on infi_payment.
+- **Mandates** (eNACH / UPI Autopay) per payer covering their children; a child on at most one live mandate (partial unique index).
+- **Monthly auto-debit** (tenant V30): a daily job plans one debit per mandate and child on the debit day (default the 10th), **higher class first, later classes after a gap**; invitations to families without a mandate, pre-debit notices, then submission. The due is held on the lines as a pending `NACH` payment (like a cheque) while the gateway call runs outside any transaction; bounces add a **NACH bounce charge + GST** as charge lines and schedule a retry.
+- **Links / orders** for several children: money applied higher class first; a child not fully covered stays part paid.
+- **Webhooks** at `/api/v1/webhooks/fees/{tenantCode}/{provider}` (open path; tenant from the URL, signature checked with that school's keys; idempotent; logged in `fee_gateway_event`).
+- Jobs: `OnlineFeeScheduler` (`vidya.fees.online.scheduler.enabled`), daily auto-debit and hourly mandate poll, per tenant, safe on several servers.
+- See `tenantdata/fee/online/ONLINE_FEES.md`. **Implemented**, **Tested** (`OnlineFeeUnitTest`, `OnlineFeesPostgresIntegrationTest`).
 
 ---
 

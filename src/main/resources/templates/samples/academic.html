@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<!--
+  Sample screen for: Academic years, classes, sections, set-up
+  Plain HTML + CSS with static sample data generated from the API (APiReqDoc/samples/api/academic/).
+  Each section names the endpoints that feed it. Rebuild it in the frontend framework; this file is not served by any controller.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Academic years, classes, sections, set-up</title>
+<link rel="stylesheet" href="samples.css">
+</head>
+<body>
+<header class="topbar"><a class="brand" href="index.html">Vidya</a><h1>Academic years, classes, sections, set-up</h1></header>
+<div class="layout">
+<nav class="side">
+<a href="security.html">Login, sessions, roles &amp; access</a>
+<a href="dashboard.html">Overview dashboard</a>
+<a href="student.html">Students (SIS, admission, enrolment, guardians)</a>
+<a href="staff.html">Staff &amp; HR set-up</a>
+<a href="user.html">School users &amp; accounts</a>
+<a href="academic.html" class="on">Academic years, classes, sections, set-up</a>
+<a href="subject.html">Subjects &amp; curriculum</a>
+<a href="assignment.html">Class teachers &amp; subject teachers</a>
+<a href="timetable.html">Timetable, bells, rooms, substitutions</a>
+<a href="calendar.html">Calendar &amp; holidays</a>
+<a href="attendance.html">Student attendance</a>
+<a href="examination.html">Exams, schedules, marks, grading</a>
+<a href="assessment.html">Assessments, question bank, report cards</a>
+<a href="fee.html">Fees &amp; finance (counter, online, auto-debit)</a>
+<a href="engagement.html">Communication, homework, daily report, parent portal</a>
+<a href="operations.html">Operations set-up (fees, attendance, transport, library)</a>
+<a href="readiness.html">School readiness</a>
+<a href="platform-school.html">Platform: schools &amp; campuses</a>
+<a href="platform-onboarding.html">Platform: onboarding</a>
+<a href="platform-workflow.html">Platform: onboarding workflow</a>
+<a href="platform-subscription.html">Platform: subscriptions &amp; plans</a>
+<a href="platform-payment.html">Platform: subscription payments</a>
+<a href="platform-community.html">Platform: communities (trusts / groups)</a>
+<a href="platform-hub.html">Platform: hub</a>
+<a href="platform-analytics.html">Platform: analytics</a>
+<a href="platform-support.html">Platform: support queries</a>
+</nav>
+<main>
+<div class="tabs"><a href="#AcademicClassController">Academic Classes</a><a href="#AcademicConfigController">Academic Configuration</a><a href="#AcademicSetupController">Academic Year Setup</a><a href="#AcademicStructureController">Academic Structure</a><a href="#AcademicYearController">Academic Years</a><a href="#AcademicYearPlanningController">Academic Year Setup</a><a href="#SectionController">Sections</a><a href="#StudentAcademicAssignmentController">Student Academic Assignments</a></div>
+
+<!-- AcademicClassController · samples/api/academic/AcademicClassController.md -->
+<section class="card" id="AcademicClassController">
+<h2>Academic Classes</h2>
+<p class="muted">Class and grade level management for the active tenant</p>
+<!-- GET /api/v1/tenant/academic-classes -->
+<form class="filters">
+<label>Status<select name="status"><option value="">Any</option><option>ACTIVE</option><option>INACTIVE</option><option>DELETED</option></select></label>
+<button type="button" class="btn primary">Apply</button>
+</form>
+<div class="scroll"><table>
+<thead><tr><th>Code</th><th>Name</th><th>Display name</th><th>Sort order</th><th>Stage</th><th>Grade level</th><th>Has streams</th><th>Status</th><th></th></tr></thead>
+<tbody>
+<tr><td>AC-001</td><td>Academic class 1</td><td>Riya Rao</td><td>1</td><td><span class="pill ">PRE_PRIMARY</span></td><td>1</td><td><span class="pill ok">Yes</span></td><td><span class="pill ok">ACTIVE</span></td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>AC-002</td><td>Academic class 2</td><td>Aman Verma</td><td>2</td><td><span class="pill ">PRIMARY</span></td><td>2</td><td><span class="pill ok">Yes</span></td><td><span class="pill bad">INACTIVE</span></td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>AC-003</td><td>Academic class 3</td><td>Kavya Iyer</td><td>3</td><td><span class="pill ">MIDDLE</span></td><td>3</td><td><span class="pill">No</span></td><td><span class="pill ">DELETED</span></td><td class="actions"><a href="#">Open</a></td></tr>
+</tbody>
+</table></div>
+<p class="muted small">Source: <code>GET /api/v1/tenant/academic-classes</code></p>
+<!-- GET /api/v1/tenant/academic-classes/{id} -->
+<h3>Details</h3>
+<dl class="details">
+<div><dt>Code</dt><dd>AC-001</dd></div>
+<div><dt>Name</dt><dd>Academic class 1</dd></div>
+<div><dt>Display name</dt><dd>Riya Rao</dd></div>
+<div><dt>Sort order</dt><dd>1</dd></div>
+<div><dt>Stage</dt><dd><span class="pill ">PRE_PRIMARY</span></dd></div>
+<div><dt>Grade level</dt><dd>1</dd></div>
+<div><dt>Has streams</dt><dd><span class="pill ok">Yes</span></dd></div>
+<div><dt>Status</dt><dd><span class="pill ok">ACTIVE</span></dd></div>
+<div><dt>Created at</dt><dd>2026-11-22T04:30:00Z</dd></div>
+<div><dt>Updated at</dt><dd>2026-11-22T04:30:00Z</dd></div>
+<div><dt>Version</dt><dd>0</dd></div>
+</dl>
+<p class="muted small">Source: <code>GET /api/v1/tenant/academic-classes/{id}</code></p>
+<!-- POST /api/v1/tenant/academic-classes -->
+<details class="form"><summary>Create academic class / grade</summary>
+<form>
+<label>Code *<input type="text" name="code" value="AC-001" required></label>
+<label>Name *<input type="text" name="name" value="Academic class 1" required></label>
+<label>Display name<input type="text" name="displayName" value="Riya Rao"></label>
+<label>Sort order<input type="number" name="sortOrder" value="1"></label>
+<label>Grade level<input type="number" name="gradeLevel" value="1"></label>
+<label>Stage<select name="stage"><option value="">Any</option><option>PRE_PRIMARY</option><option>PRIMARY</option><option>MIDDLE</option><option>SECONDARY</option><option>SENIOR_SECONDARY</option></select></label>
+<label class="check"><input type="checkbox" name="hasStreams" checked> Has streams</label>
+<div class="wide"><button type="button" class="btn primary">Save</button> <button type="reset" class="btn">Reset</button></div>
+</form>
+</details>
+<details class="endpoints"><summary>All endpoints of this section (5)</summary>
+<table>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/tenant/academic-classes</code></td><td>Create academic class / grade</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/tenant/academic-classes/{id}</code></td><td>Get academic class by ID</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/tenant/academic-classes</code></td><td>List academic classes with pagination</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/tenant/academic-classes/{id}</code></td><td>Update academic class</td></tr>
+<tr><td><span class="verb delete">DELETE</span></td><td><code>/api/v1/tenant/academic-classes/{id}</code></td><td>Soft delete academic class</td></tr>
+</table>
+</details>
+</section>
+
+<!-- AcademicConfigController · samples/api/academic/AcademicConfigController.md -->
+<section class="card" id="AcademicConfigController">
+<h2>Academic Configuration</h2>
+<p class="muted">Class-teacher and subject-teacher mapping, syllabus and lesson plans. Subjects: /api/v1/subjects; subjects per class: /api/v1/academic-structure and /api/v1/class-subject-assignments</p>
+<!-- GET /api/v1/academic-config/syllabi -->
+<form class="filters">
+<label>Academic year id<input type="text" name="academicYearId" value="e007272e-5984-3753-9104-2d899e58fb35"></label>
+<label>Academic class id<input type="text" name="academicClassId" value="544208c0-8100-3d80-a220-cccbfc29768b"></label>
+<label>Subject id<input type="text" name="subjectId" value="9802ac29-d6e2-3a81-b8c9-08ed66ecb32b"></label>
+<label>Status<select name="status"><option value="">Any</option><option>DRAFT</option><option>PUBLISHED</option><option>ARCHIVED</option></select></label>
+<button type="button" class="btn primary">Apply</button>
+</form>
+<div class="scroll"><table>
+<thead><tr><th>Code</th><th>Class name</th><th>Subject name</th><th>Title</th><th>Description</th><th>Reference books</th><th>Status</th><th>Unit count</th><th></th></tr></thead>
+<tbody>
+<tr><td>S-001</td><td>Class 9</td><td>Mathematics</td><td>Syllabus 1</td><td>Syllabus for the 2026-27 session</td><td>REF-2026-0001</td><td><span class="pill warn">DRAFT</span></td><td>42</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>S-002</td><td>Class 4</td><td>Science</td><td>Syllabus 2</td><td>Syllabus for the 2026-27 session</td><td>REF-2026-0002</td><td><span class="pill ok">PUBLISHED</span></td><td>37</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>S-003</td><td>Class 10</td><td>English</td><td>Syllabus 3</td><td>Syllabus for the 2026-27 session</td><td>REF-2026-0003</td><td><span class="pill ">ARCHIVED</span></td><td>18</td><td class="actions"><a href="#">Open</a></td></tr>
+</tbody>
+</table></div>
+<p class="muted small">Source: <code>GET /api/v1/academic-config/syllabi</code></p>
+<!-- GET /api/v1/academic-config/syllabi/{id} -->
+<h3>Details</h3>
+<dl class="details">
+<div><dt>Code</dt><dd>S-001</dd></div>
+<div><dt>Class name</dt><dd>Class 9</dd></div>
+<div><dt>Subject name</dt><dd>Mathematics</dd></div>
+<div><dt>Title</dt><dd>Syllabus 1</dd></div>
+<div><dt>Description</dt><dd>Syllabus for the 2026-27 session</dd></div>
+<div><dt>Reference books</dt><dd>REF-2026-0001</dd></div>
+<div><dt>Status</dt><dd><span class="pill warn">DRAFT</span></dd></div>
+<div><dt>Unit count</dt><dd>42</dd></div>
+<div><dt>Topic count</dt><dd>42</dd></div>
+<div><dt>Planned periods</dt><dd>1</dd></div>
+<div><dt>Coverage percent</dt><dd>14</dd></div>
+</dl>
+<p class="muted small">Source: <code>GET /api/v1/academic-config/syllabi/{id}</code></p>
+<!-- POST /api/v1/academic-config/syllabi/copy -->
+<details class="form"><summary>Copy last year's syllabi into a new year</summary>
+<form>
+<label>From academic year id *<input type="text" name="fromAcademicYearId" value="86d6cef2-33a5-3562-9566-7bf2ba5d9b70" required></label>
+<label>To academic year id *<input type="text" name="toAcademicYearId" value="19faade9-a2e8-33d6-8032-1a41e63fb20e" required></label>
+<label class="wide">Academic class ids<span class="muted small">array of uuid (see the API file)</span></label>
+<div class="wide"><button type="button" class="btn primary">Save</button> <button type="reset" class="btn">Reset</button></div>
+</form>
+</details>
+<details class="endpoints"><summary>All endpoints of this section (19)</summary>
+<table>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/academic-config/overview</code></td><td>Who teaches what</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/academic-config/workload</code></td><td>Teacher workload</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/academic-config/class-teachers</code></td><td>Set class teachers for many sections</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/academic-config/subject-teachers</code></td><td>Set subject teachers for many classes and sections</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/academic-config/syllabi</code></td><td>Syllabi of a year</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/academic-config/syllabi/{id}</code></td><td>One syllabus with units and topics</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/academic-config/syllabi</code></td><td>Create or replace the syllabus of a class × subject × year</td></tr>
+<tr><td><span class="verb patch">PATCH</span></td><td><code>/api/v1/academic-config/syllabi/{id}/status</code></td><td>Publish, archive or move a syllabus back to draft</td></tr>
+<tr><td><span class="verb delete">DELETE</span></td><td><code>/api/v1/academic-config/syllabi/{id}</code></td><td>Delete syllabus</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/academic-config/syllabi/copy</code></td><td>Copy last year's syllabi into a new year</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/academic-config/syllabi/{id}/progress</code></td><td>Mark topics covered in a section</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/academic-config/lesson-plans</code></td><td>Lesson plans</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/academic-config/lesson-plans/{id}</code></td><td>Lesson plan</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/academic-config/lesson-plans</code></td><td>Write a lesson plan</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/academic-config/lesson-plans/{id}</code></td><td>Update lesson plan</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/academic-config/lesson-plans/{id}/submit</code></td><td>Submit lesson plan</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/academic-config/lesson-plans/{id}/review</code></td><td>Approve or return a submitted lesson plan</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/academic-config/lesson-plans/{id}/deliver</code></td><td>The lesson was taught</td></tr>
+<tr><td><span class="verb delete">DELETE</span></td><td><code>/api/v1/academic-config/lesson-plans/{id}</code></td><td>Delete lesson plan</td></tr>
+</table>
+</details>
+</section>
+
+<!-- AcademicSetupController · samples/api/academic/AcademicSetupController.md -->
+<section class="card" id="AcademicSetupController">
+<h2>Academic Year Setup</h2>
+<p class="muted">Set up a new academic year, track setup progress, and promote students</p>
+<!-- GET /api/v1/academic-years/{id}/setup-status -->
+<h3>Details</h3>
+<dl class="details">
+<div><dt>Code</dt><dd>SS-001</dd></div>
+<div><dt>Name</dt><dd>Setup status 1</dd></div>
+<div><dt>Start date</dt><dd>2026-04-01</dd></div>
+<div><dt>End date</dt><dd>2027-03-31</dd></div>
+<div><dt>Status</dt><dd><span class="pill warn">DRAFT</span></dd></div>
+<div><dt>Current</dt><dd><span class="pill ok">Yes</span></dd></div>
+<div><dt>Required done</dt><dd>1</dd></div>
+<div><dt>Required total</dt><dd>42</dd></div>
+<div><dt>Percent complete</dt><dd>1</dd></div>
+<div><dt>Ready to start</dt><dd><span class="pill ok">Yes</span></dd></div>
+</dl>
+<p class="muted small">Source: <code>GET /api/v1/academic-years/{id}/setup-status</code></p>
+<!-- POST /api/v1/academic-years/setup -->
+<details class="form"><summary>Create an academic year in one step</summary>
+<form>
+<label>Code *<input type="text" name="code" value="AYS-001" required></label>
+<label>Name *<input type="text" name="name" value="Academic year setup 1" required></label>
+<label>Start date *<input type="date" name="startDate" value="2026-04-01" required></label>
+<label>End date *<input type="date" name="endDate" value="2027-03-31" required></label>
+<label class="check"><input type="checkbox" name="makeCurrent" checked> Make current</label>
+<label class="wide">Terms<span class="muted small">array of object Term (see the API file)</span></label>
+<label class="wide">Working days<span class="muted small">object WorkingDays (see the API file)</span></label>
+<label class="wide">Copy from<span class="muted small">object CopyFrom (see the API file)</span></label>
+<div class="wide"><button type="button" class="btn primary">Save</button> <button type="reset" class="btn">Reset</button></div>
+</form>
+</details>
+<details class="endpoints"><summary>All endpoints of this section (4)</summary>
+<table>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/academic-years/setup</code></td><td>Create an academic year in one step</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/academic-years/{id}/setup-status</code></td><td>Setup checklist of an academic year</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/academic-years/{id}/promotion/preview</code></td><td>Preview year-end promotion</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/academic-years/{id}/promotion</code></td><td>Promote students into the next academic year</td></tr>
+</table>
+</details>
+</section>
+
+<!-- AcademicStructureController · samples/api/academic/AcademicStructureController.md -->
+<section class="card" id="AcademicStructureController">
+<h2>Academic Structure</h2>
+<p class="muted">Classes, sections, streams, subjects, curriculum and grading in one place</p>
+<!-- GET /api/v1/academic-structure/streams -->
+<div class="scroll"><table>
+<thead><tr><th>Code</th><th>Name</th><th>Description</th><th>Sort order</th><th>Status</th><th>Sections</th><th>Curriculum subjects</th><th></th></tr></thead>
+<tbody>
+<tr><td>S-001</td><td>Stream 1</td><td>Stream for the 2026-27 session</td><td>1</td><td><span class="pill ok">ACTIVE</span></td><td>1</td><td>1</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>S-002</td><td>Stream 2</td><td>Stream for the 2026-27 session</td><td>2</td><td><span class="pill bad">INACTIVE</span></td><td>2</td><td>2</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>S-003</td><td>Stream 3</td><td>Stream for the 2026-27 session</td><td>3</td><td><span class="pill ">DELETED</span></td><td>3</td><td>3</td><td class="actions"><a href="#">Open</a></td></tr>
+</tbody>
+</table></div>
+<p class="muted small">Source: <code>GET /api/v1/academic-structure/streams</code></p>
+<!-- POST /api/v1/academic-structure/streams -->
+<details class="form"><summary>Create a stream</summary>
+<form>
+<label>Code *<input type="text" name="code" value="S-001" required></label>
+<label>Name *<input type="text" name="name" value="Stream 1" required></label>
+<label class="wide">Description<textarea name="description" rows="2">Stream for the 2026-27 session</textarea></label>
+<label>Sort order<input type="number" name="sortOrder" value="1"></label>
+<div class="wide"><button type="button" class="btn primary">Save</button> <button type="reset" class="btn">Reset</button></div>
+</form>
+</details>
+<details class="endpoints"><summary>All endpoints of this section (10)</summary>
+<table>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/academic-structure/overview</code></td><td>Whole structure of a year</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/academic-structure/templates/indian-k12</code></td><td>Apply the standard Indian K–12 structure</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/academic-structure/classes/{classId}</code></td><td>Set a class's stage, grade level, streams and grading scale</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/academic-structure/sections/streams</code></td><td>Set the stream of sections</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/academic-structure/curricula/{curriculumId}/subjects</code></td><td>Save the curriculum subject grid for some classes</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/academic-structure/streams</code></td><td>List streams with usage</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/academic-structure/streams</code></td><td>Create a stream</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/academic-structure/streams/{id}</code></td><td>Update a stream</td></tr>
+<tr><td><span class="verb patch">PATCH</span></td><td><code>/api/v1/academic-structure/streams/{id}/status</code></td><td>Activate or deactivate a stream</td></tr>
+<tr><td><span class="verb delete">DELETE</span></td><td><code>/api/v1/academic-structure/streams/{id}</code></td><td>Delete an unused stream</td></tr>
+</table>
+</details>
+</section>
+
+<!-- AcademicYearController · samples/api/academic/AcademicYearController.md -->
+<section class="card" id="AcademicYearController">
+<h2>Academic Years</h2>
+<p class="muted">Academic year lifecycle operations for the active tenant</p>
+<!-- GET /api/v1/academic-years -->
+<form class="filters">
+<label>Status<select name="status"><option value="">Any</option><option>DRAFT</option><option>ACTIVE</option><option>CLOSED</option><option>CANCELLED</option><option>DELETED</option></select></label>
+<label class="check"><input type="checkbox" name="isCurrent" checked> Is current</label>
+<button type="button" class="btn primary">Apply</button>
+</form>
+<div class="scroll"><table>
+<thead><tr><th>Code</th><th>Name</th><th>Start date</th><th>End date</th><th>Current</th><th>Status</th><th>Created at</th><th>Updated at</th><th></th></tr></thead>
+<tbody>
+<tr><td>AY-001</td><td>Academic year 1</td><td>2026-04-01</td><td>2027-03-31</td><td><span class="pill ok">Yes</span></td><td><span class="pill warn">DRAFT</span></td><td>2026-11-22T04:30:00Z</td><td>2026-11-22T04:30:00Z</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>AY-002</td><td>Academic year 2</td><td>2026-04-01</td><td>2027-03-31</td><td><span class="pill ok">Yes</span></td><td><span class="pill ok">ACTIVE</span></td><td>2026-11-21T04:30:00Z</td><td>2026-11-21T04:30:00Z</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>AY-003</td><td>Academic year 3</td><td>2026-04-01</td><td>2027-03-31</td><td><span class="pill">No</span></td><td><span class="pill ">CLOSED</span></td><td>2026-11-20T04:30:00Z</td><td>2026-11-20T04:30:00Z</td><td class="actions"><a href="#">Open</a></td></tr>
+</tbody>
+</table></div>
+<p class="muted small">Source: <code>GET /api/v1/academic-years</code></p>
+<!-- GET /api/v1/academic-years/{id} -->
+<h3>Details</h3>
+<dl class="details">
+<div><dt>Code</dt><dd>AY-001</dd></div>
+<div><dt>Name</dt><dd>Academic year 1</dd></div>
+<div><dt>Start date</dt><dd>2026-04-01</dd></div>
+<div><dt>End date</dt><dd>2027-03-31</dd></div>
+<div><dt>Current</dt><dd><span class="pill ok">Yes</span></dd></div>
+<div><dt>Status</dt><dd><span class="pill warn">DRAFT</span></dd></div>
+<div><dt>Created at</dt><dd>2026-11-22T04:30:00Z</dd></div>
+<div><dt>Updated at</dt><dd>2026-11-22T04:30:00Z</dd></div>
+<div><dt>Version</dt><dd>0</dd></div>
+</dl>
+<p class="muted small">Source: <code>GET /api/v1/academic-years/{id}</code></p>
+<!-- POST /api/v1/academic-years -->
+<details class="form"><summary>Create academic year</summary>
+<form>
+<label>Code *<input type="text" name="code" value="AY-001" required></label>
+<label>Name *<input type="text" name="name" value="Academic year 1" required></label>
+<label>Start date *<input type="date" name="startDate" value="2026-04-01" required></label>
+<label>End date *<input type="date" name="endDate" value="2027-03-31" required></label>
+<label class="check"><input type="checkbox" name="current" checked> Current</label>
+<div class="wide"><button type="button" class="btn primary">Save</button> <button type="reset" class="btn">Reset</button></div>
+</form>
+</details>
+<details class="endpoints"><summary>All endpoints of this section (10)</summary>
+<table>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/academic-years/{id}/sections/{sectionId}/timetable</code></td><td>Get active section timetable for academic year</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/academic-years</code></td><td>Create academic year</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/academic-years/{id}</code></td><td>Get academic year by ID</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/academic-years/current</code></td><td>Get current operational academic year</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/academic-years</code></td><td>List academic years with pagination and filters</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/academic-years/{id}</code></td><td>Update academic year details</td></tr>
+<tr><td><span class="verb patch">PATCH</span></td><td><code>/api/v1/academic-years/{id}/activate</code></td><td>Activate academic year</td></tr>
+<tr><td><span class="verb patch">PATCH</span></td><td><code>/api/v1/academic-years/{id}/close</code></td><td>Close academic year</td></tr>
+<tr><td><span class="verb patch">PATCH</span></td><td><code>/api/v1/academic-years/{id}/current</code></td><td>Set academic year as the current operational year</td></tr>
+<tr><td><span class="verb delete">DELETE</span></td><td><code>/api/v1/academic-years/{id}</code></td><td>Soft delete academic year</td></tr>
+</table>
+</details>
+</section>
+
+<!-- AcademicYearPlanningController · samples/api/academic/AcademicYearPlanningController.md -->
+<section class="card" id="AcademicYearPlanningController">
+<h2>Academic Year Setup</h2>
+<p class="muted">Set up a new academic year, track setup progress, and promote students</p>
+<!-- GET /api/v1/academic-years/{id}/holidays/suggestions -->
+<h3>Details</h3>
+<dl class="details">
+<div><dt>Region</dt><dd>North</dd></div>
+<div><dt>Provider</dt><dd>Sample provider</dd></div>
+<div><dt>Provider status</dt><dd>ACTIVE</dd></div>
+<div><dt>Provider fetched at</dt><dd>2026-11-22T04:30:00Z</dd></div>
+<div><dt>Message</dt><dd>Please bring the signed consent slip by Friday.</dd></div>
+<div><dt>Attribution</dt><dd>Sample attribution</dd></div>
+</dl>
+<p class="muted small">Source: <code>GET /api/v1/academic-years/{id}/holidays/suggestions</code></p>
+<!-- POST /api/v1/academic-years/{id}/start -->
+<details class="form"><summary>Start the academic year</summary>
+<form>
+<label class="check"><input type="checkbox" name="makeCurrent" checked> Make current</label>
+<label>Timetable id<input type="text" name="timetableId" value="8f9b5cfc-2b34-3926-b7b3-81672ce3f955"></label>
+<label class="check"><input type="checkbox" name="force" checked> Force</label>
+<div class="wide"><button type="button" class="btn primary">Save</button> <button type="reset" class="btn">Reset</button></div>
+</form>
+</details>
+<details class="endpoints"><summary>All endpoints of this section (7)</summary>
+<table>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/academic-years/{id}/holidays/suggestions</code></td><td>Suggested holidays for the year</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/academic-years/{id}/holidays/bulk</code></td><td>Add the year's holidays in one call</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/academic-years/{id}/timetable/carry-over</code></td><td>Start this year's timetable from last year's</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/academic-years/{id}/sections/bulk</code></td><td>Create the same sections for many classes</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/academic-years/{id}/class-subjects/from-curriculum</code></td><td>Create class subjects from the curriculum</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/academic-years/{id}/class-teachers/bulk</code></td><td>Assign class teachers to many sections</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/academic-years/{id}/start</code></td><td>Start the academic year</td></tr>
+</table>
+</details>
+</section>
+
+<!-- SectionController · samples/api/academic/SectionController.md -->
+<section class="card" id="SectionController">
+<h2>Sections</h2>
+<p class="muted">Class section management for active tenant and academic year</p>
+<!-- GET /api/v1/tenant/sections -->
+<form class="filters">
+<label>Academic year id<input type="text" name="academicYearId" value="e007272e-5984-3753-9104-2d899e58fb35"></label>
+<label>Academic class id<input type="text" name="academicClassId" value="544208c0-8100-3d80-a220-cccbfc29768b"></label>
+<label>Status<select name="status"><option value="">Any</option><option>ACTIVE</option><option>INACTIVE</option><option>DELETED</option></select></label>
+<button type="button" class="btn primary">Apply</button>
+</form>
+<div class="scroll"><table>
+<thead><tr><th>Academic year code</th><th>Academic class code</th><th>Academic class name</th><th>Code</th><th>Name</th><th>Capacity</th><th>Active student count</th><th>Status</th><th></th></tr></thead>
+<tbody>
+<tr><td>S-001</td><td>Class 9</td><td>Class 9</td><td>S-001</td><td>Section 1</td><td>40</td><td>42</td><td><span class="pill ok">ACTIVE</span></td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>S-002</td><td>Class 4</td><td>Class 4</td><td>S-002</td><td>Section 2</td><td>40</td><td>37</td><td><span class="pill bad">INACTIVE</span></td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>S-003</td><td>Class 10</td><td>Class 10</td><td>S-003</td><td>Section 3</td><td>40</td><td>18</td><td><span class="pill ">DELETED</span></td><td class="actions"><a href="#">Open</a></td></tr>
+</tbody>
+</table></div>
+<p class="muted small">Source: <code>GET /api/v1/tenant/sections</code></p>
+<!-- GET /api/v1/tenant/sections/{id} -->
+<h3>Details</h3>
+<dl class="details">
+<div><dt>Academic year code</dt><dd>S-001</dd></div>
+<div><dt>Academic class code</dt><dd>Class 9</dd></div>
+<div><dt>Academic class name</dt><dd>Class 9</dd></div>
+<div><dt>Code</dt><dd>S-001</dd></div>
+<div><dt>Name</dt><dd>Section 1</dd></div>
+<div><dt>Capacity</dt><dd>40</dd></div>
+<div><dt>Active student count</dt><dd>42</dd></div>
+<div><dt>Status</dt><dd><span class="pill ok">ACTIVE</span></dd></div>
+<div><dt>Created at</dt><dd>2026-11-22T04:30:00Z</dd></div>
+<div><dt>Updated at</dt><dd>2026-11-22T04:30:00Z</dd></div>
+<div><dt>Version</dt><dd>0</dd></div>
+</dl>
+<p class="muted small">Source: <code>GET /api/v1/tenant/sections/{id}</code></p>
+<!-- POST /api/v1/tenant/sections -->
+<details class="form"><summary>Create section</summary>
+<form>
+<label>Academic year id *<input type="text" name="academicYearId" value="e007272e-5984-3753-9104-2d899e58fb35" required></label>
+<label>Academic class id *<input type="text" name="academicClassId" value="544208c0-8100-3d80-a220-cccbfc29768b" required></label>
+<label>Code *<input type="text" name="code" value="S-001" required></label>
+<label>Name *<input type="text" name="name" value="Section 1" required></label>
+<label>Capacity<input type="number" name="capacity" value="40"></label>
+<label>Stream id<input type="text" name="streamId" value="0bc1b986-9956-351f-826e-3b61ce1af6b1"></label>
+<div class="wide"><button type="button" class="btn primary">Save</button> <button type="reset" class="btn">Reset</button></div>
+</form>
+</details>
+<details class="endpoints"><summary>All endpoints of this section (5)</summary>
+<table>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/tenant/sections</code></td><td>Create section</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/tenant/sections/{id}</code></td><td>Get section by ID</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/tenant/sections</code></td><td>List sections with filters and pagination</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/tenant/sections/{id}</code></td><td>Update section</td></tr>
+<tr><td><span class="verb delete">DELETE</span></td><td><code>/api/v1/tenant/sections/{id}</code></td><td>Soft delete section</td></tr>
+</table>
+</details>
+</section>
+
+<!-- StudentAcademicAssignmentController · samples/api/academic/StudentAcademicAssignmentController.md -->
+<section class="card" id="StudentAcademicAssignmentController">
+<h2>Student Academic Assignments</h2>
+<p class="muted">Student class &amp; section placement and academic transfer operations</p>
+<!-- GET /api/v1/tenant/students/{studentId}/academic-assignments -->
+<div class="scroll"><table>
+<thead><tr><th>Student code</th><th>Admission number</th><th>Student name</th><th>Roll number</th><th>Status</th><th>Start date</th><th>End date</th><th>Created at</th><th></th></tr></thead>
+<tbody>
+<tr><td>SAA-001</td><td>VGS/2019/101</td><td>Riya Rao</td><td>12</td><td><span class="pill ok">ACTIVE</span></td><td>2026-04-01</td><td>2027-03-31</td><td>2026-11-22T04:30:00Z</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>SAA-002</td><td>VGS/2019/102</td><td>Aman Verma</td><td>13</td><td><span class="pill ok">COMPLETED</span></td><td>2026-04-01</td><td>2027-03-31</td><td>2026-11-21T04:30:00Z</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>SAA-003</td><td>VGS/2019/103</td><td>Kavya Iyer</td><td>14</td><td><span class="pill ">TRANSFERRED</span></td><td>2026-04-01</td><td>2027-03-31</td><td>2026-11-20T04:30:00Z</td><td class="actions"><a href="#">Open</a></td></tr>
+</tbody>
+</table></div>
+<p class="muted small">Source: <code>GET /api/v1/tenant/students/{studentId}/academic-assignments</code></p>
+<!-- GET /api/v1/tenant/students/{studentId}/academic-assignments/current -->
+<h3>Details</h3>
+<dl class="details">
+<div><dt>Student code</dt><dd>SAA-001</dd></div>
+<div><dt>Admission number</dt><dd>VGS/2019/101</dd></div>
+<div><dt>Student name</dt><dd>Riya Rao</dd></div>
+<div><dt>Roll number</dt><dd>12</dd></div>
+<div><dt>Status</dt><dd><span class="pill ok">ACTIVE</span></dd></div>
+<div><dt>Start date</dt><dd>2026-04-01</dd></div>
+<div><dt>End date</dt><dd>2027-03-31</dd></div>
+<div><dt>Created at</dt><dd>2026-11-22T04:30:00Z</dd></div>
+<div><dt>Updated at</dt><dd>2026-11-22T04:30:00Z</dd></div>
+<div><dt>Version</dt><dd>0</dd></div>
+</dl>
+<p class="muted small">Source: <code>GET /api/v1/tenant/students/{studentId}/academic-assignments/current</code></p>
+<!-- POST /api/v1/tenant/students/{studentId}/academic-assignments -->
+<details class="form"><summary>Assign student to class &amp; section</summary>
+<form>
+<label>Academic year id *<input type="text" name="academicYearId" value="e007272e-5984-3753-9104-2d899e58fb35" required></label>
+<label>Academic class id *<input type="text" name="academicClassId" value="544208c0-8100-3d80-a220-cccbfc29768b" required></label>
+<label>Section id *<input type="text" name="sectionId" value="1c35581b-02b2-3f00-bdbc-29ea5acdbfba" required></label>
+<label>Roll number<input type="text" name="rollNumber" value="12"></label>
+<label>Start date<input type="date" name="startDate" value="2026-04-01"></label>
+<div class="wide"><button type="button" class="btn primary">Save</button> <button type="reset" class="btn">Reset</button></div>
+</form>
+</details>
+<details class="endpoints"><summary>All endpoints of this section (6)</summary>
+<table>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/tenant/students/{studentId}/academic-assignments</code></td><td>Assign student to class &amp; section</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/tenant/students/{studentId}/academic-assignments</code></td><td>Get all academic placement history for a student</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/tenant/students/{studentId}/academic-assignments/current</code></td><td>Get current active academic assignment for a student</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/tenant/students/{studentId}/academic-assignments/{assignmentId}</code></td><td>Get student assignment by ID</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/tenant/students/{studentId}/academic-assignments/{assignmentId}</code></td><td>Update student assignment details (roll number/dates)</td></tr>
+<tr><td><span class="verb patch">PATCH</span></td><td><code>/api/v1/tenant/students/{studentId}/academic-assignments/{assignmentId}/transfer</code></td><td>Transfer student to a new section or class</td></tr>
+</table>
+</details>
+</section>
+</main>
+</div>
+</body>
+</html>

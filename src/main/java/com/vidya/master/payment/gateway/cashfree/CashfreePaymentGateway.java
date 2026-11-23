@@ -72,27 +72,13 @@ public class CashfreePaymentGateway implements PaymentGatewayProvider {
     @Override
     public PaymentVerificationResult verifyPayment(PaymentVerificationRequest request) {
         log.info("Verifying Cashfree payment for transaction: {}", request.getTransactionCode());
-
-        PaymentMethod method = PaymentMethod.UPI;
-        if (request.getRawPayload() != null && request.getRawPayload().containsKey("payment_group")) {
-            String methodStr = String.valueOf(request.getRawPayload().get("payment_group")).toUpperCase();
-            try {
-                method = PaymentMethod.valueOf(methodStr);
-            } catch (IllegalArgumentException ignored) {
-                method = PaymentMethod.OTHER;
-            }
-        }
-
-        String providerTxnId = request.getProviderPaymentId() != null
-                ? request.getProviderPaymentId()
-                : "cf_pay_" + UUID.randomUUID().toString().substring(0, 10);
-
+        // Fail closed: client-supplied data cannot prove settlement. Cashfree payments are settled
+        // only by a signed webhook (see processWebhook) until server-side order-status lookup exists.
         return PaymentVerificationResult.builder()
-                .successful(true)
+                .successful(false)
                 .providerOrderId(request.getProviderOrderId())
-                .providerTransactionId(providerTxnId)
-                .paymentMethod(method)
-                .rawResponse(request.getRawPayload() != null ? request.getRawPayload() : Map.of("order_status", "PAID"))
+                .providerTransactionId(request.getProviderPaymentId())
+                .failureReason("Cashfree payments are confirmed via signed webhook only")
                 .build();
     }
 
@@ -115,12 +101,15 @@ public class CashfreePaymentGateway implements PaymentGatewayProvider {
             String timestamp = headers.getOrDefault("x-webhook-timestamp", headers.get("X-Webhook-Timestamp"));
             String signature = headers.getOrDefault("x-webhook-signature", headers.get("X-Webhook-Signature"));
 
-            if (timestamp != null && signature != null && !properties.getSecretKey().isBlank() && !"cf_test_vidya_secret".equals(properties.getSecretKey())) {
-                String signatureData = timestamp + payload;
-                if (!verifyCashfreeSignature(signatureData, signature, properties.getSecretKey())) {
-                    log.warn("Invalid Cashfree webhook signature");
-                    return WebhookProcessingResult.builder().handled(false).failureReason("Invalid Cashfree webhook signature").build();
-                }
+            // Fail closed: every webhook must carry a valid timestamp+signature (no test-secret bypass).
+            if (timestamp == null || timestamp.isBlank() || signature == null || signature.isBlank()
+                    || properties.getSecretKey() == null || properties.getSecretKey().isBlank()) {
+                log.warn("Rejected Cashfree webhook: missing signature/timestamp or secret not configured");
+                return WebhookProcessingResult.builder().handled(false).failureReason("Missing Cashfree webhook signature").build();
+            }
+            if (!verifyCashfreeSignature(timestamp + payload, signature, properties.getSecretKey())) {
+                log.warn("Invalid Cashfree webhook signature");
+                return WebhookProcessingResult.builder().handled(false).failureReason("Invalid Cashfree webhook signature").build();
             }
 
             JsonNode root = objectMapper.readTree(payload);

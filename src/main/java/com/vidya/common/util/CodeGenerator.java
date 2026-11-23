@@ -151,6 +151,43 @@ public final class CodeGenerator {
         return "CUR-" + generate(8);
     }
 
+    /** Syllabus code, e.g. {@code SYL-A1B2C3D4}. */
+    public static String syllabusCode() {
+        return "SYL-" + generate(8);
+    }
+
+    /** Lesson plan code, e.g. {@code LSP-A1B2C3D4}. */
+    public static String lessonPlanCode() {
+        return "LSP-" + generate(8);
+    }
+
+    public static String homeworkCode() {
+        return "HWK-" + generate(8);
+    }
+
+    public static String classActivityCode() {
+        return "ACT-" + generate(8);
+    }
+
+    public static String announcementCode() {
+        return "ANN-" + generate(8);
+    }
+
+    /** Fee structure code, e.g. {@code FST-A1B2C3D4}. */
+    public static String feeStructureCode() {
+        return "FST-" + generate(8);
+    }
+
+    /** Transport vehicle code, e.g. {@code VEH-A1B2C3D4}. */
+    public static String vehicleCode() {
+        return "VEH-" + generate(8);
+    }
+
+    /** Transport route code, e.g. {@code RTE-A1B2C3D4}. */
+    public static String routeCode() {
+        return "RTE-" + generate(8);
+    }
+
     /**
      * Generates a teacher subject assignment code with prefix.
      * Example: {@code TSA-A1B2C3D4}
@@ -317,5 +354,43 @@ public final class CodeGenerator {
      */
     public static String ticketCode() {
         return "TKT-" + generate(8);
+    }
+
+    // ── assessment engine ──
+
+    public static String assessmentSchemeCode() {
+        return "ASC-" + generate(8);
+    }
+
+    public static String assessmentCode() {
+        return "ASM-" + generate(8);
+    }
+
+    public static String questionCode() {
+        return "QST-" + generate(8);
+    }
+
+    public static String blueprintCode() {
+        return "BPR-" + generate(8);
+    }
+
+    public static String questionPaperCode() {
+        return "QPR-" + generate(8);
+    }
+
+    public static String onlineExamCode() {
+        return "OEX-" + generate(8);
+    }
+
+    public static String omrBatchCode() {
+        return "OMR-" + generate(8);
+    }
+
+    public static String moderationBatchCode() {
+        return "MOD-" + generate(8);
+    }
+
+    public static String reevaluationRequestCode() {
+        return "REV-" + generate(8);
     }
 }

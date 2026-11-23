@@ -219,6 +219,7 @@ class PaymentServiceTest {
                 .transactionCode("TXN-12345")
                 .providerPaymentId("pay_12345")
                 .providerOrderId("order_rzp_123")
+                .providerSignature(hmacSha256Hex("order_rzp_123|pay_12345", "rzp_secret"))
                 .build();
 
         when(paymentTransactionRepository.findByTransactionCode("TXN-12345")).thenReturn(Optional.of(tx));
@@ -228,6 +229,97 @@ class PaymentServiceTest {
 
         assertThat(response.getStatus()).isEqualTo(PaymentStatus.SUCCESS);
         assertThat(response.getProviderTransactionId()).isEqualTo("pay_12345");
+    }
+
+    @Test
+    @DisplayName("I0: verifyPayment without a signature must NOT mark the transaction SUCCESS (fail closed)")
+    void verifyPayment_MissingSignature_FailsClosed() {
+        PaymentTransaction tx = new PaymentTransaction(
+                "TXN-NOSIG", schoolId, null, null, new BigDecimal("1000.00"), "INR",
+                PaymentProvider.RAZORPAY, "IDEM-NOSIG", null);
+        tx.setProviderOrderId("order_rzp_123");
+
+        VerifyPaymentRequest request = VerifyPaymentRequest.builder()
+                .transactionCode("TXN-NOSIG")
+                .providerPaymentId("pay_12345")
+                .providerOrderId("order_rzp_123")
+                .build();
+
+        when(paymentTransactionRepository.findByTransactionCode("TXN-NOSIG")).thenReturn(Optional.of(tx));
+        when(paymentTransactionRepository.save(any(PaymentTransaction.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        PaymentTransactionResponse response = paymentService.verifyPayment(request);
+
+        assertThat(response.getStatus()).isNotEqualTo(PaymentStatus.SUCCESS);
+    }
+
+    @Test
+    @DisplayName("I0: verifyPayment with a forged signature must NOT mark the transaction SUCCESS")
+    void verifyPayment_ForgedSignature_FailsClosed() {
+        PaymentTransaction tx = new PaymentTransaction(
+                "TXN-FORGED", schoolId, null, null, new BigDecimal("1000.00"), "INR",
+                PaymentProvider.RAZORPAY, "IDEM-FORGED", null);
+        tx.setProviderOrderId("order_rzp_123");
+
+        VerifyPaymentRequest request = VerifyPaymentRequest.builder()
+                .transactionCode("TXN-FORGED")
+                .providerPaymentId("pay_12345")
+                .providerOrderId("order_rzp_123")
+                .providerSignature(hmacSha256Hex("order_rzp_123|pay_12345", "attacker_guess"))
+                .build();
+
+        when(paymentTransactionRepository.findByTransactionCode("TXN-FORGED")).thenReturn(Optional.of(tx));
+        when(paymentTransactionRepository.save(any(PaymentTransaction.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        assertThat(paymentService.verifyPayment(request).getStatus()).isNotEqualTo(PaymentStatus.SUCCESS);
+    }
+
+    @Test
+    @DisplayName("I0: a signature for a different order cannot settle this transaction")
+    void verifyPayment_OrderMismatch_Rejected() {
+        PaymentTransaction tx = new PaymentTransaction(
+                "TXN-MISMATCH", schoolId, null, null, new BigDecimal("1000.00"), "INR",
+                PaymentProvider.RAZORPAY, "IDEM-MISMATCH", null);
+        tx.setProviderOrderId("order_rzp_mine");
+
+        VerifyPaymentRequest request = VerifyPaymentRequest.builder()
+                .transactionCode("TXN-MISMATCH")
+                .providerPaymentId("pay_other")
+                .providerOrderId("order_rzp_other")
+                .providerSignature(hmacSha256Hex("order_rzp_other|pay_other", "rzp_secret"))
+                .build();
+
+        when(paymentTransactionRepository.findByTransactionCode("TXN-MISMATCH")).thenReturn(Optional.of(tx));
+
+        assertThatThrownBy(() -> paymentService.verifyPayment(request))
+                .isInstanceOf(com.vidya.common.exception.BusinessException.class);
+    }
+
+    @Test
+    @DisplayName("I0: MANUAL transactions cannot be settled through client verify")
+    void verifyPayment_Manual_Rejected() {
+        PaymentTransaction tx = new PaymentTransaction(
+                "TXN-MAN", schoolId, null, null, new BigDecimal("1000.00"), "INR",
+                PaymentProvider.MANUAL, "IDEM-MAN", null);
+
+        when(paymentTransactionRepository.findByTransactionCode("TXN-MAN")).thenReturn(Optional.of(tx));
+
+        assertThatThrownBy(() -> paymentService.verifyPayment(
+                VerifyPaymentRequest.builder().transactionCode("TXN-MAN").build()))
+                .isInstanceOf(com.vidya.common.exception.BusinessException.class);
+        assertThat(tx.getStatus()).isNotEqualTo(PaymentStatus.SUCCESS);
+    }
+
+    private static String hmacSha256Hex(String data, String secret) {
+        try {
+            javax.crypto.Mac mac = javax.crypto.Mac.getInstance("HmacSHA256");
+            mac.init(new javax.crypto.spec.SecretKeySpec(
+                    secret.getBytes(java.nio.charset.StandardCharsets.UTF_8), "HmacSHA256"));
+            return java.util.HexFormat.of().formatHex(
+                    mac.doFinal(data.getBytes(java.nio.charset.StandardCharsets.UTF_8)));
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     @Test

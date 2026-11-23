@@ -25,6 +25,8 @@ public class ManualPaymentConfirmRequest {
     @NotBlank(message = "Payment reference/UTR/Cheque number is required")
     private String referenceNumber;
 
+    /** @deprecated Ignored since onboarding I0: the confirmer is the authenticated user. */
+    @Deprecated
     private String confirmedBy;
 
     private String notes;

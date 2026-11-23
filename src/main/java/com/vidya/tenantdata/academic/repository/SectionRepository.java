@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
+import java.util.List;
 import java.util.UUID;
 
 @Repository
@@ -34,4 +35,9 @@ public interface SectionRepository extends JpaRepository<Section, UUID> {
     boolean existsByAcademicClassIdAndDeletedAtIsNull(UUID academicClassId);
 
     boolean existsByAcademicYearIdAndDeletedAtIsNull(UUID academicYearId);
+
+    /** Active sections of a year with their class loaded (promotion section matching). */
+    @Query("SELECT s FROM Section s JOIN FETCH s.academicClass WHERE s.academicYear.id = :academicYearId " +
+           "AND s.deletedAt IS NULL AND s.status = com.vidya.tenantdata.academic.enums.SectionStatus.ACTIVE")
+    List<Section> findActiveByAcademicYearId(@Param("academicYearId") UUID academicYearId);
 }

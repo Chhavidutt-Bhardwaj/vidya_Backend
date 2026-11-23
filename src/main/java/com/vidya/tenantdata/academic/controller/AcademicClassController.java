@@ -42,7 +42,7 @@ public class AcademicClassController {
     private final AcademicClassService academicClassService;
 
     @PostMapping
-    @PreAuthorize("hasAuthority('ACADEMIC_CLASS_CREATE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('ACADEMIC_CLASS_CREATE')")
     @Operation(summary = "Create academic class / grade")
     public ResponseEntity<ApiResponse<AcademicClassResponse>> createAcademicClass(
             @Valid @RequestBody CreateAcademicClassRequest request) {
@@ -53,7 +53,7 @@ public class AcademicClassController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('ACADEMIC_CLASS_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('ACADEMIC_CLASS_READ')")
     @Operation(summary = "Get academic class by ID")
     public ResponseEntity<ApiResponse<AcademicClassResponse>> getAcademicClassById(@PathVariable UUID id) {
         log.info("REST: Get academic class ID: [{}]", id);
@@ -62,7 +62,7 @@ public class AcademicClassController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAuthority('ACADEMIC_CLASS_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('ACADEMIC_CLASS_READ')")
     @Operation(summary = "List academic classes with pagination")
     public ResponseEntity<PagedApiResponse<AcademicClassResponse>> listAcademicClasses(
             @RequestParam(required = false) AcademicClassStatus status,
@@ -74,7 +74,7 @@ public class AcademicClassController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAuthority('ACADEMIC_CLASS_UPDATE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('ACADEMIC_CLASS_UPDATE')")
     @Operation(summary = "Update academic class")
     public ResponseEntity<ApiResponse<AcademicClassResponse>> updateAcademicClass(
             @PathVariable UUID id,
@@ -85,7 +85,7 @@ public class AcademicClassController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('ACADEMIC_CLASS_DELETE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('ACADEMIC_CLASS_DELETE')")
     @Operation(summary = "Soft delete academic class")
     public ResponseEntity<ApiResponse<Void>> deleteAcademicClass(@PathVariable UUID id) {
         log.info("REST: Delete academic class ID: [{}]", id);

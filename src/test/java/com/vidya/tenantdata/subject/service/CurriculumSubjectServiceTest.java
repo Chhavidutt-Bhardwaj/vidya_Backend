@@ -106,7 +106,7 @@ class CurriculumSubjectServiceTest {
         when(curriculumRepository.findByIdAndNotDeleted(curriculumId)).thenReturn(Optional.of(sampleCurriculum));
         when(subjectRepository.findByIdAndNotDeleted(subjectId)).thenReturn(Optional.of(sampleSubject));
         when(academicClassRepository.findByIdAndNotDeleted(academicClassId)).thenReturn(Optional.of(sampleAcademicClass));
-        when(curriculumSubjectRepository.existsActiveByCurriculumSubjectClass(curriculumId, subjectId, academicClassId, null))
+        when(curriculumSubjectRepository.existsActiveForStream(curriculumId, subjectId, academicClassId, new UUID(0, 0)))
                 .thenReturn(false);
         when(curriculumSubjectRepository.save(any(CurriculumSubject.class))).thenAnswer(invocation -> {
             CurriculumSubject cs = invocation.getArgument(0);
@@ -136,7 +136,7 @@ class CurriculumSubjectServiceTest {
         when(curriculumRepository.findByIdAndNotDeleted(curriculumId)).thenReturn(Optional.of(sampleCurriculum));
         when(subjectRepository.findByIdAndNotDeleted(subjectId)).thenReturn(Optional.of(sampleSubject));
         when(academicClassRepository.findByIdAndNotDeleted(academicClassId)).thenReturn(Optional.of(sampleAcademicClass));
-        when(curriculumSubjectRepository.existsActiveByCurriculumSubjectClass(curriculumId, subjectId, academicClassId, null))
+        when(curriculumSubjectRepository.existsActiveForStream(curriculumId, subjectId, academicClassId, new UUID(0, 0)))
                 .thenReturn(true);
 
         assertThatThrownBy(() -> curriculumSubjectService.addSubjectToCurriculum(curriculumId, request))

@@ -45,6 +45,10 @@ vidya:
       url: ${PROVISION_ADMIN_DB_URL:jdbc:postgresql://localhost:5432/postgres}
       username: ${PROVISION_DB_ADMIN_USER:postgres}
       password: ${PROVISION_DB_ADMIN_PASS:0001}
+    # Tenant database location — server configuration only; never accepted from API clients (I0).
+    tenant-db:
+      host: ${TENANT_DB_HOST:localhost}
+      port: ${TENANT_DB_PORT:5432}
 
   redis:
     host: ${REDIS_HOST:localhost}

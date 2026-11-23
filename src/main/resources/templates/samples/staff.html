@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<!--
+  Sample screen for: Staff & HR set-up
+  Plain HTML + CSS with static sample data generated from the API (APiReqDoc/samples/api/staff/).
+  Each section names the endpoints that feed it. Rebuild it in the frontend framework; this file is not served by any controller.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Staff &amp; HR set-up</title>
+<link rel="stylesheet" href="samples.css">
+</head>
+<body>
+<header class="topbar"><a class="brand" href="index.html">Vidya</a><h1>Staff &amp; HR set-up</h1></header>
+<div class="layout">
+<nav class="side">
+<a href="security.html">Login, sessions, roles &amp; access</a>
+<a href="dashboard.html">Overview dashboard</a>
+<a href="student.html">Students (SIS, admission, enrolment, guardians)</a>
+<a href="staff.html" class="on">Staff &amp; HR set-up</a>
+<a href="user.html">School users &amp; accounts</a>
+<a href="academic.html">Academic years, classes, sections, set-up</a>
+<a href="subject.html">Subjects &amp; curriculum</a>
+<a href="assignment.html">Class teachers &amp; subject teachers</a>
+<a href="timetable.html">Timetable, bells, rooms, substitutions</a>
+<a href="calendar.html">Calendar &amp; holidays</a>
+<a href="attendance.html">Student attendance</a>
+<a href="examination.html">Exams, schedules, marks, grading</a>
+<a href="assessment.html">Assessments, question bank, report cards</a>
+<a href="fee.html">Fees &amp; finance (counter, online, auto-debit)</a>
+<a href="engagement.html">Communication, homework, daily report, parent portal</a>
+<a href="operations.html">Operations set-up (fees, attendance, transport, library)</a>
+<a href="readiness.html">School readiness</a>
+<a href="platform-school.html">Platform: schools &amp; campuses</a>
+<a href="platform-onboarding.html">Platform: onboarding</a>
+<a href="platform-workflow.html">Platform: onboarding workflow</a>
+<a href="platform-subscription.html">Platform: subscriptions &amp; plans</a>
+<a href="platform-payment.html">Platform: subscription payments</a>
+<a href="platform-community.html">Platform: communities (trusts / groups)</a>
+<a href="platform-hub.html">Platform: hub</a>
+<a href="platform-analytics.html">Platform: analytics</a>
+<a href="platform-support.html">Platform: support queries</a>
+</nav>
+<main>
+<div class="tabs"><a href="#StaffController">Staff</a><a href="#StaffSetupController">Staff Setup</a></div>
+
+<!-- StaffController · samples/api/staff/StaffController.md -->
+<section class="card" id="StaffController">
+<h2>Staff</h2>
+<p class="muted">Staff &amp; Teacher management operations for the active school tenant</p>
+<!-- GET /api/v1/staff -->
+<form class="filters">
+<label>Status<select name="status"><option value="">Any</option><option>ACTIVE</option><option>INACTIVE</option><option>SUSPENDED</option><option>RESIGNED</option><option>TERMINATED</option><option>RETIRED</option><option>DELETED</option></select></label>
+<label>Staff type<select name="staffType"><option value="">Any</option><option>TEACHER</option><option>NON_TEACHING</option><option>ADMINISTRATIVE</option><option>SUPPORT</option><option>OTHER</option></select></label>
+<label>Department<input type="text" name="department" value="Science"></label>
+<label>Designation<input type="text" name="designation" value="PGT Mathematics"></label>
+<label>Q<input type="text" name="q" value="riya"></label>
+<button type="button" class="btn primary">Apply</button>
+</form>
+<div class="scroll"><table>
+<thead><tr><th>Staff code</th><th>Employee code</th><th>Staff type</th><th>Employment status</th><th>Designation</th><th>Department</th><th>Joining date</th><th>Full name</th><th></th></tr></thead>
+<tbody>
+<tr><td>EMP-42</td><td>EMP-42</td><td><span class="pill ">TEACHER</span></td><td><span class="pill ok">ACTIVE</span></td><td>PGT Mathematics</td><td>Science</td><td>2026-04-01</td><td>Riya Rao</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>EMP-43</td><td>EMP-43</td><td><span class="pill ">NON_TEACHING</span></td><td><span class="pill bad">INACTIVE</span></td><td>Accountant</td><td>Administration</td><td>2026-04-01</td><td>Aman Verma</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>EMP-44</td><td>EMP-44</td><td><span class="pill ">ADMINISTRATIVE</span></td><td><span class="pill bad">SUSPENDED</span></td><td>TGT English</td><td>Languages</td><td>2026-04-01</td><td>Kavya Iyer</td><td class="actions"><a href="#">Open</a></td></tr>
+</tbody>
+</table></div>
+<p class="muted small">Source: <code>GET /api/v1/staff</code></p>
+<!-- GET /api/v1/staff/{id} -->
+<h3>Details</h3>
+<dl class="details">
+<div><dt>Staff code</dt><dd>EMP-42</dd></div>
+<div><dt>Employee code</dt><dd>EMP-42</dd></div>
+<div><dt>Staff type</dt><dd><span class="pill ">TEACHER</span></dd></div>
+<div><dt>Employment status</dt><dd><span class="pill ok">ACTIVE</span></dd></div>
+<div><dt>Designation</dt><dd>PGT Mathematics</dd></div>
+<div><dt>Department</dt><dd>Science</dd></div>
+<div><dt>Joining date</dt><dd>2026-04-01</dd></div>
+<div><dt>Created at</dt><dd>2026-11-22T04:30:00Z</dd></div>
+<div><dt>Updated at</dt><dd>2026-11-22T04:30:00Z</dd></div>
+<div><dt>Version</dt><dd>0</dd></div>
+<div><dt>Employment type</dt><dd><span class="pill ">PERMANENT</span></dd></div>
+<div><dt>Has login</dt><dd><span class="pill ok">Yes</span></dd></div>
+</dl>
+<p class="muted small">Source: <code>GET /api/v1/staff/{id}</code></p>
+<!-- POST /api/v1/staff -->
+<details class="form"><summary>Create staff member</summary>
+<form>
+<label>Tenant user id *<input type="text" name="tenantUserId" value="dd648ca3-1793-37b0-a826-e8addb64cabe" required></label>
+<label>Employee code<input type="text" name="employeeCode" value="EMP-42"></label>
+<label>Joining date<input type="date" name="joiningDate" value="2026-04-01"></label>
+<label>Staff type *<select name="staffType"><option>TEACHER</option><option>NON_TEACHING</option><option>ADMINISTRATIVE</option><option>SUPPORT</option><option>OTHER</option></select></label>
+<label>Designation<input type="text" name="designation" value="PGT Mathematics"></label>
+<label>Department<input type="text" name="department" value="Science"></label>
+<div class="wide"><button type="button" class="btn primary">Save</button> <button type="reset" class="btn">Reset</button></div>
+</form>
+</details>
+<details class="endpoints"><summary>All endpoints of this section (8)</summary>
+<table>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/staff</code></td><td>Create staff member</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/staff</code></td><td>Search and list staff</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/staff/{id}</code></td><td>Get staff by UUID</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/staff/code/{staffCode}</code></td><td>Get staff by code</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/staff/tenant-user/{tenantUserId}</code></td><td>Get staff by TenantUser ID</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/staff/{id}</code></td><td>Update staff</td></tr>
+<tr><td><span class="verb patch">PATCH</span></td><td><code>/api/v1/staff/{id}/status</code></td><td>Update staff status</td></tr>
+<tr><td><span class="verb delete">DELETE</span></td><td><code>/api/v1/staff/{id}</code></td><td>Soft delete staff</td></tr>
+</table>
+</details>
+</section>
+
+<!-- StaffSetupController · samples/api/staff/StaffSetupController.md -->
+<section class="card" id="StaffSetupController">
+<h2>Staff Setup</h2>
+<p class="muted">Departments, designations, duties, teachers and non-teaching staff. Logins: /api/v1/tenant/users/{id}/account</p>
+<!-- GET /api/v1/staff-setup/duties -->
+<div class="scroll"><table>
+<thead><tr><th>Value</th><th></th></tr></thead>
+<tbody>
+<tr><td></td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td></td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td></td><td class="actions"><a href="#">Open</a></td></tr>
+</tbody>
+</table></div>
+<p class="muted small">Source: <code>GET /api/v1/staff-setup/duties</code></p>
+<!-- GET /api/v1/staff-setup/staff/{staffId}/duties -->
+<h3>Details</h3>
+<dl class="details">
+<div><dt>Staff code</dt><dd>EMP-42</dd></div>
+<div><dt>Name</dt><dd>Staff duties 1</dd></div>
+<div><dt>Designation</dt><dd>PGT Mathematics</dd></div>
+</dl>
+<p class="muted small">Source: <code>GET /api/v1/staff-setup/staff/{staffId}/duties</code></p>
+<!-- POST /api/v1/staff-setup/onboard -->
+<details class="form"><summary>Add a teacher or staff member</summary>
+<form>
+<label>First name *<input type="text" name="firstName" value="Riya" required></label>
+<label>Last name<input type="text" name="lastName" value="Rao"></label>
+<label>Email<input type="email" name="email" value="asha.rao@example.com"></label>
+<label>Phone<input type="tel" name="phone" value="9811111121"></label>
+<label>Gender<input type="text" name="gender" value="FEMALE"></label>
+<label>Date of birth<input type="date" name="dateOfBirth" value="2012-05-14"></label>
+<label>Employee code<input type="text" name="employeeCode" value="EMP-42"></label>
+<label>Joining date<input type="date" name="joiningDate" value="2026-04-01"></label>
+<label>Staff type<select name="staffType"><option value="">Any</option><option>TEACHER</option><option>NON_TEACHING</option><option>ADMINISTRATIVE</option><option>SUPPORT</option><option>OTHER</option></select></label>
+<label>Designation id<input type="text" name="designationId" value="4891f775-4071-3d08-a270-f5492da5b927"></label>
+<label>Department id<input type="text" name="departmentId" value="d084213b-f491-3631-9320-07896e9865c2"></label>
+<label>Reporting to staff id<input type="text" name="reportingToStaffId" value="9fecdf6f-2133-3e60-bb8c-9e8f83b750e8"></label>
+<label>Employment type<select name="employmentType"><option value="">Any</option><option>PERMANENT</option><option>PROBATION</option><option>CONTRACT</option><option>PART_TIME</option><option>GUEST</option><option>VOLUNTEER</option></select></label>
+<label>Qualification<input type="text" name="qualification" value="M.Sc., B.Ed."></label>
+<label>Experience years<input type="number" name="experienceYears" value="10.5"></label>
+<label>Max periods per week<input type="number" name="maxPeriodsPerWeek" value="100"></label>
+<div class="wide"><button type="button" class="btn primary">Save</button> <button type="reset" class="btn">Reset</button></div>
+</form>
+</details>
+<details class="endpoints"><summary>All endpoints of this section (27)</summary>
+<table>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/staff-setup/overview</code></td><td>Staff overview</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/staff-setup/templates/indian-school</code></td><td>Add standard departments and designations</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/staff-setup/departments</code></td><td>Departments</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/staff-setup/departments</code></td><td>Create department</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/staff-setup/departments/{id}</code></td><td>Update department</td></tr>
+<tr><td><span class="verb patch">PATCH</span></td><td><code>/api/v1/staff-setup/departments/{id}/status</code></td><td>Department status</td></tr>
+<tr><td><span class="verb delete">DELETE</span></td><td><code>/api/v1/staff-setup/departments/{id}</code></td><td>Delete department</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/staff-setup/designations</code></td><td>Designations</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/staff-setup/designations</code></td><td>Create designation</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/staff-setup/designations/{id}</code></td><td>Update designation</td></tr>
+<tr><td><span class="verb patch">PATCH</span></td><td><code>/api/v1/staff-setup/designations/{id}/status</code></td><td>Designation status</td></tr>
+<tr><td><span class="verb delete">DELETE</span></td><td><code>/api/v1/staff-setup/designations/{id}</code></td><td>Delete designation</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/staff-setup/onboard</code></td><td>Add a teacher or staff member</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/staff-setup/onboard/bulk</code></td><td>Add many staff at once (all or nothing)</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/staff-setup/duty-types</code></td><td>Kinds of duty</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/staff-setup/duty-types</code></td><td>Create duty type</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/staff-setup/duty-types/{id}</code></td><td>Update duty type</td></tr>
+<tr><td><span class="verb patch">PATCH</span></td><td><code>/api/v1/staff-setup/duty-types/{id}/status</code></td><td>Duty type status</td></tr>
+<tr><td><span class="verb delete">DELETE</span></td><td><code>/api/v1/staff-setup/duty-types/{id}</code></td><td>Delete duty type</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/staff-setup/duties</code></td><td>Who does what</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/staff-setup/staff/{staffId}/duties</code></td><td>Everything one person is responsible for</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/staff-setup/staff/{staffId}/duties</code></td><td>Give a staff member a duty</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/staff-setup/duties/{dutyId}/end</code></td><td>End a duty</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/staff-setup/staff/{staffId}/offboard</code></td><td>Staff member leaves or is suspended</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/staff-setup/staff/{staffId}/subjects</code></td><td>Subjects</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/staff-setup/staff/{staffId}/subjects</code></td><td>Set the subjects (and class range) a teacher can teach</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/staff-setup/teachers-for-subject</code></td><td>Teachers who can teach a subject</td></tr>
+</table>
+</details>
+</section>
+</main>
+</div>
+</body>
+</html>

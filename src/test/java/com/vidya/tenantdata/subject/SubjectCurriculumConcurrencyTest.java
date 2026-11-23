@@ -82,7 +82,7 @@ class SubjectCurriculumConcurrencyTest {
         // Atomic boolean to simulate the database partial unique index under race condition
         AtomicBoolean savedFirst = new AtomicBoolean(false);
 
-        when(curriculumSubjectRepository.existsActiveByCurriculumSubjectClass(curriculumId, subjectId, academicClassId, null))
+        when(curriculumSubjectRepository.existsActiveForStream(curriculumId, subjectId, academicClassId, new java.util.UUID(0, 0)))
                 .thenAnswer(inv -> savedFirst.get());
 
         when(curriculumSubjectRepository.save(any(CurriculumSubject.class))).thenAnswer(inv -> {

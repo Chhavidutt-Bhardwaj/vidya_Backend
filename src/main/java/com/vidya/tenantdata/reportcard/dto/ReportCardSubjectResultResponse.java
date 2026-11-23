@@ -31,4 +31,9 @@ public class ReportCardSubjectResultResponse {
     private boolean isPassing;
     private boolean isAbsent;
     private boolean isExempt;
+    private String category;
+    private BigDecimal graceMarks;
+    private BigDecimal adjustmentMarks;
+    private boolean countedInTotal;
+    private java.util.Map<String, Object> componentBreakdown;
 }

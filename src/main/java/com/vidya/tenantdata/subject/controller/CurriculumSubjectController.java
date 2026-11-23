@@ -42,7 +42,7 @@ public class CurriculumSubjectController {
     private final CurriculumSubjectService curriculumSubjectService;
 
     @PostMapping
-    @PreAuthorize("hasAuthority('CURRICULUM_SUBJECT_CREATE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('CURRICULUM_SUBJECT_CREATE')")
     @Operation(summary = "Add subject to curriculum", description = "Maps an academic subject to a curriculum for a specific class")
     public ResponseEntity<ApiResponse<CurriculumSubjectResponse>> addSubjectToCurriculum(
             @Parameter(description = "Curriculum UUID") @PathVariable UUID curriculumId,
@@ -55,7 +55,7 @@ public class CurriculumSubjectController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAuthority('CURRICULUM_SUBJECT_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('CURRICULUM_SUBJECT_READ')")
     @Operation(summary = "List curriculum subjects", description = "Lists subjects mapped to a curriculum with optional class/type filters")
     public ResponseEntity<PagedApiResponse<CurriculumSubjectResponse>> listCurriculumSubjects(
             @Parameter(description = "Curriculum UUID") @PathVariable UUID curriculumId,
@@ -70,7 +70,7 @@ public class CurriculumSubjectController {
     }
 
     @GetMapping("/{curriculumSubjectId}")
-    @PreAuthorize("hasAuthority('CURRICULUM_SUBJECT_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('CURRICULUM_SUBJECT_READ')")
     @Operation(summary = "Get curriculum subject mapping", description = "Retrieves a single curriculum subject assignment")
     public ResponseEntity<ApiResponse<CurriculumSubjectResponse>> getCurriculumSubject(
             @Parameter(description = "Curriculum UUID") @PathVariable UUID curriculumId,
@@ -81,7 +81,7 @@ public class CurriculumSubjectController {
     }
 
     @PutMapping("/{curriculumSubjectId}")
-    @PreAuthorize("hasAuthority('CURRICULUM_SUBJECT_UPDATE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('CURRICULUM_SUBJECT_UPDATE')")
     @Operation(summary = "Update curriculum subject", description = "Updates compulsory status or display order of a curriculum subject")
     public ResponseEntity<ApiResponse<CurriculumSubjectResponse>> updateCurriculumSubject(
             @Parameter(description = "Curriculum UUID") @PathVariable UUID curriculumId,
@@ -93,7 +93,7 @@ public class CurriculumSubjectController {
     }
 
     @DeleteMapping("/{curriculumSubjectId}")
-    @PreAuthorize("hasAuthority('CURRICULUM_SUBJECT_DELETE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('CURRICULUM_SUBJECT_DELETE')")
     @Operation(summary = "Remove subject from curriculum", description = "Soft-deletes a subject assignment from a curriculum")
     public ResponseEntity<ApiResponse<Void>> removeSubjectFromCurriculum(
             @Parameter(description = "Curriculum UUID") @PathVariable UUID curriculumId,

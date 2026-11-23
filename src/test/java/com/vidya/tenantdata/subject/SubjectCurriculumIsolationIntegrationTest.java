@@ -198,7 +198,7 @@ class SubjectCurriculumIsolationIntegrationTest {
         when(curriculumRepository.findByIdAndNotDeleted(tenantACurriculumId)).thenReturn(Optional.of(tenantACurriculum));
         when(subjectRepository.findByIdAndNotDeleted(tenantASubjectId)).thenReturn(Optional.of(tenantASubject));
         when(academicClassRepository.findByIdAndNotDeleted(tenantAAcademicClassId)).thenReturn(Optional.of(tenantAAcademicClass));
-        when(curriculumSubjectRepository.existsActiveByCurriculumSubjectClass(tenantACurriculumId, tenantASubjectId, tenantAAcademicClassId, null))
+        when(curriculumSubjectRepository.existsActiveForStream(tenantACurriculumId, tenantASubjectId, tenantAAcademicClassId, new java.util.UUID(0, 0)))
                 .thenReturn(false);
         when(curriculumSubjectRepository.save(any(CurriculumSubject.class))).thenAnswer(i -> {
             CurriculumSubject cs = i.getArgument(0);

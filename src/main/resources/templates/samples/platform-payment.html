@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<!--
+  Sample screen for: Platform: subscription payments
+  Plain HTML + CSS with static sample data generated from the API (APiReqDoc/samples/api/platform-payment/).
+  Each section names the endpoints that feed it. Rebuild it in the frontend framework; this file is not served by any controller.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Platform: subscription payments</title>
+<link rel="stylesheet" href="samples.css">
+</head>
+<body>
+<header class="topbar"><a class="brand" href="index.html">Vidya</a><h1>Platform: subscription payments</h1></header>
+<div class="layout">
+<nav class="side">
+<a href="security.html">Login, sessions, roles &amp; access</a>
+<a href="dashboard.html">Overview dashboard</a>
+<a href="student.html">Students (SIS, admission, enrolment, guardians)</a>
+<a href="staff.html">Staff &amp; HR set-up</a>
+<a href="user.html">School users &amp; accounts</a>
+<a href="academic.html">Academic years, classes, sections, set-up</a>
+<a href="subject.html">Subjects &amp; curriculum</a>
+<a href="assignment.html">Class teachers &amp; subject teachers</a>
+<a href="timetable.html">Timetable, bells, rooms, substitutions</a>
+<a href="calendar.html">Calendar &amp; holidays</a>
+<a href="attendance.html">Student attendance</a>
+<a href="examination.html">Exams, schedules, marks, grading</a>
+<a href="assessment.html">Assessments, question bank, report cards</a>
+<a href="fee.html">Fees &amp; finance (counter, online, auto-debit)</a>
+<a href="engagement.html">Communication, homework, daily report, parent portal</a>
+<a href="operations.html">Operations set-up (fees, attendance, transport, library)</a>
+<a href="readiness.html">School readiness</a>
+<a href="platform-school.html">Platform: schools &amp; campuses</a>
+<a href="platform-onboarding.html">Platform: onboarding</a>
+<a href="platform-workflow.html">Platform: onboarding workflow</a>
+<a href="platform-subscription.html">Platform: subscriptions &amp; plans</a>
+<a href="platform-payment.html" class="on">Platform: subscription payments</a>
+<a href="platform-community.html">Platform: communities (trusts / groups)</a>
+<a href="platform-hub.html">Platform: hub</a>
+<a href="platform-analytics.html">Platform: analytics</a>
+<a href="platform-support.html">Platform: support queries</a>
+</nav>
+<main>
+<div class="tabs"><a href="#PaymentController">Payment Management</a><a href="#PaymentWebhookController">Payment Webhooks</a></div>
+
+<!-- PaymentController · samples/api/platform-payment/PaymentController.md -->
+<section class="card" id="PaymentController">
+<h2>Payment Management</h2>
+<p class="muted">APIs for initiating, verifying, and managing online &amp; manual payments</p>
+<!-- GET /api/v1/payments/school/{schoolId} -->
+<div class="scroll"><table>
+<thead><tr><th>Transaction code</th><th>Amount</th><th>Currency</th><th>Status</th><th>Payment provider</th><th>Provider transaction id</th><th>Provider order id</th><th>Idempotency key</th><th></th></tr></thead>
+<tbody>
+<tr><td>PT-001</td><td>2500.00</td><td>INR</td><td><span class="pill ">INITIATED</span></td><td><span class="pill ">RAZORPAY</span></td><td>d727b5dd-e4ac-3885-aade-095a1d0e2da2</td><td>d8d3fba6-9c4d-3c02-8d6c-0f5ea215e930</td><td>uploads/2026/11/payment-transaction-1.pdf</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>PT-002</td><td>1800.00</td><td>INR</td><td><span class="pill warn">PENDING</span></td><td><span class="pill ">CASHFREE</span></td><td>64c63be3-8fcf-34a6-934c-2fe17ad7918b</td><td>8f172900-dd8d-3df2-91de-c4935e7c400c</td><td>uploads/2026/11/payment-transaction-2.pdf</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>PT-003</td><td>3200.00</td><td>INR</td><td><span class="pill ok">SUCCESS</span></td><td><span class="pill ">PAYU</span></td><td>b8575f31-341d-3bda-b9bb-eefe578e36f3</td><td>ff50d23c-0425-3d61-acd1-4f6bda28e9da</td><td>uploads/2026/11/payment-transaction-3.pdf</td><td class="actions"><a href="#">Open</a></td></tr>
+</tbody>
+</table></div>
+<p class="muted small">Source: <code>GET /api/v1/payments/school/{schoolId}</code></p>
+<!-- GET /api/v1/payments/{transactionCode} -->
+<h3>Details</h3>
+<dl class="details">
+<div><dt>Transaction code</dt><dd>PT-001</dd></div>
+<div><dt>Amount</dt><dd>2500.00</dd></div>
+<div><dt>Currency</dt><dd>INR</dd></div>
+<div><dt>Status</dt><dd><span class="pill ">INITIATED</span></dd></div>
+<div><dt>Payment provider</dt><dd><span class="pill ">RAZORPAY</span></dd></div>
+<div><dt>Provider transaction id</dt><dd>d727b5dd-e4ac-3885-aade-095a1d0e2da2</dd></div>
+<div><dt>Provider order id</dt><dd>d8d3fba6-9c4d-3c02-8d6c-0f5ea215e930</dd></div>
+<div><dt>Idempotency key</dt><dd>uploads/2026/11/payment-transaction-1.pdf</dd></div>
+<div><dt>Payment method</dt><dd><span class="pill ">UPI</span></dd></div>
+<div><dt>Failure reason</dt><dd>Requested by the parent</dd></div>
+<div><dt>Initiated at</dt><dd>2026-11-22T04:30:00Z</dd></div>
+<div><dt>Completed at</dt><dd>2026-11-22T04:30:00Z</dd></div>
+</dl>
+<p class="muted small">Source: <code>GET /api/v1/payments/{transactionCode}</code></p>
+<!-- POST /api/v1/payments/verify -->
+<details class="form"><summary>Verify gateway payment completion token / signature</summary>
+<form>
+<label>Transaction code *<input type="text" name="transactionCode" value="VP-001" required></label>
+<label>Provider payment id<input type="text" name="providerPaymentId" value="e56ebfb2-0750-33e8-aecb-5520106dca44"></label>
+<label>Provider order id<input type="text" name="providerOrderId" value="d8d3fba6-9c4d-3c02-8d6c-0f5ea215e930"></label>
+<label>Provider signature<input type="text" name="providerSignature" value="5d41402abc4b2a76b9719d911017c592"></label>
+<label class="wide">Raw payload<span class="muted small">object (map) (see the API file)</span></label>
+<div class="wide"><button type="button" class="btn primary">Save</button> <button type="reset" class="btn">Reset</button></div>
+</form>
+</details>
+<details class="endpoints"><summary>All endpoints of this section (6)</summary>
+<table>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/payments/initiate</code></td><td>Initiate a payment transaction with Razorpay, Cashfree, or Manual gateway</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/payments/verify</code></td><td>Verify gateway payment completion token / signature</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/payments/manual/confirm</code></td><td>Confirm an offline or manual payment by reference / cheque / bank transfer</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/payments/{transactionCode}</code></td><td>Get payment transaction details by transaction code</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/payments/school/{schoolId}</code></td><td>Get paginated payment transaction history for a school</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/payments/refund</code></td><td>Process a refund for a successful payment transaction</td></tr>
+</table>
+</details>
+</section>
+
+<!-- PaymentWebhookController · samples/api/platform-payment/PaymentWebhookController.md -->
+<section class="card" id="PaymentWebhookController">
+<h2>Payment Webhooks</h2>
+<p class="muted">Inbound asynchronous webhook endpoints for payment gateways</p>
+<details class="endpoints"><summary>All endpoints of this section (2)</summary>
+<table>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/webhooks/payments/razorpay</code></td><td>Inbound webhook receiver for Razorpay payment events</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/webhooks/payments/cashfree</code></td><td>Inbound webhook receiver for Cashfree payment events</td></tr>
+</table>
+</details>
+</section>
+</main>
+</div>
+</body>
+</html>

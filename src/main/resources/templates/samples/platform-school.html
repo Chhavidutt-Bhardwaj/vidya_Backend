@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<!--
+  Sample screen for: Platform: schools & campuses
+  Plain HTML + CSS with static sample data generated from the API (APiReqDoc/samples/api/platform-school/).
+  Each section names the endpoints that feed it. Rebuild it in the frontend framework; this file is not served by any controller.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Platform: schools &amp; campuses</title>
+<link rel="stylesheet" href="samples.css">
+</head>
+<body>
+<header class="topbar"><a class="brand" href="index.html">Vidya</a><h1>Platform: schools &amp; campuses</h1></header>
+<div class="layout">
+<nav class="side">
+<a href="security.html">Login, sessions, roles &amp; access</a>
+<a href="dashboard.html">Overview dashboard</a>
+<a href="student.html">Students (SIS, admission, enrolment, guardians)</a>
+<a href="staff.html">Staff &amp; HR set-up</a>
+<a href="user.html">School users &amp; accounts</a>
+<a href="academic.html">Academic years, classes, sections, set-up</a>
+<a href="subject.html">Subjects &amp; curriculum</a>
+<a href="assignment.html">Class teachers &amp; subject teachers</a>
+<a href="timetable.html">Timetable, bells, rooms, substitutions</a>
+<a href="calendar.html">Calendar &amp; holidays</a>
+<a href="attendance.html">Student attendance</a>
+<a href="examination.html">Exams, schedules, marks, grading</a>
+<a href="assessment.html">Assessments, question bank, report cards</a>
+<a href="fee.html">Fees &amp; finance (counter, online, auto-debit)</a>
+<a href="engagement.html">Communication, homework, daily report, parent portal</a>
+<a href="operations.html">Operations set-up (fees, attendance, transport, library)</a>
+<a href="readiness.html">School readiness</a>
+<a href="platform-school.html" class="on">Platform: schools &amp; campuses</a>
+<a href="platform-onboarding.html">Platform: onboarding</a>
+<a href="platform-workflow.html">Platform: onboarding workflow</a>
+<a href="platform-subscription.html">Platform: subscriptions &amp; plans</a>
+<a href="platform-payment.html">Platform: subscription payments</a>
+<a href="platform-community.html">Platform: communities (trusts / groups)</a>
+<a href="platform-hub.html">Platform: hub</a>
+<a href="platform-analytics.html">Platform: analytics</a>
+<a href="platform-support.html">Platform: support queries</a>
+</nav>
+<main>
+<div class="tabs"><a href="#SchoolCampusController">Dashboard</a><a href="#SchoolController">School</a><a href="#SchoolDetailController">School Sub-Details &amp; Onboarding Profile</a><a href="#SchoolRelationshipController">School relationship</a></div>
+
+<!-- SchoolCampusController · samples/api/platform-school/SchoolCampusController.md -->
+<section class="card" id="SchoolCampusController">
+<h2>Dashboard</h2>
+<p class="muted">School overview: KPIs, school snapshot, live operations, quick counts, trends and action items</p>
+<details class="endpoints"><summary>All endpoints of this section (1)</summary>
+<table>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/dashboard/campuses</code></td><td>School and campuses for the header switcher</td></tr>
+</table>
+</details>
+</section>
+
+<!-- SchoolController · samples/api/platform-school/SchoolController.md -->
+<section class="card" id="SchoolController">
+<h2>School</h2>
+<!-- GET /api/v1/schools -->
+<form class="filters">
+<label>Status<select name="status"><option value="">Any</option><option>DRAFT</option><option>PENDING</option><option>VERIFIED</option><option>ACTIVE</option><option>SUSPENDED</option><option>DEACTIVATED</option><option>ARCHIVED</option></select></label>
+<label>Board<select name="board"><option value="">Any</option><option>CBSE</option><option>ICSE</option><option>HBSE</option><option>STATE</option><option>IB</option><option>IGCSE</option><option>OTHER</option></select></label>
+<label>Search<input type="text" name="search" value="riya"></label>
+<button type="button" class="btn primary">Apply</button>
+</form>
+<div class="scroll"><table>
+<thead><tr><th>School code</th><th>School name</th><th>Legal name</th><th>Registration number</th><th>Board</th><th>School type</th><th>Email</th><th>Phone</th><th></th></tr></thead>
+<tbody>
+<tr><td>S-001</td><td>Vidya Global School</td><td>School 1</td><td>REF-2026-0001</td><td><span class="pill ">CBSE</span></td><td><span class="pill ">PRIMARY</span></td><td>asha.rao@example.com</td><td>9811111121</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>S-002</td><td>Vidya Global School</td><td>School 2</td><td>REF-2026-0002</td><td><span class="pill ">ICSE</span></td><td><span class="pill ">SECONDARY</span></td><td>rakesh.verma@example.com</td><td>9822222232</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>S-003</td><td>Vidya Global School</td><td>School 3</td><td>REF-2026-0003</td><td><span class="pill ">HBSE</span></td><td><span class="pill ">SENIOR_SECONDARY</span></td><td>meena.iyer@example.com</td><td>9833333343</td><td class="actions"><a href="#">Open</a></td></tr>
+</tbody>
+</table></div>
+<p class="muted small">Source: <code>GET /api/v1/schools</code></p>
+<!-- GET /api/v1/schools/{id} -->
+<h3>Details</h3>
+<dl class="details">
+<div><dt>School code</dt><dd>S-001</dd></div>
+<div><dt>School name</dt><dd>Vidya Global School</dd></div>
+<div><dt>Legal name</dt><dd>School 1</dd></div>
+<div><dt>Registration number</dt><dd>REF-2026-0001</dd></div>
+<div><dt>Board</dt><dd><span class="pill ">CBSE</span></dd></div>
+<div><dt>School type</dt><dd><span class="pill ">PRIMARY</span></dd></div>
+<div><dt>Email</dt><dd>asha.rao@example.com</dd></div>
+<div><dt>Phone</dt><dd>9811111121</dd></div>
+<div><dt>Website</dt><dd>https://www.vgs.edu.in</dd></div>
+<div><dt>Status</dt><dd><span class="pill warn">DRAFT</span></dd></div>
+<div><dt>Created at</dt><dd>2026-11-22T04:30:00Z</dd></div>
+<div><dt>Updated at</dt><dd>2026-11-22T04:30:00Z</dd></div>
+</dl>
+<p class="muted small">Source: <code>GET /api/v1/schools/{id}</code></p>
+<!-- POST /api/v1/schools -->
+<details class="form"><summary>Create school</summary>
+<form>
+<label>School name *<input type="text" name="schoolName" value="Vidya Global School" required></label>
+<label>Legal name<input type="text" name="legalName" value="School 1"></label>
+<label>Registration number<input type="text" name="registrationNumber" value="REF-2026-0001"></label>
+<label>Board<select name="board"><option value="">Any</option><option>CBSE</option><option>ICSE</option><option>HBSE</option><option>STATE</option><option>IB</option><option>IGCSE</option><option>OTHER</option></select></label>
+<label>School type<select name="schoolType"><option value="">Any</option><option>PRIMARY</option><option>SECONDARY</option><option>SENIOR_SECONDARY</option><option>ALL</option><option>OTHER</option></select></label>
+<label>Email *<input type="email" name="email" value="asha.rao@example.com" required></label>
+<label>Phone<input type="tel" name="phone" value="9811111121"></label>
+<label>Website<input type="text" name="website" value="https://www.vgs.edu.in"></label>
+<label class="wide">Main branch<span class="muted small">object CreateBranchRequest (see the API file)</span></label>
+<div class="wide"><button type="button" class="btn primary">Save</button> <button type="reset" class="btn">Reset</button></div>
+</form>
+</details>
+<details class="endpoints"><summary>All endpoints of this section (12)</summary>
+<table>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/schools</code></td><td>Create school</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/schools/{id}</code></td><td>Get school by id</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/schools/code/{code}</code></td><td>Get school by code</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/schools/tenant/{tenantId}</code></td><td>Get school by tenant id</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/schools/stats</code></td><td>Get master stats</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/schools</code></td><td>Get all schools</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/schools/{id}</code></td><td>Update school</td></tr>
+<tr><td><span class="verb patch">PATCH</span></td><td><code>/api/v1/schools/{id}/status</code></td><td>Change school status</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/schools/{id}/branches</code></td><td>Add branch</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/schools/{id}/branches</code></td><td>Get school branches</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/schools/{id}/branches/{branchId}</code></td><td>Get branch by id</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/schools/{id}/branches/{branchId}</code></td><td>Update branch</td></tr>
+</table>
+</details>
+</section>
+
+<!-- SchoolDetailController · samples/api/platform-school/SchoolDetailController.md -->
+<section class="card" id="SchoolDetailController">
+<h2>School Sub-Details &amp; Onboarding Profile</h2>
+<p class="muted">Endpoints for normalized school contacts, addresses, boards, and certificates</p>
+<!-- GET /api/v1/schools/{id}/boards -->
+<div class="scroll"><table>
+<thead><tr><th>Board type</th><th>Board name</th><th>Affiliation number</th><th>Affiliation level</th><th>Valid from</th><th>Valid to</th><th>Is primary board</th><th>Affiliation letter url</th><th></th></tr></thead>
+<tbody>
+<tr><td><span class="pill ">CBSE</span></td><td>CBSE</td><td>REF-2026-0001</td><td><span class="pill ">PRIMARY</span></td><td>2027-03-31</td><td>2027-03-31</td><td><span class="pill ok">Yes</span></td><td>https://app.vidya.io/school-board-affiliation/1</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td><span class="pill ">ICSE</span></td><td>CBSE</td><td>REF-2026-0002</td><td><span class="pill ">MIDDLE</span></td><td>2027-03-31</td><td>2027-03-31</td><td><span class="pill ok">Yes</span></td><td>https://app.vidya.io/school-board-affiliation/2</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td><span class="pill ">HBSE</span></td><td>CBSE</td><td>REF-2026-0003</td><td><span class="pill ">SECONDARY</span></td><td>2027-03-31</td><td>2027-03-31</td><td><span class="pill">No</span></td><td>https://app.vidya.io/school-board-affiliation/3</td><td class="actions"><a href="#">Open</a></td></tr>
+</tbody>
+</table></div>
+<p class="muted small">Source: <code>GET /api/v1/schools/{id}/boards</code></p>
+<!-- GET /api/v1/schools/{id}/complete-profile -->
+<h3>Details</h3>
+<dl class="details">
+</dl>
+<p class="muted small">Source: <code>GET /api/v1/schools/{id}/complete-profile</code></p>
+<!-- POST /api/v1/schools/{id}/boards -->
+<details class="form"><summary>Add educational board affiliation (CBSE, HBSE, ICSE, IB, etc.)</summary>
+<form>
+<label>Board type *<select name="boardType"><option>CBSE</option><option>ICSE</option><option>HBSE</option><option>STATE_BOARD</option><option>IB</option><option>CAMBRIDGE_IGCSE</option><option>OTHER</option></select></label>
+<label>Board name<input type="text" name="boardName" value="CBSE"></label>
+<label>Affiliation number *<input type="text" name="affiliationNumber" value="REF-2026-0001" required></label>
+<label>Affiliation level<select name="affiliationLevel"><option value="">Any</option><option>PRIMARY</option><option>MIDDLE</option><option>SECONDARY</option><option>SENIOR_SECONDARY</option><option>ALL_LEVELS</option></select></label>
+<label>Valid from<input type="date" name="validFrom" value="2027-03-31"></label>
+<label>Valid to<input type="date" name="validTo" value="2027-03-31"></label>
+<label class="check"><input type="checkbox" name="isPrimaryBoard" checked> Is primary board</label>
+<label>Affiliation letter url<input type="text" name="affiliationLetterUrl" value="https://app.vidya.io/school-board-affiliation/1"></label>
+<label>Status<select name="status"><option value="">Any</option><option>ACTIVE</option><option>PENDING_RENEWAL</option><option>EXPIRED</option><option>PROVISIONAL</option></select></label>
+<div class="wide"><button type="button" class="btn primary">Save</button> <button type="reset" class="btn">Reset</button></div>
+</form>
+</details>
+<details class="endpoints"><summary>All endpoints of this section (19)</summary>
+<table>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/schools/{id}/contacts</code></td><td>Add designated contact to school (Principal, Admin in-charge, Billing, etc.)</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/schools/{id}/contacts</code></td><td>List all contacts of a school</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/schools/{id}/contacts/{contactId}</code></td><td>Update designated contact</td></tr>
+<tr><td><span class="verb delete">DELETE</span></td><td><code>/api/v1/schools/{id}/contacts/{contactId}</code></td><td>Delete designated contact</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/schools/{id}/addresses</code></td><td>Add physical campus address or registered office</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/schools/{id}/addresses</code></td><td>List all addresses of a school</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/schools/{id}/addresses/{addressId}</code></td><td>Update address</td></tr>
+<tr><td><span class="verb delete">DELETE</span></td><td><code>/api/v1/schools/{id}/addresses/{addressId}</code></td><td>Delete address</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/schools/{id}/boards</code></td><td>Add educational board affiliation (CBSE, HBSE, ICSE, IB, etc.)</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/schools/{id}/boards</code></td><td>List all educational board affiliations</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/schools/{id}/boards/{affiliationId}</code></td><td>Update board affiliation</td></tr>
+<tr><td><span class="verb delete">DELETE</span></td><td><code>/api/v1/schools/{id}/boards/{affiliationId}</code></td><td>Remove board affiliation</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/schools/{id}/documents</code></td><td>Upload / record statutory compliance document (Affiliation letter, Fire NOC, Trust Deed, etc.)</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/schools/{id}/documents</code></td><td>List all documents and certificates for a school</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/schools/{id}/documents/{documentId}/verify</code></td><td>Verify document / certificate</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/schools/{id}/documents/{documentId}/reject</code></td><td>Reject document with reason</td></tr>
+<tr><td><span class="verb delete">DELETE</span></td><td><code>/api/v1/schools/{id}/documents/{documentId}</code></td><td>Delete compliance document</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/schools/{id}/complete-profile</code></td><td>Get complete 360 aggregated profile of school (core, branches, contacts, addresses, boards, documents, RM relationship)</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/schools/{id}/complete-profile</code></td><td>Submit complete post-approval school profile in one multi-facet payload</td></tr>
+</table>
+</details>
+</section>
+
+<!-- SchoolRelationshipController · samples/api/platform-school/SchoolRelationshipController.md -->
+<section class="card" id="SchoolRelationshipController">
+<h2>School relationship</h2>
+<!-- GET /api/v1/hubs/{hubId}/assigned-schools -->
+<div class="scroll"><table>
+<thead><tr><th>School code</th><th>School name</th><th>School email</th><th>School phone</th><th>School city</th><th>School state</th><th>Onboarding community code</th><th>Onboarding community name</th><th></th></tr></thead>
+<tbody>
+<tr><td>SR-001</td><td>Vidya Global School</td><td>asha.rao@example.com</td><td>9811111121</td><td>Gurugram</td><td>Haryana</td><td>Unit 4: Fractions</td><td>Unit 4: Fractions</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>SR-002</td><td>Vidya Global School</td><td>rakesh.verma@example.com</td><td>9822222232</td><td>Gurugram</td><td>Haryana</td><td>Unit 4: Fractions</td><td>Unit 4: Fractions</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>SR-003</td><td>Vidya Global School</td><td>meena.iyer@example.com</td><td>9833333343</td><td>Gurugram</td><td>Haryana</td><td>Unit 4: Fractions</td><td>Unit 4: Fractions</td><td class="actions"><a href="#">Open</a></td></tr>
+</tbody>
+</table></div>
+<p class="muted small">Source: <code>GET /api/v1/hubs/{hubId}/assigned-schools</code></p>
+<!-- GET /api/v1/schools/{schoolId}/relationship -->
+<h3>Details</h3>
+<dl class="details">
+<div><dt>School code</dt><dd>SR-001</dd></div>
+<div><dt>School name</dt><dd>Vidya Global School</dd></div>
+<div><dt>School email</dt><dd>asha.rao@example.com</dd></div>
+<div><dt>School phone</dt><dd>9811111121</dd></div>
+<div><dt>School city</dt><dd>Gurugram</dd></div>
+<div><dt>School state</dt><dd>Haryana</dd></div>
+<div><dt>Onboarding community code</dt><dd>Unit 4: Fractions</dd></div>
+<div><dt>Onboarding community name</dt><dd>Unit 4: Fractions</dd></div>
+<div><dt>Onboarded at</dt><dd>2026-11-22T04:30:00Z</dd></div>
+<div><dt>Assigned community code</dt><dd>Unit 4: Fractions</dd></div>
+<div><dt>Assigned community name</dt><dd>Unit 4: Fractions</dd></div>
+<div><dt>Assigned community type</dt><dd>Unit 4: Fractions</dd></div>
+</dl>
+<p class="muted small">Source: <code>GET /api/v1/schools/{schoolId}/relationship</code></p>
+<!-- POST /api/v1/schools/{schoolId}/relationship/assign-rm -->
+<details class="form"><summary>Assign relationship manager</summary>
+<form>
+<label>Community id *<input type="text" name="communityId" value="fbfb45a2-817d-35df-8158-1b2b7b1daa95" required></label>
+<label>Onboarding community id<input type="text" name="onboardingCommunityId" value="ded807e6-7c84-38f2-9c81-39c80aa7d3f9"></label>
+<label>Rm member id<input type="text" name="rmMemberId" value="a62e7e98-b813-3400-badf-769e41959b23"></label>
+<label>Rm member name<input type="text" name="rmMemberName" value="Assign school rm 1"></label>
+<label>Assignment type<select name="assignmentType"><option value="">Any</option><option>ONBOARDED_BY_COMMUNITY</option><option>NEAREST_GEO_ALLOCATION</option><option>MANUAL_PLATFORM_OVERRIDE</option></select></label>
+<div class="wide"><button type="button" class="btn primary">Save</button> <button type="reset" class="btn">Reset</button></div>
+</form>
+</details>
+<details class="endpoints"><summary>All endpoints of this section (6)</summary>
+<table>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/schools/{schoolId}/relationship/assign-rm</code></td><td>Assign relationship manager</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/schools/{schoolId}/relationship/auto-assign-nearest</code></td><td>Auto assign nearest</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/schools/{schoolId}/relationship</code></td><td>Get school relationship</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/communities/{communityId}/assigned-schools</code></td><td>List assigned schools for community</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/hubs/{hubId}/assigned-schools</code></td><td>List assigned schools for hub</td></tr>
+<tr><td><span class="verb patch">PATCH</span></td><td><code>/api/v1/communities/{communityId}/workload-limits</code></td><td>Update workload limits</td></tr>
+</table>
+</details>
+</section>
+</main>
+</div>
+</body>
+</html>

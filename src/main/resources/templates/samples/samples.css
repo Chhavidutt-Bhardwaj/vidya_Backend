@@ -1,0 +1,57 @@
+/* Shared look of the generated sample screens. Plain CSS: replace with the frontend's design system. */
+:root {
+  --bg: #f5f6f8; --card: #fff; --text: #1d2330; --muted: #687083; --line: #e3e6ec; --brand: #2f5bea;
+  --ok: #1a8f5a; --ok-bg: #e5f5ec; --warn: #a86400; --warn-bg: #fdf1dc; --bad: #c33a32; --bad-bg: #fbe7e5; --grey-bg: #eef0f3;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+a { color: var(--brand); text-decoration: none; }
+code { font-family: ui-monospace, Menlo, monospace; font-size: 12px; }
+.topbar { display: flex; gap: 16px; align-items: center; padding: 12px 24px; background: var(--card); border-bottom: 1px solid var(--line); }
+.topbar h1 { margin: 0; font-size: 17px; }
+.brand { font-weight: 800; color: var(--text); }
+.layout { display: grid; grid-template-columns: 240px 1fr; min-height: calc(100vh - 50px); }
+.side { background: var(--card); border-right: 1px solid var(--line); padding: 12px 0; }
+.side a { display: block; padding: 7px 20px; color: var(--muted); }
+.side a.on, .side a:hover { color: var(--brand); background: var(--grey-bg); }
+main { padding: 20px 24px 40px; display: grid; gap: 16px; align-content: start; min-width: 0; }
+main.solo { max-width: 1100px; margin: 0 auto; }
+.tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+.tabs a { padding: 6px 12px; border: 1px solid var(--line); border-radius: 99px; background: var(--card); }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px; min-width: 0; }
+.card h2 { margin: 0 0 8px; font-size: 16px; }
+.card h3 { margin: 16px 0 8px; font-size: 14px; }
+.card.link:hover { border-color: var(--brand); }
+.grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+.muted { color: var(--muted); }
+.small { font-size: 12px; }
+.filters { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; margin: 8px 0 12px; }
+label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--muted); }
+label.check { flex-direction: row; align-items: center; }
+input, select, textarea { font: inherit; color: var(--text); padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--card); min-width: 140px; }
+.btn { font: inherit; padding: 7px 14px; border: 1px solid var(--line); border-radius: 6px; background: var(--card); cursor: pointer; }
+.btn.primary { background: var(--brand); border-color: var(--brand); color: #fff; }
+.scroll { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; }
+th, td { padding: 8px; border-bottom: 1px solid var(--line); text-align: left; white-space: nowrap; }
+th { font-size: 12px; color: var(--muted); font-weight: 600; }
+.actions { text-align: right; }
+.pill { display: inline-block; padding: 1px 8px; border-radius: 99px; font-size: 11px; font-weight: 700; background: var(--grey-bg); color: var(--muted); }
+.pill.ok { background: var(--ok-bg); color: var(--ok); }
+.pill.warn { background: var(--warn-bg); color: var(--warn); }
+.pill.bad { background: var(--bad-bg); color: var(--bad); }
+.details { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px 16px; margin: 0; }
+.details dt { font-size: 12px; color: var(--muted); }
+.details dd { margin: 0; font-weight: 600; overflow-wrap: anywhere; }
+details.form, details.endpoints { margin-top: 14px; border-top: 1px solid var(--line); padding-top: 10px; }
+details summary { cursor: pointer; font-weight: 600; }
+details.form form { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; margin-top: 12px; }
+.wide { grid-column: 1 / -1; }
+.verb { font: 700 11px ui-monospace, Menlo, monospace; padding: 2px 6px; border-radius: 4px; background: var(--grey-bg); }
+.verb.get { color: var(--ok); } .verb.post { color: var(--brand); } .verb.put, .verb.patch { color: var(--warn); } .verb.delete { color: var(--bad); }
+@media (max-width: 760px) {
+  .layout { grid-template-columns: 1fr; }
+  .side { display: flex; overflow-x: auto; border-right: 0; border-bottom: 1px solid var(--line); padding: 0; }
+  .side a { white-space: nowrap; padding: 10px 14px; }
+  main, .topbar { padding-left: 16px; padding-right: 16px; }
+}

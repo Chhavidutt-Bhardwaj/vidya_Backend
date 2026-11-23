@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<!--
+  Sample screen for: Platform: onboarding
+  Plain HTML + CSS with static sample data generated from the API (APiReqDoc/samples/api/platform-onboarding/).
+  Each section names the endpoints that feed it. Rebuild it in the frontend framework; this file is not served by any controller.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Platform: onboarding</title>
+<link rel="stylesheet" href="samples.css">
+</head>
+<body>
+<header class="topbar"><a class="brand" href="index.html">Vidya</a><h1>Platform: onboarding</h1></header>
+<div class="layout">
+<nav class="side">
+<a href="security.html">Login, sessions, roles &amp; access</a>
+<a href="dashboard.html">Overview dashboard</a>
+<a href="student.html">Students (SIS, admission, enrolment, guardians)</a>
+<a href="staff.html">Staff &amp; HR set-up</a>
+<a href="user.html">School users &amp; accounts</a>
+<a href="academic.html">Academic years, classes, sections, set-up</a>
+<a href="subject.html">Subjects &amp; curriculum</a>
+<a href="assignment.html">Class teachers &amp; subject teachers</a>
+<a href="timetable.html">Timetable, bells, rooms, substitutions</a>
+<a href="calendar.html">Calendar &amp; holidays</a>
+<a href="attendance.html">Student attendance</a>
+<a href="examination.html">Exams, schedules, marks, grading</a>
+<a href="assessment.html">Assessments, question bank, report cards</a>
+<a href="fee.html">Fees &amp; finance (counter, online, auto-debit)</a>
+<a href="engagement.html">Communication, homework, daily report, parent portal</a>
+<a href="operations.html">Operations set-up (fees, attendance, transport, library)</a>
+<a href="readiness.html">School readiness</a>
+<a href="platform-school.html">Platform: schools &amp; campuses</a>
+<a href="platform-onboarding.html" class="on">Platform: onboarding</a>
+<a href="platform-workflow.html">Platform: onboarding workflow</a>
+<a href="platform-subscription.html">Platform: subscriptions &amp; plans</a>
+<a href="platform-payment.html">Platform: subscription payments</a>
+<a href="platform-community.html">Platform: communities (trusts / groups)</a>
+<a href="platform-hub.html">Platform: hub</a>
+<a href="platform-analytics.html">Platform: analytics</a>
+<a href="platform-support.html">Platform: support queries</a>
+</nav>
+<main>
+<div class="tabs"><a href="#OnboardingController">Onboarding</a><a href="#OnboardingOrchestrationController">Onboarding Orchestration</a></div>
+
+<!-- OnboardingController · samples/api/platform-onboarding/OnboardingController.md -->
+<section class="card" id="OnboardingController">
+<h2>Onboarding</h2>
+<!-- GET /api/v1/onboarding -->
+<form class="filters">
+<label>Status<select name="status"><option value="">Any</option><option>DRAFT</option><option>SUBMITTED</option><option>VERIFICATION_PENDING</option><option>VERIFIED</option><option>PLAN_SELECTED</option><option>PAYMENT_PENDING</option><option>PAYMENT_COMPLETED</option><option>PAYMENT_WAIVED</option><option>APPROVAL_PENDING</option><option>APPROVED</option><option>PROVISIONING</option><option>PROVISIONED</option><option>ACTIVE</option><option>REJECTED</option><option>CANCELLED</option><option>FAILED</option><option>PROVISIONING_FAILED</option></select></label>
+<label>Source<select name="source"><option value="">Any</option><option>DIRECT</option><option>COMMUNITY</option><option>PARTNER</option><option>REFERRAL</option><option>WEBSITE</option></select></label>
+<label>Community id<input type="text" name="communityId" value="fbfb45a2-817d-35df-8158-1b2b7b1daa95"></label>
+<button type="button" class="btn primary">Apply</button>
+</form>
+<div class="scroll"><table>
+<thead><tr><th>Onboarding code</th><th>School code</th><th>School name</th><th>Source</th><th>Current step</th><th>Status</th><th>Rejection reason</th><th>Started at</th><th></th></tr></thead>
+<tbody>
+<tr><td>O-001</td><td>O-001</td><td>Vidya Global School</td><td><span class="pill ">DIRECT</span></td><td><span class="pill ">BASIC_INFORMATION</span></td><td><span class="pill warn">DRAFT</span></td><td>Requested by the parent</td><td>2026-04-01T04:30:00Z</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>O-002</td><td>O-002</td><td>Vidya Global School</td><td><span class="pill ">COMMUNITY</span></td><td><span class="pill ">CONTACT_INFORMATION</span></td><td><span class="pill warn">SUBMITTED</span></td><td>Entered by mistake</td><td>2026-04-01T04:30:00Z</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>O-003</td><td>O-003</td><td>Vidya Global School</td><td><span class="pill ">PARTNER</span></td><td><span class="pill ">ADDRESS</span></td><td><span class="pill ">VERIFICATION_PENDING</span></td><td>Medical leave</td><td>2026-04-01T04:30:00Z</td><td class="actions"><a href="#">Open</a></td></tr>
+</tbody>
+</table></div>
+<p class="muted small">Source: <code>GET /api/v1/onboarding</code></p>
+<!-- GET /api/v1/onboarding/{id} -->
+<h3>Details</h3>
+<dl class="details">
+<div><dt>Onboarding code</dt><dd>O-001</dd></div>
+<div><dt>School code</dt><dd>O-001</dd></div>
+<div><dt>School name</dt><dd>Vidya Global School</dd></div>
+<div><dt>Source</dt><dd><span class="pill ">DIRECT</span></dd></div>
+<div><dt>Current step</dt><dd><span class="pill ">BASIC_INFORMATION</span></dd></div>
+<div><dt>Status</dt><dd><span class="pill warn">DRAFT</span></dd></div>
+<div><dt>Rejection reason</dt><dd>Requested by the parent</dd></div>
+<div><dt>Started at</dt><dd>2026-04-01T04:30:00Z</dd></div>
+<div><dt>Submitted at</dt><dd>2026-11-22T04:30:00Z</dd></div>
+<div><dt>Completed at</dt><dd>2026-11-22T04:30:00Z</dd></div>
+<div><dt>Created at</dt><dd>2026-11-22T04:30:00Z</dd></div>
+<div><dt>Updated at</dt><dd>2026-11-22T04:30:00Z</dd></div>
+</dl>
+<p class="muted small">Source: <code>GET /api/v1/onboarding/{id}</code></p>
+<!-- POST /api/v1/onboarding -->
+<details class="form"><summary>Initiate onboarding</summary>
+<form>
+<label>Source<select name="source"><option value="">Any</option><option>DIRECT</option><option>COMMUNITY</option><option>PARTNER</option><option>REFERRAL</option><option>WEBSITE</option></select></label>
+<label>Community id<input type="text" name="communityId" value="fbfb45a2-817d-35df-8158-1b2b7b1daa95"></label>
+<label>Community member id<input type="text" name="communityMemberId" value="8054ae28-2959-3978-8b86-6359c0e29a01"></label>
+<label>School name *<input type="text" name="schoolName" value="Vidya Global School" required></label>
+<label>Email *<input type="email" name="email" value="asha.rao@example.com" required></label>
+<label>Phone<input type="tel" name="phone" value="9811111121"></label>
+<label>Contact person name<input type="text" name="contactPersonName" value="Asha Rao"></label>
+<label>City<input type="text" name="city" value="Gurugram"></label>
+<label>State<input type="text" name="state" value="Haryana"></label>
+<label>Primary board<select name="primaryBoard"><option value="">Any</option><option>CBSE</option><option>ICSE</option><option>HBSE</option><option>STATE</option><option>IB</option><option>IGCSE</option><option>OTHER</option></select></label>
+<label>Referral code<input type="text" name="referralCode" value="IO-001"></label>
+<label class="wide">Initial notes<textarea name="initialNotes" rows="2">Parent informed on phone</textarea></label>
+<div class="wide"><button type="button" class="btn primary">Save</button> <button type="reset" class="btn">Reset</button></div>
+</form>
+</details>
+<details class="endpoints"><summary>All endpoints of this section (10)</summary>
+<table>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/onboarding</code></td><td>Initiate onboarding</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/onboarding/{id}</code></td><td>Get onboarding by id</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/onboarding/code/{code}</code></td><td>Get onboarding by code</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/onboarding/{id}/detail</code></td><td>Get onboarding detail</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/onboarding/{id}/steps</code></td><td>Save step data</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/onboarding/{id}/submit</code></td><td>Submit onboarding</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/onboarding/{id}/verify</code></td><td>Verify onboarding</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/onboarding/{id}/approve</code></td><td>Approve onboarding</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/onboarding/{id}/reject</code></td><td>Reject onboarding</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/onboarding</code></td><td>Get all onboardings</td></tr>
+</table>
+</details>
+</section>
+
+<!-- OnboardingOrchestrationController · samples/api/platform-onboarding/OnboardingOrchestrationController.md -->
+<section class="card" id="OnboardingOrchestrationController">
+<h2>Onboarding Orchestration</h2>
+<p class="muted">End-to-end full pipeline activation linking onboarding, billing, payments, and automated tenant DB provisioning</p>
+<!-- POST /api/v1/onboarding/{id}/activate -->
+<details class="form"><summary>Provision (if needed) and activate an APPROVED onboarding. Plan/payment fields in the body are deprecated and ignored.</summary>
+<form>
+<label>Plan id<input type="text" name="planId" value="c81a7f4f-a0ff-38ab-af15-53bd39f4efae"></label>
+<label>Billing cycle<select name="billingCycle"><option value="">Any</option><option>MONTHLY</option><option>QUARTERLY</option><option>ANNUAL</option><option>ONE_TIME</option></select></label>
+<label>Discount amount<input type="number" name="discountAmount" value="2500.00"></label>
+<label>Payment provider<select name="paymentProvider"><option value="">Any</option><option>RAZORPAY</option><option>CASHFREE</option><option>PAYU</option><option>MANUAL</option><option>OTHER</option></select></label>
+<label>Payment method<select name="paymentMethod"><option value="">Any</option><option>UPI</option><option>CARD</option><option>NETBANKING</option><option>WALLET</option><option>NEFT</option><option>RTGS</option><option>CHEQUE</option><option>OTHER</option></select></label>
+<label>Idempotency key<input type="text" name="idempotencyKey" value="uploads/2026/11/complete-onboarding-1.pdf"></label>
+<label>Reference number<input type="text" name="referenceNumber" value="REF-2026-0001"></label>
+<label>Confirmed by<input type="text" name="confirmedBy" value="Neha Sharma"></label>
+<label class="wide">Payment notes<textarea name="paymentNotes" rows="2">Parent informed on phone</textarea></label>
+<div class="wide"><button type="button" class="btn primary">Save</button> <button type="reset" class="btn">Reset</button></div>
+</form>
+</details>
+<details class="endpoints"><summary>All endpoints of this section (1)</summary>
+<table>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/onboarding/{id}/activate</code></td><td>Provision (if needed) and activate an APPROVED onboarding. Plan/payment fields in the body are deprecated and ignored.</td></tr>
+</table>
+</details>
+</section>
+</main>
+</div>
+</body>
+</html>

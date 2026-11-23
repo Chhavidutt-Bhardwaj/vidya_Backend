@@ -44,7 +44,7 @@ public class ExamTermController {
     private final ExamTermService examTermService;
 
     @PostMapping
-    @PreAuthorize("hasAuthority('EXAM_CREATE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('EXAM_CREATE')")
     @Operation(summary = "Create exam term", description = "Defines an exam cycle (e.g. Term 1, Final Exam) under an academic year")
     public ResponseEntity<ApiResponse<ExamTermResponse>> createExamTerm(
             @Valid @RequestBody CreateExamTermRequest request) {
@@ -55,7 +55,7 @@ public class ExamTermController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('EXAM_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN') or hasRole('TEACHER')")
+    @PreAuthorize("hasAuthority('EXAM_READ')")
     @Operation(summary = "Get exam term by ID")
     public ResponseEntity<ApiResponse<ExamTermResponse>> getExamTermById(@PathVariable UUID id) {
         log.info("REST: Get exam term ID: {}", id);
@@ -64,7 +64,7 @@ public class ExamTermController {
     }
 
     @GetMapping("/academic-year/{academicYearId}")
-    @PreAuthorize("hasAuthority('EXAM_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN') or hasRole('TEACHER')")
+    @PreAuthorize("hasAuthority('EXAM_READ')")
     @Operation(summary = "List exam terms for an academic year")
     public ResponseEntity<ApiResponse<List<ExamTermResponse>>> getExamTermsByAcademicYear(
             @PathVariable UUID academicYearId) {
@@ -73,7 +73,7 @@ public class ExamTermController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAuthority('EXAM_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN') or hasRole('TEACHER')")
+    @PreAuthorize("hasAuthority('EXAM_READ')")
     @Operation(summary = "Search exam terms with pagination")
     public ResponseEntity<PagedApiResponse<ExamTermResponse>> searchExamTerms(
             @RequestParam(required = false) UUID academicYearId,
@@ -85,7 +85,7 @@ public class ExamTermController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAuthority('EXAM_UPDATE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('EXAM_UPDATE')")
     @Operation(summary = "Update exam term details")
     public ResponseEntity<ApiResponse<ExamTermResponse>> updateExamTerm(
             @PathVariable UUID id,
@@ -96,7 +96,7 @@ public class ExamTermController {
     }
 
     @PatchMapping("/{id}/status")
-    @PreAuthorize("hasAuthority('EXAM_UPDATE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('EXAM_UPDATE')")
     @Operation(summary = "Update exam term lifecycle status")
     public ResponseEntity<ApiResponse<ExamTermResponse>> updateTermStatus(
             @PathVariable UUID id,
@@ -107,7 +107,7 @@ public class ExamTermController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('EXAM_DELETE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('EXAM_DELETE')")
     @Operation(summary = "Soft delete exam term")
     public ResponseEntity<ApiResponse<Void>> deleteExamTerm(@PathVariable UUID id) {
         log.info("REST: Delete exam term ID: {}", id);

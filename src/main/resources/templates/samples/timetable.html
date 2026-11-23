@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<!--
+  Sample screen for: Timetable, bells, rooms, substitutions
+  Plain HTML + CSS with static sample data generated from the API (APiReqDoc/samples/api/timetable/).
+  Each section names the endpoints that feed it. Rebuild it in the frontend framework; this file is not served by any controller.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Timetable, bells, rooms, substitutions</title>
+<link rel="stylesheet" href="samples.css">
+</head>
+<body>
+<header class="topbar"><a class="brand" href="index.html">Vidya</a><h1>Timetable, bells, rooms, substitutions</h1></header>
+<div class="layout">
+<nav class="side">
+<a href="security.html">Login, sessions, roles &amp; access</a>
+<a href="dashboard.html">Overview dashboard</a>
+<a href="student.html">Students (SIS, admission, enrolment, guardians)</a>
+<a href="staff.html">Staff &amp; HR set-up</a>
+<a href="user.html">School users &amp; accounts</a>
+<a href="academic.html">Academic years, classes, sections, set-up</a>
+<a href="subject.html">Subjects &amp; curriculum</a>
+<a href="assignment.html">Class teachers &amp; subject teachers</a>
+<a href="timetable.html" class="on">Timetable, bells, rooms, substitutions</a>
+<a href="calendar.html">Calendar &amp; holidays</a>
+<a href="attendance.html">Student attendance</a>
+<a href="examination.html">Exams, schedules, marks, grading</a>
+<a href="assessment.html">Assessments, question bank, report cards</a>
+<a href="fee.html">Fees &amp; finance (counter, online, auto-debit)</a>
+<a href="engagement.html">Communication, homework, daily report, parent portal</a>
+<a href="operations.html">Operations set-up (fees, attendance, transport, library)</a>
+<a href="readiness.html">School readiness</a>
+<a href="platform-school.html">Platform: schools &amp; campuses</a>
+<a href="platform-onboarding.html">Platform: onboarding</a>
+<a href="platform-workflow.html">Platform: onboarding workflow</a>
+<a href="platform-subscription.html">Platform: subscriptions &amp; plans</a>
+<a href="platform-payment.html">Platform: subscription payments</a>
+<a href="platform-community.html">Platform: communities (trusts / groups)</a>
+<a href="platform-hub.html">Platform: hub</a>
+<a href="platform-analytics.html">Platform: analytics</a>
+<a href="platform-support.html">Platform: support queries</a>
+</nav>
+<main>
+<div class="tabs"><a href="#BellScheduleController">Bell Schedule Management</a><a href="#RoomController">Room Management</a><a href="#TimetableController">Timetable &amp; Scheduling</a><a href="#TimetableSubstitutionController">Timetable Substitutions</a></div>
+
+<!-- BellScheduleController · samples/api/timetable/BellScheduleController.md -->
+<section class="card" id="BellScheduleController">
+<h2>Bell Schedule Management</h2>
+<p class="muted">Bell schedule and period timing configuration for the active school tenant</p>
+<!-- GET /api/v1/bell-schedules -->
+<form class="filters">
+<label>Search<input type="text" name="search" value="riya"></label>
+<label>Status<select name="status"><option value="">Any</option><option>ACTIVE</option><option>INACTIVE</option><option>DELETED</option></select></label>
+<button type="button" class="btn primary">Apply</button>
+</form>
+<div class="scroll"><table>
+<thead><tr><th>Schedule code</th><th>Name</th><th>Description</th><th>Is default</th><th>Status</th><th>Created at</th><th>Updated at</th><th>Version</th><th></th></tr></thead>
+<tbody>
+<tr><td>BS-001</td><td>Bell schedule 1</td><td>Bell schedule for the 2026-27 session</td><td><span class="pill ok">Yes</span></td><td><span class="pill ok">ACTIVE</span></td><td>2026-11-22T04:30:00Z</td><td>2026-11-22T04:30:00Z</td><td>0</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>BS-002</td><td>Bell schedule 2</td><td>Bell schedule for the 2026-27 session</td><td><span class="pill ok">Yes</span></td><td><span class="pill bad">INACTIVE</span></td><td>2026-11-21T04:30:00Z</td><td>2026-11-21T04:30:00Z</td><td>0</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>BS-003</td><td>Bell schedule 3</td><td>Bell schedule for the 2026-27 session</td><td><span class="pill">No</span></td><td><span class="pill ">DELETED</span></td><td>2026-11-20T04:30:00Z</td><td>2026-11-20T04:30:00Z</td><td>0</td><td class="actions"><a href="#">Open</a></td></tr>
+</tbody>
+</table></div>
+<p class="muted small">Source: <code>GET /api/v1/bell-schedules</code></p>
+<!-- GET /api/v1/bell-schedules/{id} -->
+<h3>Details</h3>
+<dl class="details">
+<div><dt>Schedule code</dt><dd>BS-001</dd></div>
+<div><dt>Name</dt><dd>Bell schedule 1</dd></div>
+<div><dt>Description</dt><dd>Bell schedule for the 2026-27 session</dd></div>
+<div><dt>Is default</dt><dd><span class="pill ok">Yes</span></dd></div>
+<div><dt>Status</dt><dd><span class="pill ok">ACTIVE</span></dd></div>
+<div><dt>Created at</dt><dd>2026-11-22T04:30:00Z</dd></div>
+<div><dt>Updated at</dt><dd>2026-11-22T04:30:00Z</dd></div>
+<div><dt>Version</dt><dd>0</dd></div>
+</dl>
+<p class="muted small">Source: <code>GET /api/v1/bell-schedules/{id}</code></p>
+<!-- POST /api/v1/bell-schedules -->
+<details class="form"><summary>Create bell schedule</summary>
+<form>
+<label>Name *<input type="text" name="name" value="Bell schedule 1" required></label>
+<label class="wide">Description<textarea name="description" rows="2">Bell schedule for the 2026-27 session</textarea></label>
+<label class="check"><input type="checkbox" name="isDefault" checked> Is default</label>
+<label class="wide">Periods *<span class="muted small">array of object CreatePeriodRequest (see the API file)</span></label>
+<div class="wide"><button type="button" class="btn primary">Save</button> <button type="reset" class="btn">Reset</button></div>
+</form>
+</details>
+<details class="endpoints"><summary>All endpoints of this section (14)</summary>
+<table>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/bell-schedules</code></td><td>Create bell schedule</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/bell-schedules</code></td><td>Search bell schedules</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/bell-schedules/default</code></td><td>Get default bell schedule</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/bell-schedules/{id}</code></td><td>Get bell schedule by ID</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/bell-schedules/{id}</code></td><td>Update bell schedule</td></tr>
+<tr><td><span class="verb patch">PATCH</span></td><td><code>/api/v1/bell-schedules/{id}/status</code></td><td>Update bell schedule status</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/bell-schedules/{id}/set-default</code></td><td>Set default bell schedule</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/bell-schedules/{id}/clone</code></td><td>Clone bell schedule</td></tr>
+<tr><td><span class="verb delete">DELETE</span></td><td><code>/api/v1/bell-schedules/{id}</code></td><td>Delete bell schedule</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/bell-schedules/{id}/periods</code></td><td>Get periods for schedule</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/bell-schedules/{id}/periods</code></td><td>Add period to schedule</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/bell-schedules/{id}/periods/{periodId}</code></td><td>Update period</td></tr>
+<tr><td><span class="verb delete">DELETE</span></td><td><code>/api/v1/bell-schedules/{id}/periods/{periodId}</code></td><td>Delete period</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/bell-schedules/{id}/periods</code></td><td>Bulk replace periods</td></tr>
+</table>
+</details>
+</section>
+
+<!-- RoomController · samples/api/timetable/RoomController.md -->
+<section class="card" id="RoomController">
+<h2>Room Management</h2>
+<p class="muted">Physical classrooms and facility management for the active school tenant</p>
+<!-- GET /api/v1/rooms -->
+<form class="filters">
+<label>Search<input type="text" name="search" value="riya"></label>
+<label>Room type<select name="roomType"><option value="">Any</option><option>CLASSROOM</option><option>LAB</option><option>COMPUTER_LAB</option><option>SCIENCE_LAB</option><option>LIBRARY</option><option>AUDITORIUM</option><option>SPORTS</option><option>OTHER</option></select></label>
+<label>Status<select name="status"><option value="">Any</option><option>ACTIVE</option><option>INACTIVE</option><option>MAINTENANCE</option><option>DELETED</option></select></label>
+<label>Building<input type="text" name="building" value="Block A"></label>
+<button type="button" class="btn primary">Apply</button>
+</form>
+<div class="scroll"><table>
+<thead><tr><th>Room code</th><th>Name</th><th>Room type</th><th>Capacity</th><th>Building</th><th>Floor</th><th>Status</th><th>Created at</th><th></th></tr></thead>
+<tbody>
+<tr><td>R-001</td><td>Room 1</td><td><span class="pill ">CLASSROOM</span></td><td>40</td><td>Block A</td><td>Sample floor</td><td><span class="pill ok">ACTIVE</span></td><td>2026-11-22T04:30:00Z</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>R-002</td><td>Room 2</td><td><span class="pill ">LAB</span></td><td>40</td><td>Block A</td><td>Sample floor 2</td><td><span class="pill bad">INACTIVE</span></td><td>2026-11-21T04:30:00Z</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>R-003</td><td>Room 3</td><td><span class="pill ">COMPUTER_LAB</span></td><td>40</td><td>Block A</td><td>Sample floor 3</td><td><span class="pill ">MAINTENANCE</span></td><td>2026-11-20T04:30:00Z</td><td class="actions"><a href="#">Open</a></td></tr>
+</tbody>
+</table></div>
+<p class="muted small">Source: <code>GET /api/v1/rooms</code></p>
+<!-- GET /api/v1/rooms/{id} -->
+<h3>Details</h3>
+<dl class="details">
+<div><dt>Room code</dt><dd>R-001</dd></div>
+<div><dt>Name</dt><dd>Room 1</dd></div>
+<div><dt>Room type</dt><dd><span class="pill ">CLASSROOM</span></dd></div>
+<div><dt>Capacity</dt><dd>40</dd></div>
+<div><dt>Building</dt><dd>Block A</dd></div>
+<div><dt>Floor</dt><dd>Sample floor</dd></div>
+<div><dt>Status</dt><dd><span class="pill ok">ACTIVE</span></dd></div>
+<div><dt>Created at</dt><dd>2026-11-22T04:30:00Z</dd></div>
+<div><dt>Updated at</dt><dd>2026-11-22T04:30:00Z</dd></div>
+<div><dt>Version</dt><dd>0</dd></div>
+</dl>
+<p class="muted small">Source: <code>GET /api/v1/rooms/{id}</code></p>
+<!-- POST /api/v1/rooms -->
+<details class="form"><summary>Create room</summary>
+<form>
+<label>Name *<input type="text" name="name" value="Room 1" required></label>
+<label>Room type *<select name="roomType"><option>CLASSROOM</option><option>LAB</option><option>COMPUTER_LAB</option><option>SCIENCE_LAB</option><option>LIBRARY</option><option>AUDITORIUM</option><option>SPORTS</option><option>OTHER</option></select></label>
+<label>Capacity<input type="number" name="capacity" value="40"></label>
+<label>Building<input type="text" name="building" value="Block A"></label>
+<label>Floor<input type="text" name="floor" value="Sample floor"></label>
+<div class="wide"><button type="button" class="btn primary">Save</button> <button type="reset" class="btn">Reset</button></div>
+</form>
+</details>
+<details class="endpoints"><summary>All endpoints of this section (6)</summary>
+<table>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/rooms</code></td><td>Create room</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/rooms</code></td><td>Search rooms</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/rooms/{id}</code></td><td>Get room by ID</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/rooms/{id}</code></td><td>Update room</td></tr>
+<tr><td><span class="verb patch">PATCH</span></td><td><code>/api/v1/rooms/{id}/status</code></td><td>Update room status</td></tr>
+<tr><td><span class="verb delete">DELETE</span></td><td><code>/api/v1/rooms/{id}</code></td><td>Delete room</td></tr>
+</table>
+</details>
+</section>
+
+<!-- TimetableController · samples/api/timetable/TimetableController.md -->
+<section class="card" id="TimetableController">
+<h2>Timetable &amp; Scheduling</h2>
+<p class="muted">Timetable creation, entries, validation, publish, and grid views for the active school tenant</p>
+<!-- GET /api/v1/timetables -->
+<form class="filters">
+<label>Academic year id<input type="text" name="academicYearId" value="e007272e-5984-3753-9104-2d899e58fb35"></label>
+<label>Bell schedule id<input type="text" name="bellScheduleId" value="0e36bf88-b1dd-3a8d-9991-b14a18bf8ebc"></label>
+<label>Status<select name="status"><option value="">Any</option><option>DRAFT</option><option>PUBLISHED</option><option>ACTIVE</option><option>ARCHIVED</option><option>DELETED</option></select></label>
+<label>Search<input type="text" name="search" value="riya"></label>
+<button type="button" class="btn primary">Apply</button>
+</form>
+<div class="scroll"><table>
+<thead><tr><th>Timetable code</th><th>Academic year code</th><th>Academic year name</th><th>Bell schedule code</th><th>Bell schedule name</th><th>Name</th><th>Description</th><th>Status</th><th></th></tr></thead>
+<tbody>
+<tr><td>T-001</td><td>T-001</td><td>2026-27</td><td>T-001</td><td>Timetable 1</td><td>Timetable 1</td><td>Timetable for the 2026-27 session</td><td><span class="pill warn">DRAFT</span></td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>T-002</td><td>T-002</td><td>2026-27</td><td>T-002</td><td>Timetable 2</td><td>Timetable 2</td><td>Timetable for the 2026-27 session</td><td><span class="pill ok">PUBLISHED</span></td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>T-003</td><td>T-003</td><td>2026-27</td><td>T-003</td><td>Timetable 3</td><td>Timetable 3</td><td>Timetable for the 2026-27 session</td><td><span class="pill ok">ACTIVE</span></td><td class="actions"><a href="#">Open</a></td></tr>
+</tbody>
+</table></div>
+<p class="muted small">Source: <code>GET /api/v1/timetables</code></p>
+<!-- GET /api/v1/timetables/{id} -->
+<h3>Details</h3>
+<dl class="details">
+<div><dt>Timetable code</dt><dd>T-001</dd></div>
+<div><dt>Academic year code</dt><dd>T-001</dd></div>
+<div><dt>Academic year name</dt><dd>2026-27</dd></div>
+<div><dt>Name</dt><dd>Timetable 1</dd></div>
+<div><dt>Description</dt><dd>Timetable for the 2026-27 session</dd></div>
+<div><dt>Status</dt><dd><span class="pill warn">DRAFT</span></dd></div>
+<div><dt>Effective from</dt><dd>2026-11-22</dd></div>
+<div><dt>Effective to</dt><dd>2026-11-22</dd></div>
+<div><dt>Created at</dt><dd>2026-11-22T04:30:00Z</dd></div>
+<div><dt>Updated at</dt><dd>2026-11-22T04:30:00Z</dd></div>
+<div><dt>Version</dt><dd>0</dd></div>
+</dl>
+<p class="muted small">Source: <code>GET /api/v1/timetables/{id}</code></p>
+<!-- POST /api/v1/timetables -->
+<details class="form"><summary>Create timetable</summary>
+<form>
+<label>Academic year id *<input type="text" name="academicYearId" value="e007272e-5984-3753-9104-2d899e58fb35" required></label>
+<label>Bell schedule id *<input type="text" name="bellScheduleId" value="0e36bf88-b1dd-3a8d-9991-b14a18bf8ebc" required></label>
+<label>Name *<input type="text" name="name" value="Timetable 1" required></label>
+<label class="wide">Description<textarea name="description" rows="2">Timetable for the 2026-27 session</textarea></label>
+<label>Effective from<input type="date" name="effectiveFrom" value="2026-11-22"></label>
+<label>Effective to<input type="date" name="effectiveTo" value="2026-11-22"></label>
+<div class="wide"><button type="button" class="btn primary">Save</button> <button type="reset" class="btn">Reset</button></div>
+</form>
+</details>
+<details class="endpoints"><summary>All endpoints of this section (25)</summary>
+<table>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/timetables</code></td><td>Create timetable</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/timetables</code></td><td>Search timetables</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/timetables/{id}</code></td><td>Get timetable details by ID</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/timetables/{id}</code></td><td>Update timetable</td></tr>
+<tr><td><span class="verb patch">PATCH</span></td><td><code>/api/v1/timetables/{id}/status</code></td><td>Update timetable status</td></tr>
+<tr><td><span class="verb delete">DELETE</span></td><td><code>/api/v1/timetables/{id}</code></td><td>Delete timetable</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/timetables/{id}/validate</code></td><td>Validate timetable</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/timetables/{id}/publish</code></td><td>Publish timetable</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/timetables/{id}/clone</code></td><td>Clone timetable</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/timetables/{timetableId}/sections/{sectionId}/entries</code></td><td>Bulk upsert section timetable entries</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/timetables/{timetableId}/entries</code></td><td>Create timetable entry</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/timetables/{timetableId}/entries</code></td><td>Search timetable entries</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/timetables/{timetableId}/entries/{id}</code></td><td>Get timetable entry by ID</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/timetables/{timetableId}/entries/{id}</code></td><td>Update timetable entry</td></tr>
+<tr><td><span class="verb delete">DELETE</span></td><td><code>/api/v1/timetables/{timetableId}/entries/{id}</code></td><td>Delete timetable entry</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/timetables/{timetableId}/class/{academicClassId}</code></td><td>Get class weekly timetable grid</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/timetables/{timetableId}/sections/{sectionId}/grid</code></td><td>Get section weekly timetable grid</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/timetables/{timetableId}/teachers/{teacherId}/grid</code></td><td>Get teacher weekly timetable grid</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/timetables/{timetableId}/teacher/{teacherId}</code></td><td>Get teacher weekly timetable grid</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/timetables/{timetableId}/sections/{sectionId}/day</code></td><td>Get section day timetable schedule</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/timetables/{timetableId}/teachers/{teacherId}/day</code></td><td>Get teacher day timetable schedule</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/timetables/{timetableId}/rooms/{roomId}/grid</code></td><td>Get room weekly timetable grid</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/timetables/{timetableId}/room/{roomId}</code></td><td>Get room weekly timetable grid</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/timetables/{timetableId}/rooms/{roomId}/occupancy</code></td><td>Get room occupancy and utilisation</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/timetables/{timetableId}/teachers/{teacherId}/load</code></td><td>Get teacher workload and free periods</td></tr>
+</table>
+</details>
+</section>
+
+<!-- TimetableSubstitutionController · samples/api/timetable/TimetableSubstitutionController.md -->
+<section class="card" id="TimetableSubstitutionController">
+<h2>Timetable Substitutions</h2>
+<p class="muted">Daily teacher substitution, room change, and class cancellation management</p>
+<!-- GET /api/v1/substitutions -->
+<form class="filters">
+<label>Date from<input type="date" name="dateFrom" value="2026-11-22"></label>
+<label>Date to<input type="date" name="dateTo" value="2026-11-22"></label>
+<label>Section id<input type="text" name="sectionId" value="1c35581b-02b2-3f00-bdbc-29ea5acdbfba"></label>
+<label>Teacher id<input type="text" name="teacherId" value="64150973-9b29-3d23-9f86-9620ae588407"></label>
+<label>Status<select name="status"><option value="">Any</option><option>ACTIVE</option><option>CANCELLED</option><option>DELETED</option></select></label>
+<button type="button" class="btn primary">Apply</button>
+</form>
+<div class="scroll"><table>
+<thead><tr><th>Substitution code</th><th>Timetable code</th><th>Substitution date</th><th>Period name</th><th>Period order</th><th>Class name</th><th>Section name</th><th>Substitution type</th><th></th></tr></thead>
+<tbody>
+<tr><td>S-001</td><td>S-001</td><td>2026-11-22</td><td>Substitution 1</td><td>1</td><td>Class 9</td><td>A</td><td><span class="pill ">TEACHER_SUBSTITUTE</span></td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>S-002</td><td>S-002</td><td>2026-11-21</td><td>Substitution 2</td><td>2</td><td>Class 4</td><td>B</td><td><span class="pill ">ROOM_CHANGE</span></td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>S-003</td><td>S-003</td><td>2026-11-20</td><td>Substitution 3</td><td>3</td><td>Class 10</td><td>C</td><td><span class="pill ">CLASS_CANCELLED</span></td><td class="actions"><a href="#">Open</a></td></tr>
+</tbody>
+</table></div>
+<p class="muted small">Source: <code>GET /api/v1/substitutions</code></p>
+<!-- GET /api/v1/substitutions/{id} -->
+<h3>Details</h3>
+<dl class="details">
+<div><dt>Substitution code</dt><dd>S-001</dd></div>
+<div><dt>Timetable code</dt><dd>S-001</dd></div>
+<div><dt>Substitution date</dt><dd>2026-11-22</dd></div>
+<div><dt>Period name</dt><dd>Substitution 1</dd></div>
+<div><dt>Period order</dt><dd>1</dd></div>
+<div><dt>Class name</dt><dd>Class 9</dd></div>
+<div><dt>Section name</dt><dd>A</dd></div>
+<div><dt>Substitution type</dt><dd><span class="pill ">TEACHER_SUBSTITUTE</span></dd></div>
+<div><dt>Original teacher name</dt><dd>Neha Sharma</dd></div>
+<div><dt>Original subject name</dt><dd>Mathematics</dd></div>
+<div><dt>Substitute teacher name</dt><dd>Neha Sharma</dd></div>
+<div><dt>Substitute room name</dt><dd>Substitution 1</dd></div>
+</dl>
+<p class="muted small">Source: <code>GET /api/v1/substitutions/{id}</code></p>
+<!-- POST /api/v1/substitutions -->
+<details class="form"><summary>Create substitution</summary>
+<form>
+<label>Timetable id *<input type="text" name="timetableId" value="8f9b5cfc-2b34-3926-b7b3-81672ce3f955" required></label>
+<label>Substitution date *<input type="date" name="substitutionDate" value="2026-11-22" required></label>
+<label>Period id *<input type="text" name="periodId" value="171a260f-5a9a-31db-bfac-d40e1eafbb32" required></label>
+<label>Academic class id *<input type="text" name="academicClassId" value="544208c0-8100-3d80-a220-cccbfc29768b" required></label>
+<label>Section id<input type="text" name="sectionId" value="1c35581b-02b2-3f00-bdbc-29ea5acdbfba"></label>
+<label>Substitution type *<select name="substitutionType"><option>TEACHER_SUBSTITUTE</option><option>ROOM_CHANGE</option><option>CLASS_CANCELLED</option></select></label>
+<label>Substitute teacher id<input type="text" name="substituteTeacherId" value="baf0b5ca-6159-36f5-8d12-8268836184a0"></label>
+<label>Substitute room id<input type="text" name="substituteRoomId" value="6388c82d-b5c9-3318-92ef-df06dcf99149"></label>
+<label class="wide">Reason<textarea name="reason" rows="2">Requested by the parent</textarea></label>
+<div class="wide"><button type="button" class="btn primary">Save</button> <button type="reset" class="btn">Reset</button></div>
+</form>
+</details>
+<details class="endpoints"><summary>All endpoints of this section (6)</summary>
+<table>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/substitutions</code></td><td>Create substitution</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/substitutions/{id}</code></td><td>Get substitution by ID</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/substitutions</code></td><td>Search substitutions</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/substitutions/{id}</code></td><td>Update substitution</td></tr>
+<tr><td><span class="verb patch">PATCH</span></td><td><code>/api/v1/substitutions/{id}/cancel</code></td><td>Cancel substitution</td></tr>
+<tr><td><span class="verb delete">DELETE</span></td><td><code>/api/v1/substitutions/{id}</code></td><td>Delete substitution</td></tr>
+</table>
+</details>
+</section>
+</main>
+</div>
+</body>
+</html>

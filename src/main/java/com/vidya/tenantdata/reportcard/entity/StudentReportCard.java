@@ -110,6 +110,23 @@ public class StudentReportCard {
     @Column(name = "published_at")
     private Instant publishedAt;
 
+    /** Scheme the result was calculated with (null = exam papers only). */
+    @Column(name = "assessment_scheme_id")
+    private UUID assessmentSchemeId;
+
+    /** Year-to-date result over the terms so far, by the scheme's term aggregation. */
+    @Column(name = "cumulative_percentage", precision = 5, scale = 2)
+    private BigDecimal cumulativePercentage;
+
+    @Column(name = "cumulative_grade", length = 10)
+    private String cumulativeGrade;
+
+    @Column(name = "grace_applied", nullable = false)
+    private boolean graceApplied = false;
+
+    @Column(name = "result_note", length = 500)
+    private String resultNote;
+
     @OneToMany(mappedBy = "reportCard", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ReportCardSubjectResult> subjectResults = new ArrayList<>();
 

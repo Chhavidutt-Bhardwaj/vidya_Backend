@@ -65,4 +65,19 @@ public class StaffResponse {
 
     @Schema(description = "Last update timestamp")
     private Instant updatedAt;
+
+    @Schema(description = "Department id (null when not set)")
+    private UUID departmentId;
+
+    @Schema(description = "Designation id (null when not set)")
+    private UUID designationId;
+
+    @Schema(description = "Staff member this person reports to")
+    private UUID reportingToStaffId;
+
+    @Schema(description = "PERMANENT, PROBATION, CONTRACT, PART_TIME, GUEST, VOLUNTEER")
+    private com.vidya.tenantdata.staff.enums.EmploymentType employmentType;
+
+    @Schema(description = "Has a login account")
+    private boolean hasLogin;
 }

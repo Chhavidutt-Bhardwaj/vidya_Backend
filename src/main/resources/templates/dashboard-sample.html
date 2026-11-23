@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<!--
+  Sample layout of the school Overview dashboard: plain HTML + CSS, static sample data, no framework.
+  Each block names the endpoint that feeds it and the sample file with its request / response
+  (APiReqDoc/samples/dashboard/*.md). Numbers here are the same as in those files.
+  Not served by any controller; open it directly in a browser. Rebuild it later in the frontend framework.
+-->
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School Overview</title>
+    <style>
+        :root {
+            --bg: #f5f6f8;
+            --card: #ffffff;
+            --text: #1d2330;
+            --muted: #687083;
+            --line: #e3e6ec;
+            --brand: #2f5bea;
+            --green: #1a8f5a;
+            --green-bg: #e5f5ec;
+            --amber: #a86400;
+            --amber-bg: #fdf1dc;
+            --red: #c33a32;
+            --red-bg: #fbe7e5;
+            --blue: #2f5bea;
+            --blue-bg: #e7edfd;
+            --grey: #687083;
+            --grey-bg: #eef0f3;
+            --radius: 10px;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--text);
+            font: 14px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        }
+
+        a { color: var(--brand); text-decoration: none; }
+
+        /* ── Header ─────────────────────────────── */
+        .topbar {
+            display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between;
+            padding: 14px 24px; background: var(--card); border-bottom: 1px solid var(--line);
+        }
+        .school { display: flex; align-items: center; gap: 10px; }
+        .school h1 { margin: 0; font-size: 18px; }
+        .badge { font-size: 11px; padding: 2px 8px; border-radius: 99px; background: var(--grey-bg); color: var(--muted); font-weight: 600; }
+        .controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+        select, input[type="date"], .btn {
+            font: inherit; padding: 6px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); color: var(--text);
+        }
+        .btn { cursor: pointer; }
+        .btn.primary { background: var(--brand); border-color: var(--brand); color: #fff; }
+        .caption { padding: 8px 24px; color: var(--muted); font-size: 12px; }
+
+        main { padding: 0 24px 32px; display: grid; gap: 16px; }
+
+        /* ── Cards ──────────────────────────────── */
+        .grid { display: grid; gap: 16px; }
+        .kpis { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+        .two { grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); }
+        .card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; min-width: 0; }
+        .card h2 { margin: 0 0 12px; font-size: 14px; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+        .src { font-size: 11px; font-weight: 400; color: var(--muted); font-family: ui-monospace, Menlo, monospace; }
+        .label { color: var(--muted); font-size: 12px; }
+        .big { font-size: 28px; font-weight: 700; margin: 4px 0; font-variant-numeric: tabular-nums; }
+        .sub { color: var(--muted); font-size: 12px; }
+        .delta { font-size: 12px; font-weight: 600; }
+        .up { color: var(--green); }
+        .down { color: var(--red); }
+        .num { font-variant-numeric: tabular-nums; text-align: right; }
+
+        /* ── Pulse tiles ────────────────────────── */
+        .tiles { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); }
+        .tile { border: 1px solid var(--line); border-radius: 8px; padding: 12px; }
+        .tile .title { font-weight: 600; margin: 6px 0 2px; }
+        .status { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 99px; }
+        .s-green { background: var(--green-bg); color: var(--green); }
+        .s-amber { background: var(--amber-bg); color: var(--amber); }
+        .s-red { background: var(--red-bg); color: var(--red); }
+        .s-blue { background: var(--blue-bg); color: var(--blue); }
+        .s-grey { background: var(--grey-bg); color: var(--grey); }
+
+        /* ── Quick counts ───────────────────────── */
+        .counts { display: flex; flex-wrap: wrap; gap: 8px; }
+        .count { display: flex; gap: 8px; align-items: center; border: 1px solid var(--line); border-radius: 99px; padding: 6px 12px; }
+        .count b { background: var(--brand); color: #fff; border-radius: 99px; padding: 0 8px; font-size: 12px; }
+
+        /* ── Bars (CSS only) ────────────────────── */
+        .bars { display: flex; align-items: flex-end; gap: 10px; height: 160px; padding-top: 8px; border-bottom: 1px solid var(--line); }
+        .bar { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%; gap: 4px; min-width: 0; }
+        .bar span { width: 100%; max-width: 36px; background: var(--brand); border-radius: 4px 4px 0 0; }
+        .bar small { font-size: 11px; color: var(--muted); }
+        .bar.gap span { background: transparent; border: 1px dashed var(--line); }
+        .axis { display: flex; gap: 10px; }
+        .axis div { flex: 1; text-align: center; font-size: 11px; color: var(--muted); }
+
+        .hbar { display: grid; grid-template-columns: 80px 1fr 70px; gap: 8px; align-items: center; margin: 6px 0; }
+        .track { background: var(--grey-bg); border-radius: 4px; height: 12px; overflow: hidden; }
+        .fill { background: var(--brand); height: 100%; }
+
+        .progress { background: var(--grey-bg); border-radius: 6px; height: 10px; display: flex; overflow: hidden; margin: 10px 0 6px; }
+        .progress .ok { background: var(--green); }
+        .progress .wait { background: var(--blue); }
+        .progress .bad { background: var(--red); }
+        .legend { display: flex; flex-wrap: wrap; gap: 12px; font-size: 12px; color: var(--muted); }
+        .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; }
+
+        /* ── Tables / lists ─────────────────────── */
+        .scroll { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 8px 6px; border-bottom: 1px solid var(--line); text-align: left; white-space: nowrap; }
+        th { font-size: 12px; color: var(--muted); font-weight: 600; }
+        .facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
+        .facts div { border-left: 3px solid var(--line); padding-left: 8px; }
+        .facts b { display: block; font-size: 18px; }
+
+        .items { list-style: none; margin: 0; padding: 0; }
+        .items li { display: flex; gap: 12px; justify-content: space-between; align-items: flex-start; padding: 10px 0; border-bottom: 1px solid var(--line); }
+        .items .type { font-size: 10px; font-weight: 700; color: var(--muted); letter-spacing: .03em; }
+        .items .actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+        .soon { border-style: dashed; color: var(--muted); }
+
+        @media (max-width: 600px) {
+            .topbar, .caption { padding-left: 16px; padding-right: 16px; }
+            main { padding: 0 16px 24px; }
+            .items li { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- GET /api/v1/dashboard/campuses  ·  samples/dashboard/02_campuses.md -->
+<header class="topbar">
+    <div class="school">
+        <h1>Vidya Global School</h1>
+        <span class="badge">CBSE</span>
+        <select aria-label="Campus">
+            <option>Gurugram (main)</option>
+            <option>Saket</option>
+        </select>
+    </div>
+    <div class="controls">
+        <select aria-label="Academic year"><option>2026-27</option><option>2025-26</option></select>
+        <input type="date" value="2026-11-01" aria-label="From">
+        <input type="date" value="2026-11-22" aria-label="To">
+        <!-- GET /api/v1/dashboard/export  ·  13_export.md -->
+        <a class="btn primary" href="#">Export summary (CSV)</a>
+    </div>
+</header>
+<div class="caption">2026-27 · 1–22 Nov 2026 · whole school (numbers are not split by campus)</div>
+
+<main>
+
+    <!-- GET /api/v1/dashboard/kpis  ·  03_kpis.md -->
+    <section class="grid kpis">
+        <article class="card">
+            <div class="label">Active enrolment</div>
+            <div class="big">1,240</div>
+            <div class="sub">of 1,400 seats · 88.6% full</div>
+            <div class="delta up">▲ 4.2% vs last academic year</div>
+        </article>
+        <article class="card">
+            <div class="label">Attendance today</div>
+            <div class="big">95.8%</div>
+            <div class="sub">41 absent · 12 late · 41 / 44 sections marked</div>
+            <div class="delta up">▲ 1.3 pts vs 30-day average</div>
+        </article>
+        <article class="card">
+            <div class="label">Admissions this period</div>
+            <div class="big">9</div>
+            <div class="sub">Enquiry leads: coming soon</div>
+            <div class="delta up">▲ 50.0% vs previous 22 days</div>
+        </article>
+        <article class="card">
+            <div class="label">Fees collected</div>
+            <div class="big">₹9,85,000</div>
+            <div class="sub">of ₹11,20,000 falling due · rate 87.9% · overdue ₹1,35,000 (96 students)</div>
+            <div class="delta up">▲ 12.4% vs previous 22 days</div>
+        </article>
+    </section>
+
+    <!-- GET /api/v1/dashboard/quick-counts  ·  07_quick_counts.md -->
+    <section class="card">
+        <h2>Quick actions <span class="src">/dashboard/quick-counts</span></h2>
+        <div class="counts">
+            <a class="count" href="#">Mark attendance <b>3</b></a>
+            <a class="count" href="#">Substitutions <b>4</b></a>
+            <a class="count" href="#">Approvals <b>7</b></a>
+            <a class="count" href="#">New admissions (7 days) <b>2</b></a>
+            <a class="count" href="#">Holidays (30 days) <b>1</b></a>
+            <a class="count" href="#">Fees today ₹42,500 <b>31</b></a>
+            <a class="count" href="#">Cheques to clear <b>5</b></a>
+        </div>
+    </section>
+
+    <!-- GET /api/v1/dashboard/operations-pulse  ·  05_operations_pulse.md -->
+    <section class="card">
+        <h2>Campus pulse · today <span class="src">/dashboard/operations-pulse</span></h2>
+        <div class="tiles">
+            <div class="tile">
+                <span class="status s-amber">PENDING</span>
+                <div class="title">41 / 44 sections marked</div>
+                <div class="sub">3 section(s) still to mark today</div>
+            </div>
+            <div class="tile">
+                <span class="status s-blue">COVERED</span>
+                <div class="title">4 substitution(s) today</div>
+                <div class="sub">3 proxy teachers, 1 room change, 0 cancelled</div>
+            </div>
+            <div class="tile">
+                <span class="status s-blue">UPCOMING</span>
+                <div class="title">Term 1 – Practicals</div>
+                <div class="sub">Class 10 · Physics on 25 Nov · in 3 days</div>
+            </div>
+            <div class="tile">
+                <span class="status s-red">ATTENTION</span>
+                <div class="title">18 vehicles on 16 routes</div>
+                <div class="sub">1 in maintenance, 2 documents expiring</div>
+            </div>
+            <div class="tile">
+                <span class="status s-red">ATTENTION</span>
+                <div class="title">Auto-debit on 10 Nov</div>
+                <div class="sub">371 collected, 21 bounced, 2 refused</div>
+            </div>
+            <div class="tile soon">
+                <span class="status s-grey">COMING SOON</span>
+                <div class="title">APAAR / UDISE+</div>
+                <div class="sub">Compliance sync is not built yet</div>
+            </div>
+        </div>
+    </section>
+
+    <section class="grid two">
+        <!-- GET /api/v1/dashboard/auto-debit  ·  06_auto_debit.md -->
+        <article class="card">
+            <h2>Auto-debit · November <span class="src">/dashboard/auto-debit</span></h2>
+            <div class="facts">
+                <div><span class="label">Collected</span><b>₹9,84,500</b><span class="sub">371 debits</span></div>
+                <div><span class="label">At the bank</span><b>₹14,400</b><span class="sub">6 debits</span></div>
+                <div><span class="label">Bounced</span><b>₹53,200</b><span class="sub">21 · charges ₹12,390</span></div>
+                <div><span class="label">Mandates</span><b>412</b><span class="sub">18 pending</span></div>
+            </div>
+            <div class="progress" aria-label="Auto-debit progress">
+                <span class="ok" style="width: 93.6%"></span>
+                <span class="wait" style="width: 1.4%"></span>
+                <span class="bad" style="width: 5%"></span>
+            </div>
+            <div class="legend">
+                <span><i class="dot" style="background: var(--green)"></i>collected</span>
+                <span><i class="dot" style="background: var(--blue)"></i>at the bank</span>
+                <span><i class="dot" style="background: var(--red)"></i>bounced</span>
+                <span>9 skipped (paid before) · 2 refused by gateway</span>
+            </div>
+            <p class="sub">Debit day 10th · higher class first, next child a day later · bounce ₹500 + 18% GST, retry after 3 days.</p>
+        </article>
+
+        <!-- GET /api/v1/dashboard/snapshot  ·  04_snapshot.md -->
+        <article class="card">
+            <h2>School at a glance <span class="src">/dashboard/snapshot</span></h2>
+            <div class="facts">
+                <div><span class="label">Students</span><b>1,240</b><span class="sub">652 boys · 584 girls</span></div>
+                <div><span class="label">Without section</span><b>3</b><span class="sub"><a href="#">assign</a></span></div>
+                <div><span class="label">Staff</span><b>96</b><span class="sub">71 teaching · 25 other</span></div>
+                <div><span class="label">Classes / sections</span><b>14 / 44</b><span class="sub">23 subjects</span></div>
+                <div><span class="label">No class teacher</span><b>2</b><span class="sub">sections</span></div>
+                <div><span class="label">Timetable</span><b>Published</b></div>
+            </div>
+        </article>
+    </section>
+
+    <section class="grid two">
+        <!-- GET /api/v1/dashboard/attendance-trend  ·  08_attendance_trend.md  (bar height = rate, scaled 90–100%) -->
+        <article class="card">
+            <h2>Attendance trend <span class="src">/dashboard/attendance-trend</span></h2>
+            <div class="bars">
+                <div class="bar"><small>94.6</small><span style="height: 46%"></span></div>
+                <div class="bar"><small>95.2</small><span style="height: 52%"></span></div>
+                <div class="bar"><small>94.9</small><span style="height: 49%"></span></div>
+                <div class="bar"><small>95.9</small><span style="height: 59%"></span></div>
+                <div class="bar"><small>94.7</small><span style="height: 47%"></span></div>
+                <div class="bar gap"><small>—</small><span style="height: 4%"></span></div>
+                <div class="bar"><small>95.8</small><span style="height: 58%"></span></div>
+            </div>
+            <div class="axis"><div>16</div><div>17</div><div>18</div><div>19</div><div>20</div><div>21</div><div>22</div></div>
+            <p class="sub">Average 95.1% · 21 Nov had no marks (shown as a gap, not zero)</p>
+        </article>
+
+        <!-- GET /api/v1/dashboard/fee-trend  ·  10_fee_trend.md  (bar height = collected that day) -->
+        <article class="card">
+            <h2>Fee collection velocity <span class="src">/dashboard/fee-trend</span></h2>
+            <div class="bars">
+                <div class="bar"><small>18k</small><span style="height: 3%"></span></div>
+                <div class="bar"><small>0</small><span style="height: 0"></span></div>
+                <div class="bar"><small>24k</small><span style="height: 3%"></span></div>
+                <div class="bar"><small>8.2L</small><span style="height: 100%"></span></div>
+                <div class="bar"><small>2.2L</small><span style="height: 27%"></span></div>
+                <div class="bar"><small>92k</small><span style="height: 11%"></span></div>
+                <div class="bar"><small>44k</small><span style="height: 5%"></span></div>
+            </div>
+            <div class="axis"><div>8</div><div>9</div><div>10</div><div>11</div><div>12</div><div>13</div><div>14</div></div>
+            <p class="sub">₹12,13,000 in the week · spike on the 11th = auto-debits confirmed by the bank</p>
+        </article>
+    </section>
+
+    <section class="grid two">
+        <!-- GET /api/v1/dashboard/enrollment-by-class  ·  09_enrollment_by_class.md -->
+        <article class="card">
+            <h2>Enrolment by class <span class="src">/dashboard/enrollment-by-class</span></h2>
+            <div class="hbar"><span>Nursery</span><div class="track"><div class="fill" style="width: 88.6%"></div></div><span class="num">62 / 70</span></div>
+            <div class="hbar"><span>Class 4</span><div class="track"><div class="fill" style="width: 91.4%"></div></div><span class="num">96 / 105</span></div>
+            <div class="hbar"><span>Class 9</span><div class="track"><div class="fill" style="width: 86.7%"></div></div><span class="num">104 / 120</span></div>
+            <div class="hbar"><span>Class 10</span><div class="track"><div class="fill" style="width: 100%; opacity: .4"></div></div><span class="num">98 / –</span></div>
+            <p class="sub">Class 10 has no section capacity set.</p>
+        </article>
+
+        <!-- GET /api/v1/dashboard/fee-breakdown  ·  11_fee_breakdown.md -->
+        <article class="card">
+            <h2>Fees by head <span class="src">/dashboard/fee-breakdown</span></h2>
+            <div class="scroll">
+                <table>
+                    <thead><tr><th>Head</th><th class="num">Net payable</th><th class="num">Paid</th><th class="num">Due</th><th class="num">Rate</th></tr></thead>
+                    <tbody>
+                    <tr><td>Tuition fee</td><td class="num">₹60,20,000</td><td class="num">₹37,10,000</td><td class="num">₹22,95,600</td><td class="num">61.6%</td></tr>
+                    <tr><td>Transport fee</td><td class="num">₹9,60,000</td><td class="num">₹6,05,000</td><td class="num">₹3,55,000</td><td class="num">63.0%</td></tr>
+                    <tr><td>NACH bounce charge</td><td class="num">₹21,000</td><td class="num">₹14,500</td><td class="num">₹6,500</td><td class="num">69.0%</td></tr>
+                    <tr><td>GST 18% on bounce</td><td class="num">₹3,780</td><td class="num">₹2,610</td><td class="num">₹1,170</td><td class="num">69.0%</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </article>
+    </section>
+
+    <!-- GET /api/v1/dashboard/action-items  ·  POST …/{id}/dismiss  ·  12_action_items.md -->
+    <section class="card">
+        <h2>Waiting for you (7) <span class="src">/dashboard/action-items</span></h2>
+        <ul class="items">
+            <li>
+                <div><div class="type">FEE_MANDATE_STALLED</div><b>Mandate not approved yet: Meena Gupta</b>
+                    <div class="sub">ENACH via RAZORPAY · 2 children · waiting since 14 Nov 2026</div></div>
+                <div class="actions"><a class="btn" href="#">Refresh</a><a class="btn" href="#">Dismiss</a></div>
+            </li>
+            <li>
+                <div><div class="type">FEE_DEBIT_ERROR</div><b>Auto-debit refused by the gateway: Aman Rao</b>
+                    <div class="sub">₹2,000 · Asha Rao · 11 Nov · Mandate not active</div></div>
+                <div class="actions"><a class="btn primary" href="#">Send payment link</a><a class="btn" href="#">Dismiss</a></div>
+            </li>
+            <li>
+                <div><div class="type">FEE_CONCESSION</div><b>Concession to approve: Riya Rao</b>
+                    <div class="sub">Sibling discount · 10% · Class 9 · asked by Accounts – Neha</div></div>
+                <div class="actions"><a class="btn primary" href="#">Review &amp; approve</a><a class="btn" href="#">Dismiss</a></div>
+            </li>
+            <li>
+                <div><div class="type">FEE_UNALLOCATED</div><b>Online payment to refund: ₹500</b>
+                    <div class="sub">Rahul Sharma paid ₹25,500 on PL5F2A91C3 · more than was due</div></div>
+                <div class="actions"><a class="btn" href="#">Open</a><a class="btn" href="#">Dismiss</a></div>
+            </li>
+            <li>
+                <div><div class="type">LESSON_PLAN_REVIEW</div><b>Lesson plan to review: Fractions</b>
+                    <div class="sub">Class 6 A · Maths · 24 Nov · Asha Rao</div></div>
+                <div class="actions"><a class="btn primary" href="#">Review</a><a class="btn" href="#">Dismiss</a></div>
+            </li>
+        </ul>
+    </section>
+
+    <!-- Blocks returned in "unavailable" with reason NOT_BUILT -->
+    <section class="grid two">
+        <article class="card soon">
+            <h2>Admissions funnel <span class="badge">Coming soon</span></h2>
+            <p>Needs the enquiry / application pipeline (03_ADMISSIONS.md).</p>
+        </article>
+        <article class="card soon">
+            <h2>Multi-campus comparison <span class="badge">Coming soon</span></h2>
+            <p>Students and staff are not stored per campus yet.</p>
+        </article>
+    </section>
+
+</main>
+</body>
+</html>

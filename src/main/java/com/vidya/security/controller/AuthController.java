@@ -8,6 +8,7 @@ import com.vidya.security.dto.LoginRequest;
 import com.vidya.security.dto.PlatformUserResponse;
 import com.vidya.security.dto.RefreshTokenRequest;
 import com.vidya.security.service.AuthService;
+import com.vidya.security.session.service.ClientInfo;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -40,10 +41,10 @@ public class AuthController {
             @Valid @RequestBody LoginRequest request,
             HttpServletRequest servletRequest) {
 
-        String ip = servletRequest.getRemoteAddr();
+        ClientInfo client = ClientInfo.from(servletRequest);
         String correlationId = MDC.get(MdcKeys.CORRELATION_ID);
 
-        AuthResponse response = authService.login(request, ip, correlationId);
+        AuthResponse response = authService.login(request, client, correlationId);
         return ResponseEntity.ok(ApiResponse.success(
                 ApiResponseCode.LOGIN_SUCCESS,
                 "Authentication successful",
@@ -59,10 +60,10 @@ public class AuthController {
             @Valid @RequestBody RefreshTokenRequest request,
             HttpServletRequest servletRequest) {
 
-        String ip = servletRequest.getRemoteAddr();
+        ClientInfo client = ClientInfo.from(servletRequest);
         String correlationId = MDC.get(MdcKeys.CORRELATION_ID);
 
-        AuthResponse response = authService.refreshToken(request, ip, correlationId);
+        AuthResponse response = authService.refreshToken(request, client, correlationId);
         return ResponseEntity.ok(ApiResponse.success(
                 ApiResponseCode.TOKEN_REFRESHED,
                 "Token refreshed successfully",
@@ -77,14 +78,22 @@ public class AuthController {
             @RequestBody(required = false) RefreshTokenRequest request,
             HttpServletRequest servletRequest) {
 
-        String ip = servletRequest.getRemoteAddr();
+        ClientInfo client = ClientInfo.from(servletRequest);
         String correlationId = MDC.get(MdcKeys.CORRELATION_ID);
 
-        authService.logout(request, ip, correlationId);
+        authService.logout(request, client, correlationId);
         return ResponseEntity.ok(ApiResponse.success(
                 ApiResponseCode.LOGOUT_SUCCESS,
                 "Logged out successfully"
         ));
+    }
+
+    @PostMapping("/logout-all")
+    @Operation(summary = "Log out of every device: ends all sessions of the current user",
+            security = @SecurityRequirement(name = "bearerAuth"))
+    public ResponseEntity<ApiResponse<Void>> logoutAll(HttpServletRequest servletRequest) {
+        authService.logoutAll(ClientInfo.from(servletRequest), MDC.get(MdcKeys.CORRELATION_ID));
+        return ResponseEntity.ok(ApiResponse.success(ApiResponseCode.LOGOUT_SUCCESS, "Logged out of all devices"));
     }
 
     @GetMapping("/me")

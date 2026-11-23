@@ -45,7 +45,7 @@ public class RoomController {
     private final RoomService roomService;
 
     @PostMapping
-    @PreAuthorize("hasAuthority('ROOM_CREATE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('ROOM_CREATE')")
     @Operation(summary = "Create room", description = "Creates a new physical room or facility in the school")
     public ResponseEntity<ApiResponse<RoomResponse>> createRoom(@Valid @RequestBody CreateRoomRequest request) {
         log.info("REST: Create room [{}]", request.name());
@@ -55,7 +55,7 @@ public class RoomController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAuthority('ROOM_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('ROOM_READ')")
     @Operation(summary = "Search rooms", description = "Searches and filters physical rooms with pagination")
     public ResponseEntity<PagedApiResponse<RoomResponse>> searchRooms(
             @Parameter(description = "Search term by room name or code")
@@ -73,7 +73,7 @@ public class RoomController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('ROOM_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('ROOM_READ')")
     @Operation(summary = "Get room by ID", description = "Fetches a room by its unique ID")
     public ResponseEntity<ApiResponse<RoomResponse>> getRoomById(@PathVariable UUID id) {
         RoomResponse response = roomService.getRoomById(id);
@@ -81,7 +81,7 @@ public class RoomController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAuthority('ROOM_UPDATE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('ROOM_UPDATE')")
     @Operation(summary = "Update room", description = "Updates an existing room's details and status")
     public ResponseEntity<ApiResponse<RoomResponse>> updateRoom(
             @PathVariable UUID id,
@@ -93,7 +93,7 @@ public class RoomController {
     }
 
     @PatchMapping("/{id}/status")
-    @PreAuthorize("hasAuthority('ROOM_UPDATE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('ROOM_UPDATE')")
     @Operation(summary = "Update room status", description = "Updates the operational status of a physical room")
     public ResponseEntity<ApiResponse<RoomResponse>> updateRoomStatus(
             @PathVariable UUID id,
@@ -105,7 +105,7 @@ public class RoomController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('ROOM_DELETE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('ROOM_DELETE')")
     @Operation(summary = "Delete room", description = "Soft deletes a physical room")
     public ResponseEntity<ApiResponse<Void>> deleteRoom(@PathVariable UUID id) {
         log.info("REST: Delete room [{}]", id);

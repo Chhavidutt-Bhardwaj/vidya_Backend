@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<!--
+  Sample screen for: Platform: communities (trusts / groups)
+  Plain HTML + CSS with static sample data generated from the API (APiReqDoc/samples/api/platform-community/).
+  Each section names the endpoints that feed it. Rebuild it in the frontend framework; this file is not served by any controller.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Platform: communities (trusts / groups)</title>
+<link rel="stylesheet" href="samples.css">
+</head>
+<body>
+<header class="topbar"><a class="brand" href="index.html">Vidya</a><h1>Platform: communities (trusts / groups)</h1></header>
+<div class="layout">
+<nav class="side">
+<a href="security.html">Login, sessions, roles &amp; access</a>
+<a href="dashboard.html">Overview dashboard</a>
+<a href="student.html">Students (SIS, admission, enrolment, guardians)</a>
+<a href="staff.html">Staff &amp; HR set-up</a>
+<a href="user.html">School users &amp; accounts</a>
+<a href="academic.html">Academic years, classes, sections, set-up</a>
+<a href="subject.html">Subjects &amp; curriculum</a>
+<a href="assignment.html">Class teachers &amp; subject teachers</a>
+<a href="timetable.html">Timetable, bells, rooms, substitutions</a>
+<a href="calendar.html">Calendar &amp; holidays</a>
+<a href="attendance.html">Student attendance</a>
+<a href="examination.html">Exams, schedules, marks, grading</a>
+<a href="assessment.html">Assessments, question bank, report cards</a>
+<a href="fee.html">Fees &amp; finance (counter, online, auto-debit)</a>
+<a href="engagement.html">Communication, homework, daily report, parent portal</a>
+<a href="operations.html">Operations set-up (fees, attendance, transport, library)</a>
+<a href="readiness.html">School readiness</a>
+<a href="platform-school.html">Platform: schools &amp; campuses</a>
+<a href="platform-onboarding.html">Platform: onboarding</a>
+<a href="platform-workflow.html">Platform: onboarding workflow</a>
+<a href="platform-subscription.html">Platform: subscriptions &amp; plans</a>
+<a href="platform-payment.html">Platform: subscription payments</a>
+<a href="platform-community.html" class="on">Platform: communities (trusts / groups)</a>
+<a href="platform-hub.html">Platform: hub</a>
+<a href="platform-analytics.html">Platform: analytics</a>
+<a href="platform-support.html">Platform: support queries</a>
+</nav>
+<main>
+<div class="tabs"><a href="#CommunityController">Community</a><a href="#CommunityDetailController">Community Details Management</a><a href="#CommunityRoleController">Community Role Management</a></div>
+
+<!-- CommunityController · samples/api/platform-community/CommunityController.md -->
+<section class="card" id="CommunityController">
+<h2>Community</h2>
+<!-- GET /api/v1/communities -->
+<form class="filters">
+<label>Status<select name="status"><option value="">Any</option><option>ACTIVE</option><option>INACTIVE</option><option>SUSPENDED</option></select></label>
+<label>Type<select name="type"><option value="">Any</option><option>PARTNER</option><option>FIELD_AGENCY</option><option>NGO</option><option>GOVT</option><option>OTHER</option></select></label>
+<label>Search<input type="text" name="search" value="riya"></label>
+<button type="button" class="btn primary">Apply</button>
+</form>
+<div class="scroll"><table>
+<thead><tr><th>Community code</th><th>Name</th><th>Description</th><th>Type</th><th>Status</th><th>Created at</th><th>Updated at</th><th>Member count</th><th></th></tr></thead>
+<tbody>
+<tr><td>Unit 4: Fractions</td><td>Community 1</td><td>Community for the 2026-27 session</td><td><span class="pill ">PARTNER</span></td><td><span class="pill ok">ACTIVE</span></td><td>2026-11-22T04:30:00Z</td><td>2026-11-22T04:30:00Z</td><td>42</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>Unit 4: Fractions</td><td>Community 2</td><td>Community for the 2026-27 session</td><td><span class="pill ">FIELD_AGENCY</span></td><td><span class="pill bad">INACTIVE</span></td><td>2026-11-21T04:30:00Z</td><td>2026-11-21T04:30:00Z</td><td>37</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>Unit 4: Fractions</td><td>Community 3</td><td>Community for the 2026-27 session</td><td><span class="pill ">NGO</span></td><td><span class="pill bad">SUSPENDED</span></td><td>2026-11-20T04:30:00Z</td><td>2026-11-20T04:30:00Z</td><td>18</td><td class="actions"><a href="#">Open</a></td></tr>
+</tbody>
+</table></div>
+<p class="muted small">Source: <code>GET /api/v1/communities</code></p>
+<!-- GET /api/v1/communities/{id} -->
+<h3>Details</h3>
+<dl class="details">
+<div><dt>Community code</dt><dd>Unit 4: Fractions</dd></div>
+<div><dt>Name</dt><dd>Community 1</dd></div>
+<div><dt>Description</dt><dd>Community for the 2026-27 session</dd></div>
+<div><dt>Type</dt><dd><span class="pill ">PARTNER</span></dd></div>
+<div><dt>Status</dt><dd><span class="pill ok">ACTIVE</span></dd></div>
+<div><dt>Created at</dt><dd>2026-11-22T04:30:00Z</dd></div>
+<div><dt>Updated at</dt><dd>2026-11-22T04:30:00Z</dd></div>
+<div><dt>Member count</dt><dd>42</dd></div>
+</dl>
+<p class="muted small">Source: <code>GET /api/v1/communities/{id}</code></p>
+<!-- POST /api/v1/communities -->
+<details class="form"><summary>Create community</summary>
+<form>
+<label>Name *<input type="text" name="name" value="Community 1" required></label>
+<label class="wide">Description<textarea name="description" rows="2">Community for the 2026-27 session</textarea></label>
+<label>Type *<select name="type"><option>PARTNER</option><option>FIELD_AGENCY</option><option>NGO</option><option>GOVT</option><option>OTHER</option></select></label>
+<div class="wide"><button type="button" class="btn primary">Save</button> <button type="reset" class="btn">Reset</button></div>
+</form>
+</details>
+<details class="endpoints"><summary>All endpoints of this section (10)</summary>
+<table>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/communities</code></td><td>Create community</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/communities/{id}</code></td><td>Get community by id</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/communities/code/{code}</code></td><td>Get community by code</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/communities</code></td><td>Get all communities</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/communities/{id}</code></td><td>Update community</td></tr>
+<tr><td><span class="verb patch">PATCH</span></td><td><code>/api/v1/communities/{id}/status</code></td><td>Change community status</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/communities/{id}/members</code></td><td>Add member</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/communities/{id}/members</code></td><td>Get community members</td></tr>
+<tr><td><span class="verb patch">PATCH</span></td><td><code>/api/v1/communities/{id}/members/{memberId}/role</code></td><td>Update member role</td></tr>
+<tr><td><span class="verb delete">DELETE</span></td><td><code>/api/v1/communities/{id}/members/{memberId}</code></td><td>Remove member</td></tr>
+</table>
+</details>
+</section>
+
+<!-- CommunityDetailController · samples/api/platform-community/CommunityDetailController.md -->
+<section class="card" id="CommunityDetailController">
+<h2>Community Details Management</h2>
+<p class="muted">APIs for managing community personal, professional, address, bank, payroll, commission, and login history</p>
+<!-- GET /api/v1/communities/{communityId}/details/payroll -->
+<div class="scroll"><table>
+<thead><tr><th>Created at</th><th>Updated at</th><th>Version</th><th>Payroll frequency</th><th>Payroll day</th><th>Payroll cycle start day</th><th>Payroll cycle end day</th><th>Is active</th><th></th></tr></thead>
+<tbody>
+<tr><td>2026-11-22T04:30:00Z</td><td>2026-11-22T04:30:00Z</td><td>0</td><td><span class="pill ">MONTHLY</span></td><td>10</td><td>10</td><td>10</td><td><span class="pill ok">Yes</span></td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>2026-11-21T04:30:00Z</td><td>2026-11-21T04:30:00Z</td><td>0</td><td><span class="pill ">BI_WEEKLY</span></td><td>10</td><td>10</td><td>10</td><td><span class="pill ok">Yes</span></td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>2026-11-20T04:30:00Z</td><td>2026-11-20T04:30:00Z</td><td>0</td><td><span class="pill ">WEEKLY</span></td><td>10</td><td>10</td><td>10</td><td><span class="pill">No</span></td><td class="actions"><a href="#">Open</a></td></tr>
+</tbody>
+</table></div>
+<p class="muted small">Source: <code>GET /api/v1/communities/{communityId}/details/payroll</code></p>
+<!-- GET /api/v1/communities/{communityId}/details/personal -->
+<h3>Details</h3>
+<dl class="details">
+<div><dt>Contact person name</dt><dd>Asha Rao</dd></div>
+<div><dt>Designation</dt><dd>PGT Mathematics</dd></div>
+<div><dt>Alternate email</dt><dd>asha.rao@example.com</dd></div>
+<div><dt>Alternate phone</dt><dd>9811111121</dd></div>
+<div><dt>Date of birth</dt><dd>2012-05-14</dd></div>
+<div><dt>Gender</dt><dd><span class="pill ">MALE</span></dd></div>
+<div><dt>Pan number</dt><dd>ABCDE1234F</dd></div>
+<div><dt>Aadhaar number</dt><dd>XXXX-XXXX-1234</dd></div>
+<div><dt>Created at</dt><dd>2026-11-22T04:30:00Z</dd></div>
+<div><dt>Updated at</dt><dd>2026-11-22T04:30:00Z</dd></div>
+</dl>
+<p class="muted small">Source: <code>GET /api/v1/communities/{communityId}/details/personal</code></p>
+<!-- POST /api/v1/communities/{communityId}/details/payroll -->
+<details class="form"><summary>Create payroll</summary>
+<form>
+<div class="wide"><button type="button" class="btn primary">Save</button> <button type="reset" class="btn">Reset</button></div>
+</form>
+</details>
+<details class="endpoints"><summary>All endpoints of this section (17)</summary>
+<table>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/communities/{communityId}/details/personal</code></td><td>Create personal details</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/communities/{communityId}/details/personal</code></td><td>Update personal details</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/communities/{communityId}/details/personal</code></td><td>Get personal details</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/communities/{communityId}/details/professional</code></td><td>Create professional details</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/communities/{communityId}/details/professional</code></td><td>Get professional details</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/communities/{communityId}/details/addresses</code></td><td>Add address</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/communities/{communityId}/details/addresses</code></td><td>Get addresses</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/communities/{communityId}/details/bank-details</code></td><td>Add bank detail</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/communities/{communityId}/details/bank-details</code></td><td>Get bank details</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/communities/{communityId}/details/payroll</code></td><td>Create payroll</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/communities/{communityId}/details/payroll</code></td><td>Get payrolls</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/communities/{communityId}/details/commissions</code></td><td>Create commission</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/communities/{communityId}/details/commissions</code></td><td>Get commissions</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/communities/{communityId}/details/login-history</code></td><td>Record login</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/communities/{communityId}/details/login-history/logout</code></td><td>Record logout</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/communities/{communityId}/details/login-history</code></td><td>Get login history</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/communities/{communityId}/details/commission-ledger</code></td><td>Get commission ledger</td></tr>
+</table>
+</details>
+</section>
+
+<!-- CommunityRoleController · samples/api/platform-community/CommunityRoleController.md -->
+<section class="card" id="CommunityRoleController">
+<h2>Community Role Management</h2>
+<p class="muted">APIs for managing custom community roles and granular permissions</p>
+<!-- GET /api/v1/communities/roles/type/{communityType} -->
+<div class="scroll"><table>
+<thead><tr><th>Role code</th><th>Role name</th><th>Description</th><th>Community type</th><th>Is system</th><th>Is active</th><th>Level</th><th>Created at</th><th></th></tr></thead>
+<tbody>
+<tr><td>CR-001</td><td>SCHOOL_ADMIN</td><td>Community role for the 2026-27 session</td><td><span class="pill ">PARTNER</span></td><td><span class="pill ok">Yes</span></td><td><span class="pill ok">Yes</span></td><td>1</td><td>2026-11-22T04:30:00Z</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>CR-002</td><td>SCHOOL_ADMIN</td><td>Community role for the 2026-27 session</td><td><span class="pill ">FIELD_AGENCY</span></td><td><span class="pill ok">Yes</span></td><td><span class="pill ok">Yes</span></td><td>2</td><td>2026-11-21T04:30:00Z</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>CR-003</td><td>SCHOOL_ADMIN</td><td>Community role for the 2026-27 session</td><td><span class="pill ">NGO</span></td><td><span class="pill">No</span></td><td><span class="pill">No</span></td><td>3</td><td>2026-11-20T04:30:00Z</td><td class="actions"><a href="#">Open</a></td></tr>
+</tbody>
+</table></div>
+<p class="muted small">Source: <code>GET /api/v1/communities/roles/type/{communityType}</code></p>
+<!-- GET /api/v1/communities/roles/{id} -->
+<h3>Details</h3>
+<dl class="details">
+<div><dt>Role code</dt><dd>CR-001</dd></div>
+<div><dt>Role name</dt><dd>SCHOOL_ADMIN</dd></div>
+<div><dt>Description</dt><dd>Community role for the 2026-27 session</dd></div>
+<div><dt>Community type</dt><dd><span class="pill ">PARTNER</span></dd></div>
+<div><dt>Is system</dt><dd><span class="pill ok">Yes</span></dd></div>
+<div><dt>Is active</dt><dd><span class="pill ok">Yes</span></dd></div>
+<div><dt>Level</dt><dd>1</dd></div>
+<div><dt>Created at</dt><dd>2026-11-22T04:30:00Z</dd></div>
+<div><dt>Updated at</dt><dd>2026-11-22T04:30:00Z</dd></div>
+</dl>
+<p class="muted small">Source: <code>GET /api/v1/communities/roles/{id}</code></p>
+<!-- POST /api/v1/communities/roles -->
+<details class="form"><summary>Create custom role</summary>
+<form>
+<label>Role code<input type="text" name="roleCode" value="CR-001"></label>
+<label>Role name *<input type="text" name="roleName" value="SCHOOL_ADMIN" required></label>
+<label class="wide">Description<textarea name="description" rows="2">Community role for the 2026-27 session</textarea></label>
+<label>Community type<select name="communityType"><option value="">Any</option><option>PARTNER</option><option>FIELD_AGENCY</option><option>NGO</option><option>GOVT</option><option>OTHER</option></select></label>
+<label>Level<input type="number" name="level" value="1"></label>
+<label class="wide">Permissions<span class="muted small">array of object RolePermissionEntry (see the API file)</span></label>
+<div class="wide"><button type="button" class="btn primary">Save</button> <button type="reset" class="btn">Reset</button></div>
+</form>
+</details>
+<details class="endpoints"><summary>All endpoints of this section (10)</summary>
+<table>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/communities/roles</code></td><td>Create custom role</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/communities/roles/type/{communityType}</code></td><td>Get roles by community type</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/communities/roles/{id}</code></td><td>Get role by ID</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/communities/roles/code/{roleCode}</code></td><td>Get role by role code</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/communities/roles/{id}</code></td><td>Update custom role</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/communities/roles/{id}/permissions</code></td><td>Update role permissions matrix</td></tr>
+<tr><td><span class="verb delete">DELETE</span></td><td><code>/api/v1/communities/roles/{id}</code></td><td>Delete custom role</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/communities/roles/members/assign</code></td><td>Assign custom role to community member</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/communities/roles/my-permissions</code></td><td>Get currently authenticated user's permissions matrix</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/communities/roles/{communityId}/audit-logs</code></td><td>Get role audit logs for community</td></tr>
+</table>
+</details>
+</section>
+</main>
+</div>
+</body>
+</html>

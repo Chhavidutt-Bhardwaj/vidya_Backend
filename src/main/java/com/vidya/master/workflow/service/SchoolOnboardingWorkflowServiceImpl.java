@@ -9,7 +9,7 @@ import com.vidya.common.util.CodeGenerator;
 import com.vidya.master.onboarding.entity.OnboardingActivity;
 import com.vidya.master.onboarding.entity.OnboardingStatus;
 import com.vidya.master.onboarding.entity.OnboardingStep;
-import com.vidya.master.onboarding.entity.PerformerType;
+import com.vidya.master.onboarding.service.OnboardingActor;
 import com.vidya.master.onboarding.entity.SchoolOnboarding;
 import com.vidya.master.onboarding.repository.OnboardingActivityRepository;
 import com.vidya.master.onboarding.repository.SchoolOnboardingRepository;
@@ -40,6 +40,8 @@ import com.vidya.master.tenant.repository.TenantRepository;
 import com.vidya.master.workflow.admin.SchoolAdminProvisioningService;
 import com.vidya.master.workflow.admin.dto.InitialSchoolAdminRequest;
 import com.vidya.master.workflow.admin.dto.InitialSchoolAdminResponse;
+import com.vidya.master.workflow.dto.PaymentWaiverRequest;
+import com.vidya.master.workflow.dto.PaymentWaiverResponse;
 import com.vidya.master.workflow.dto.PlanSelectionRequest;
 import com.vidya.master.workflow.dto.PlanSelectionResponse;
 import com.vidya.master.workflow.dto.SchoolOnboardingProgressResponse;
@@ -58,12 +60,16 @@ import com.vidya.security.repository.PlatformUserRepository;
 import com.vidya.tenant.provisioning.TenantProvisioningService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -89,6 +95,30 @@ public class SchoolOnboardingWorkflowServiceImpl implements SchoolOnboardingWork
     private final PlatformUserRepository platformUserRepository;
     private final OnboardingActivityRepository activityRepository;
 
+    /**
+     * Tenant database location is server configuration only; it is never taken from a request.
+     * Field-injected (non-final) so the Lombok constructor used by existing tests is unchanged.
+     */
+    @Value("${vidya.provisioning.tenant-db.host:localhost}")
+    private String tenantDbHost = "localhost";
+
+    @Value("${vidya.provisioning.tenant-db.port:5432}")
+    private int tenantDbPort = 5432;
+
+    /**
+     * Transactional proxy of this service. {@link #retryWorkflow} must call {@link #activateSchool}
+     * through the proxy so that activation runs in its own transaction (a plain self-call bypasses
+     * {@code @Transactional} and fails with LazyInitializationException on real JPA).
+     * Null in plain unit tests, where {@code this} is used.
+     */
+    @Autowired
+    @Lazy
+    private SchoolOnboardingWorkflowService self;
+
+    private SchoolOnboardingWorkflowService self() {
+        return self != null ? self : this;
+    }
+
     // -------------------------------------------------------------------------
     // 1. Plan Selection & Subscription Snapshot
     // -------------------------------------------------------------------------
@@ -103,9 +133,8 @@ public class SchoolOnboardingWorkflowServiceImpl implements SchoolOnboardingWork
         if (onboarding.getStatus() == OnboardingStatus.ACTIVE) {
             throw new BusinessException(ApiResponseCode.BUSINESS_ERROR, "School onboarding is already active");
         }
-        if (onboarding.getStatus() == OnboardingStatus.REJECTED || onboarding.getStatus() == OnboardingStatus.CANCELLED) {
-            throw new InvalidStateTransitionException("SchoolOnboarding", onboarding.getStatus().name(), OnboardingStatus.PLAN_SELECTED.name());
-        }
+        // Plan selection requires a VERIFIED onboarding (re-selection allowed while payment is pending).
+        onboarding.getStatus().validateTransitionTo(OnboardingStatus.PLAN_SELECTED);
 
         UUID schoolId = onboarding.getSchool() != null ? onboarding.getSchool().getId() : null;
         if (schoolId == null) {
@@ -158,7 +187,6 @@ public class SchoolOnboardingWorkflowServiceImpl implements SchoolOnboardingWork
 
         // Audit Trail
         recordActivity(updated, "PLAN_SELECTED", prevStatus, OnboardingStatus.PLAN_SELECTED.name(),
-                null, PerformerType.SYSTEM,
                 Map.of("planCode", subscriptionRes.planCode(),
                         "planVersion", subscriptionRes.planVersion(),
                         "finalAmount", subscriptionRes.finalAmount(),
@@ -199,9 +227,8 @@ public class SchoolOnboardingWorkflowServiceImpl implements SchoolOnboardingWork
         if (onboarding.getStatus() == OnboardingStatus.ACTIVE) {
             throw new BusinessException(ApiResponseCode.BUSINESS_ERROR, "School onboarding is already active");
         }
-        if (onboarding.getStatus() == OnboardingStatus.REJECTED || onboarding.getStatus() == OnboardingStatus.CANCELLED) {
-            throw new InvalidStateTransitionException("SchoolOnboarding", onboarding.getStatus().name(), OnboardingStatus.PAYMENT_PENDING.name());
-        }
+        // Payment can only be initiated after a plan has been selected (or re-initiated while pending).
+        onboarding.getStatus().validateTransitionTo(OnboardingStatus.PAYMENT_PENDING);
 
         UUID schoolId = onboarding.getSchool() != null ? onboarding.getSchool().getId() : null;
         if (schoolId == null) {
@@ -216,7 +243,7 @@ public class SchoolOnboardingWorkflowServiceImpl implements SchoolOnboardingWork
         if (subs.isEmpty()) {
             throw new BusinessException(ApiResponseCode.BUSINESS_ERROR, "No subscription plan selected for school. Select a plan first.");
         }
-        SchoolSubscription subscription = subs.get(0);
+        SchoolSubscription subscription = latestSubscription(subs);
 
         String idempotencyKey = (request.getIdempotencyKey() != null && !request.getIdempotencyKey().isBlank())
                 ? request.getIdempotencyKey()
@@ -240,13 +267,12 @@ public class SchoolOnboardingWorkflowServiceImpl implements SchoolOnboardingWork
         InitiatePaymentResponse payRes = paymentService.initiatePayment(payRequest);
 
         String prevStatus = onboarding.getStatus().name();
-        if (onboarding.getStatus() == OnboardingStatus.PLAN_SELECTED || onboarding.getStatus() == OnboardingStatus.DRAFT) {
+        if (onboarding.getStatus() == OnboardingStatus.PLAN_SELECTED) {
             onboarding.setStatus(OnboardingStatus.PAYMENT_PENDING);
             onboarding.setCurrentStep(OnboardingStep.PAYMENT);
-            onboardingRepository.save(onboarding);
+            onboarding = onboardingRepository.save(onboarding);
 
             recordActivity(onboarding, "PAYMENT_INITIATED", prevStatus, OnboardingStatus.PAYMENT_PENDING.name(),
-                    null, PerformerType.SYSTEM,
                     Map.of("transactionCode", payRes.getTransactionCode(),
                             "provider", request.getPaymentProvider().name(),
                             "amount", subscription.getFinalAmount()));
@@ -296,15 +322,11 @@ public class SchoolOnboardingWorkflowServiceImpl implements SchoolOnboardingWork
             return;
         }
 
-        // Idempotency: Skip if already advanced past PAYMENT_COMPLETED
-        if (onboarding.getStatus() == OnboardingStatus.PAYMENT_COMPLETED ||
-                onboarding.getStatus() == OnboardingStatus.APPROVAL_PENDING ||
-                onboarding.getStatus() == OnboardingStatus.APPROVED ||
-                onboarding.getStatus() == OnboardingStatus.PROVISIONING ||
-                onboarding.getStatus() == OnboardingStatus.PROVISIONED ||
-                onboarding.getStatus() == OnboardingStatus.ACTIVE) {
-            log.info("Workflow: Onboarding [{}] already at status [{}]; skipping redundant payment completion",
-                    onboarding.getOnboardingCode(), onboarding.getStatus());
+        // Idempotency / sequencing: only an onboarding awaiting payment can be advanced by a payment.
+        // A settled payment never skips verification or plan selection.
+        if (onboarding.getStatus() != OnboardingStatus.PAYMENT_PENDING) {
+            log.info("Workflow: Onboarding [{}] at status [{}] is not awaiting payment; payment {} not applied to workflow",
+                    onboarding.getOnboardingCode(), onboarding.getStatus(), event.getTransactionCode());
             return;
         }
 
@@ -315,7 +337,6 @@ public class SchoolOnboardingWorkflowServiceImpl implements SchoolOnboardingWork
         SchoolOnboarding updated = onboardingRepository.save(onboarding);
 
         recordActivity(updated, "PAYMENT_COMPLETED", prevStatus, OnboardingStatus.PAYMENT_COMPLETED.name(),
-                null, PerformerType.SYSTEM,
                 Map.of("transactionCode", event.getTransactionCode(),
                         "amount", event.getAmount() != null ? event.getAmount() : 0,
                         "provider", event.getPaymentProvider() != null ? event.getPaymentProvider().name() : "MANUAL"));
@@ -349,13 +370,8 @@ public class SchoolOnboardingWorkflowServiceImpl implements SchoolOnboardingWork
                     .build();
         }
 
-        // Prerequisites check: Must be VERIFIED, PLAN_SELECTED, or PAYMENT_COMPLETED
-        if (onboarding.getStatus() != OnboardingStatus.PAYMENT_COMPLETED &&
-                onboarding.getStatus() != OnboardingStatus.APPROVAL_PENDING &&
-                onboarding.getStatus() != OnboardingStatus.VERIFIED &&
-                onboarding.getStatus() != OnboardingStatus.PLAN_SELECTED) {
-            throw new InvalidStateTransitionException("SchoolOnboarding", onboarding.getStatus().name(), OnboardingStatus.APPROVED.name());
-        }
+        // Prerequisite: payment settled (PAYMENT_COMPLETED) or explicitly waived (PAYMENT_WAIVED).
+        onboarding.getStatus().validateTransitionTo(OnboardingStatus.APPROVED);
 
         UUID schoolId = onboarding.getSchool() != null ? onboarding.getSchool().getId() : null;
         if (schoolId == null) {
@@ -372,9 +388,8 @@ public class SchoolOnboardingWorkflowServiceImpl implements SchoolOnboardingWork
         if (request != null && request.getNotes() != null) {
             meta.put("notes", request.getNotes());
         }
-        recordActivity(updated, "ONBOARDING_APPROVED", prevStatus, OnboardingStatus.APPROVED.name(),
-                request != null ? request.getApprovedBy() : null,
-                PerformerType.PLATFORM_USER, meta);
+        // request.approvedBy is deprecated and ignored: the approver is the authenticated user.
+        recordActivity(updated, "ONBOARDING_APPROVED", prevStatus, OnboardingStatus.APPROVED.name(), meta);
 
         return WorkflowApprovalResponse.builder()
                 .onboardingId(updated.getId())
@@ -383,6 +398,55 @@ public class SchoolOnboardingWorkflowServiceImpl implements SchoolOnboardingWork
                 .nextStep(updated.getCurrentStep())
                 .notes(request != null ? request.getNotes() : null)
                 .approvedAt(Instant.now())
+                .build();
+    }
+
+    // -------------------------------------------------------------------------
+    // 4b. Authorized Payment Waiver
+    // -------------------------------------------------------------------------
+
+    @Override
+    @Transactional(transactionManager = "masterTransactionManager")
+    public PaymentWaiverResponse waivePayment(UUID onboardingId, PaymentWaiverRequest request) {
+        log.info("Workflow: Payment waiver requested for onboarding ID: [{}]", onboardingId);
+
+        if (request == null || request.getReason() == null || request.getReason().isBlank()) {
+            throw new IllegalArgumentException("A waiver reason is required");
+        }
+        UUID actorId = OnboardingActor.currentUserId();
+        if (actorId == null) {
+            // Defence in depth: the endpoint is permission-guarded; a waiver must always be attributable.
+            throw new org.springframework.security.access.AccessDeniedException("Payment waiver requires an authenticated approver");
+        }
+
+        SchoolOnboarding onboarding = findOnboardingOrThrow(onboardingId);
+        if (onboarding.getStatus() == OnboardingStatus.PAYMENT_WAIVED) {
+            throw new InvalidStateTransitionException("SchoolOnboarding", onboarding.getStatus().name(), OnboardingStatus.PAYMENT_WAIVED.name());
+        }
+        // Only after plan selection (PLAN_SELECTED or PAYMENT_PENDING); never from an unverified onboarding.
+        onboarding.getStatus().validateTransitionTo(OnboardingStatus.PAYMENT_WAIVED);
+
+        String prevStatus = onboarding.getStatus().name();
+        onboarding.setStatus(OnboardingStatus.PAYMENT_WAIVED);
+        onboarding.setCurrentStep(OnboardingStep.APPROVAL);
+        onboarding.addCompletedStep(OnboardingStep.PAYMENT.name());
+        SchoolOnboarding updated = onboardingRepository.save(onboarding);
+
+        Map<String, Object> meta = new HashMap<>();
+        meta.put("reason", request.getReason());
+        if (request.getReference() != null) {
+            meta.put("reference", request.getReference());
+        }
+        recordActivity(updated, "PAYMENT_WAIVED", prevStatus, OnboardingStatus.PAYMENT_WAIVED.name(), meta);
+
+        return PaymentWaiverResponse.builder()
+                .onboardingId(updated.getId())
+                .onboardingCode(updated.getOnboardingCode())
+                .onboardingStatus(updated.getStatus())
+                .nextStep(updated.getCurrentStep())
+                .waivedBy(actorId)
+                .reason(request.getReason())
+                .waivedAt(Instant.now())
                 .build();
     }
 
@@ -399,22 +463,18 @@ public class SchoolOnboardingWorkflowServiceImpl implements SchoolOnboardingWork
         if (onboarding.getStatus() == OnboardingStatus.ACTIVE) {
             throw new BusinessException(ApiResponseCode.BUSINESS_ERROR, "School onboarding is already active");
         }
-        if (onboarding.getStatus() != OnboardingStatus.APPROVED &&
-                onboarding.getStatus() != OnboardingStatus.PROVISIONING &&
-                onboarding.getStatus() != OnboardingStatus.PROVISIONING_FAILED &&
-                onboarding.getStatus() != OnboardingStatus.FAILED) {
-            throw new InvalidStateTransitionException("SchoolOnboarding", onboarding.getStatus().name(), OnboardingStatus.PROVISIONING.name());
-        }
+        // APPROVED, PROVISIONING_FAILED / FAILED (retry) or PROVISIONING (resume after a crash).
+        onboarding.getStatus().validateTransitionTo(OnboardingStatus.PROVISIONING);
 
         UUID schoolId = onboarding.getSchool() != null ? onboarding.getSchool().getId() : null;
         if (schoolId == null) {
             throw new BusinessException(ApiResponseCode.BUSINESS_ERROR, "Onboarding has no associated school");
         }
 
-        // 1. Ensure Tenant Entity Exists
-        String dbHost = (request != null && request.getDatabaseHost() != null && !request.getDatabaseHost().isBlank())
-                ? request.getDatabaseHost() : "localhost";
-        int dbPort = (request != null && request.getDatabasePort() != null) ? request.getDatabasePort() : 5432;
+        // 1. Ensure Tenant Entity Exists. The DB location is server configuration only (never from the request);
+        //    WorkflowProvisionRequest.databaseHost/databasePort are rejected at the API boundary.
+        String dbHost = tenantDbHost;
+        int dbPort = tenantDbPort;
 
         Tenant tenant = tenantRepository.findBySchoolId(schoolId)
                 .orElseGet(() -> {
@@ -436,17 +496,16 @@ public class SchoolOnboardingWorkflowServiceImpl implements SchoolOnboardingWork
         String prevStatus = onboarding.getStatus().name();
         onboarding.setStatus(OnboardingStatus.PROVISIONING);
         onboarding.setCurrentStep(OnboardingStep.TENANT_PROVISIONING);
-        onboardingRepository.save(onboarding);
+        // Re-assign: this method is not transactional, so the saved (merged) instance carries the new @Version.
+        onboarding = onboardingRepository.save(onboarding);
 
         recordActivity(onboarding, "TENANT_PROVISIONING_STARTED", prevStatus, OnboardingStatus.PROVISIONING.name(),
-                null, PerformerType.SYSTEM,
                 Map.of("tenantCode", tenant.getTenantCode(), "dbName", tenant.getDatabaseName()));
 
         // 3. Execute Provisioning Steps (DB Creation, Flyway, Seed)
         TenantProvisioning provisioningRecord;
         try {
-            provisioningRecord = tenantProvisioningService.startProvisioning(tenant.getId());
-            tenantProvisioningService.executeProvisioning(tenant.getId());
+            provisioningRecord = startOrResumeProvisioning(tenant.getId());
 
             // Reload records
             tenant = tenantRepository.findById(tenant.getId()).orElse(tenant);
@@ -458,7 +517,6 @@ public class SchoolOnboardingWorkflowServiceImpl implements SchoolOnboardingWork
             SchoolOnboarding saved = onboardingRepository.save(onboarding);
 
             recordActivity(saved, "TENANT_PROVISIONING_COMPLETED", OnboardingStatus.PROVISIONING.name(), OnboardingStatus.PROVISIONED.name(),
-                    null, PerformerType.SYSTEM,
                     Map.of("tenantCode", tenant.getTenantCode(), "dbName", tenant.getDatabaseName()));
 
             log.info("Workflow: Tenant provisioning completed successfully for onboarding [{}]", saved.getOnboardingCode());
@@ -480,11 +538,12 @@ public class SchoolOnboardingWorkflowServiceImpl implements SchoolOnboardingWork
         } catch (Exception e) {
             log.error("Workflow: Tenant provisioning failed for onboarding [{}]: {}", onboarding.getOnboardingCode(), e.getMessage(), e);
 
-            onboarding.setStatus(OnboardingStatus.PROVISIONING_FAILED);
-            onboardingRepository.save(onboarding);
+            // Reload to avoid writing over concurrent changes with a stale @Version.
+            SchoolOnboarding failed = onboardingRepository.findById(onboarding.getId()).orElse(onboarding);
+            failed.setStatus(OnboardingStatus.PROVISIONING_FAILED);
+            failed = onboardingRepository.save(failed);
 
-            recordActivity(onboarding, "TENANT_PROVISIONING_FAILED", OnboardingStatus.PROVISIONING.name(), OnboardingStatus.PROVISIONING_FAILED.name(),
-                    null, PerformerType.SYSTEM,
+            recordActivity(failed, "TENANT_PROVISIONING_FAILED", OnboardingStatus.PROVISIONING.name(), OnboardingStatus.PROVISIONING_FAILED.name(),
                     Map.of("error", e.getMessage() != null ? e.getMessage() : "Unknown provisioning failure"));
 
             if (e instanceof TenantProvisioningException) {
@@ -504,6 +563,9 @@ public class SchoolOnboardingWorkflowServiceImpl implements SchoolOnboardingWork
         log.info("Workflow: Creating initial administrator for onboarding ID: [{}]", onboardingId);
 
         SchoolOnboarding onboarding = findOnboardingOrThrow(onboardingId);
+        if (onboarding.getStatus() != OnboardingStatus.PROVISIONED) {
+            throw new InvalidStateTransitionException("SchoolOnboarding", onboarding.getStatus().name(), "ADMIN_CREATION");
+        }
         UUID schoolId = onboarding.getSchool() != null ? onboarding.getSchool().getId() : null;
         if (schoolId == null) {
             throw new BusinessException(ApiResponseCode.BUSINESS_ERROR, "Onboarding has no associated school");
@@ -516,8 +578,8 @@ public class SchoolOnboardingWorkflowServiceImpl implements SchoolOnboardingWork
         SchoolOnboarding updated = onboardingRepository.save(onboarding);
 
         recordActivity(updated, "ADMIN_CREATED", null, null,
-                adminResponse.getUserId(), PerformerType.SYSTEM,
-                Map.of("userCode", adminResponse.getUserCode(),
+                Map.of("adminUserId", String.valueOf(adminResponse.getUserId()),
+                        "userCode", adminResponse.getUserCode(),
                         "email", adminResponse.getEmail(),
                         "role", adminResponse.getRole().name()));
 
@@ -546,17 +608,21 @@ public class SchoolOnboardingWorkflowServiceImpl implements SchoolOnboardingWork
             throw new BusinessException(ApiResponseCode.BUSINESS_ERROR, "Onboarding has no associated school");
         }
 
+        // Only a PROVISIONED onboarding can be activated (DRAFT/unpaid/unapproved cannot reach this state).
+        onboarding.getStatus().validateTransitionTo(OnboardingStatus.ACTIVE);
+
         School school = schoolRepository.findById(schoolId)
                 .orElseThrow(() -> new ResourceNotFoundException("School", schoolId));
 
-        // 1. Verify Tenant Provisioning is Completed
+        // 1. Verify Tenant Provisioning is Completed (a missing record is NOT treated as completed)
         Tenant tenant = tenantRepository.findBySchoolId(schoolId)
                 .orElseThrow(() -> new BusinessException(ApiResponseCode.BUSINESS_ERROR, "Tenant not found. Provision tenant before activation."));
 
         TenantProvisioning provisioning = tenantProvisioningRepository.findByTenantId(tenant.getId()).orElse(null);
-        if (provisioning != null && !provisioning.isCompleted()) {
+        if (provisioning == null || !provisioning.isCompleted()) {
             throw new BusinessException(ApiResponseCode.BUSINESS_ERROR,
-                    "Tenant provisioning is not completed. Current status: " + provisioning.getStatus());
+                    "Tenant provisioning is not completed. Current status: "
+                            + (provisioning != null ? provisioning.getStatus() : "NOT_STARTED"));
         }
 
         // 2. Ensure Initial Admin is Provisioned
@@ -580,7 +646,6 @@ public class SchoolOnboardingWorkflowServiceImpl implements SchoolOnboardingWork
 
         // Audit Trail
         recordActivity(updatedOnboarding, "SCHOOL_ACTIVATED", prevStatus, OnboardingStatus.ACTIVE.name(),
-                null, PerformerType.SYSTEM,
                 Map.of("schoolCode", school.getSchoolCode(),
                         "tenantCode", tenant.getTenantCode(),
                         "adminEmail", adminResponse.getEmail()));
@@ -603,7 +668,8 @@ public class SchoolOnboardingWorkflowServiceImpl implements SchoolOnboardingWork
 
         if (onboarding.getStatus() == OnboardingStatus.ACTIVE) {
             log.info("Workflow: Onboarding [{}] is already ACTIVE — nothing to retry", onboarding.getOnboardingCode());
-            return buildActivationResponse(onboarding, "School onboarding is already active");
+            // Via the proxy: activateSchool is idempotent for ACTIVE and builds the response inside a transaction.
+            return self().activateSchool(onboarding.getId(), null);
         }
 
         UUID schoolId = onboarding.getSchool() != null ? onboarding.getSchool().getId() : null;
@@ -611,22 +677,18 @@ public class SchoolOnboardingWorkflowServiceImpl implements SchoolOnboardingWork
             throw new BusinessException(ApiResponseCode.BUSINESS_ERROR, "Onboarding has no associated school");
         }
 
-        Tenant tenant = tenantRepository.findBySchoolId(schoolId)
-                .orElseThrow(() -> new BusinessException(ApiResponseCode.BUSINESS_ERROR, "No tenant found for school retry"));
-
-        // If provisioning failed, retry provisioning from last completed step (No double payment!)
-        TenantProvisioning provisioning = tenantProvisioningRepository.findByTenantId(tenant.getId()).orElse(null);
-        if (provisioning != null && provisioning.isFailed()) {
-            log.info("Workflow: Retrying tenant provisioning from step: {}", provisioning.getLastCompletedStep());
-            tenantProvisioningService.retryProvisioning(tenant.getId());
-            tenantProvisioningService.executeProvisioning(tenant.getId());
-        } else if (provisioning == null || !provisioning.isCompleted()) {
-            tenantProvisioningService.startProvisioning(tenant.getId());
-            tenantProvisioningService.executeProvisioning(tenant.getId());
+        // Retry is a technical recovery only: it never skips verification, payment or approval.
+        OnboardingStatus status = onboarding.getStatus();
+        if (status == OnboardingStatus.APPROVED || status == OnboardingStatus.PROVISIONING_FAILED
+                || status == OnboardingStatus.FAILED || status == OnboardingStatus.PROVISIONING) {
+            // Re-runs provisioning from the last completed step (no double payment, no duplicate tenant).
+            provisionTenant(onboarding.getId(), null);
+        } else if (status != OnboardingStatus.PROVISIONED) {
+            throw new InvalidStateTransitionException("SchoolOnboarding", status.name(), "RETRY");
         }
 
-        // Complete activation
-        return activateSchool(onboarding.getId(), new WorkflowActivateRequest(null, request != null ? request.getNotes() : "Retried"));
+        // Complete activation (through the proxy: own transaction)
+        return self().activateSchool(onboarding.getId(), new WorkflowActivateRequest(null, request != null ? request.getNotes() : "Retried"));
     }
 
     // -------------------------------------------------------------------------
@@ -706,20 +768,44 @@ public class SchoolOnboardingWorkflowServiceImpl implements SchoolOnboardingWork
                 .orElseThrow(() -> new ResourceNotFoundException("SchoolOnboarding", id));
     }
 
+    /**
+     * Starts provisioning, or resumes it when a previous attempt FAILED (resetting the record via
+     * {@link TenantProvisioningService#retryProvisioning(UUID)}), then executes the remaining steps.
+     * Completed steps are skipped by the engine, so this is safe to call repeatedly.
+     */
+    private TenantProvisioning startOrResumeProvisioning(UUID tenantId) {
+        TenantProvisioning existing = tenantProvisioningRepository.findByTenantId(tenantId).orElse(null);
+        TenantProvisioning record = (existing != null && existing.isFailed())
+                ? tenantProvisioningService.retryProvisioning(tenantId)
+                : tenantProvisioningService.startProvisioning(tenantId);
+        tenantProvisioningService.executeProvisioning(tenantId);
+        return record;
+    }
+
+    /** Most recently created subscription for the school (repository order is not guaranteed). */
+    private SchoolSubscription latestSubscription(List<SchoolSubscription> subs) {
+        return subs.stream()
+                .max(Comparator.comparing(SchoolSubscription::getCreatedAt,
+                        Comparator.nullsFirst(Comparator.naturalOrder())))
+                .orElse(subs.get(0));
+    }
+
+    /**
+     * Records an audit activity. The actor is resolved exclusively from the SecurityContext
+     * ({@link OnboardingActor}); request-supplied identities are never used.
+     */
     private void recordActivity(SchoolOnboarding onboarding,
                                 String action,
                                 String previousStatus,
                                 String newStatus,
-                                UUID performedBy,
-                                PerformerType performedByType,
                                 Map<String, Object> metadata) {
         OnboardingActivity activity = new OnboardingActivity(
                 onboarding,
                 action,
                 previousStatus,
                 newStatus,
-                performedBy,
-                performedByType,
+                OnboardingActor.currentUserId(),
+                OnboardingActor.currentPerformerType(),
                 metadata
         );
         activityRepository.save(activity);

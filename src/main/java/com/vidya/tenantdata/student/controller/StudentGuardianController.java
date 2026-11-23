@@ -35,7 +35,7 @@ public class StudentGuardianController {
     private final StudentGuardianService guardianService;
 
     @GetMapping
-    @PreAuthorize("hasAuthority('STUDENT_GUARDIAN_READ') or hasAuthority('STUDENT_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("(hasAuthority('STUDENT_GUARDIAN_READ') or hasAuthority('STUDENT_READ')) and @dataAccess.canAccessStudent(authentication, #studentId, 'STUDENT')")
     @Operation(summary = "Get guardians for student", description = "Retrieves all parent/guardian records for a student")
     public ResponseEntity<ApiResponse<List<StudentGuardianResponse>>> getGuardians(
             @PathVariable UUID studentId) {
@@ -45,7 +45,7 @@ public class StudentGuardianController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAuthority('STUDENT_GUARDIAN_CREATE') or hasAuthority('STUDENT_UPDATE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("(hasAuthority('STUDENT_GUARDIAN_CREATE') or hasAuthority('STUDENT_UPDATE')) and @dataAccess.canAccessStudent(authentication, #studentId, 'STUDENT')")
     @Operation(summary = "Add guardian for student", description = "Records a parent/guardian for a student")
     public ResponseEntity<ApiResponse<StudentGuardianResponse>> createGuardian(
             @PathVariable UUID studentId,
@@ -57,7 +57,7 @@ public class StudentGuardianController {
     }
 
     @GetMapping("/{guardianId}")
-    @PreAuthorize("hasAuthority('STUDENT_GUARDIAN_READ') or hasAuthority('STUDENT_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("(hasAuthority('STUDENT_GUARDIAN_READ') or hasAuthority('STUDENT_READ')) and @dataAccess.canAccessStudent(authentication, #studentId, 'STUDENT')")
     @Operation(summary = "Get guardian by ID", description = "Retrieves guardian details")
     public ResponseEntity<ApiResponse<StudentGuardianResponse>> getGuardianById(
             @PathVariable UUID studentId,
@@ -68,7 +68,7 @@ public class StudentGuardianController {
     }
 
     @PutMapping("/{guardianId}")
-    @PreAuthorize("hasAuthority('STUDENT_GUARDIAN_UPDATE') or hasAuthority('STUDENT_UPDATE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("(hasAuthority('STUDENT_GUARDIAN_UPDATE') or hasAuthority('STUDENT_UPDATE')) and @dataAccess.canAccessStudent(authentication, #studentId, 'STUDENT')")
     @Operation(summary = "Update guardian", description = "Updates guardian contact, occupation, or status")
     public ResponseEntity<ApiResponse<StudentGuardianResponse>> updateGuardian(
             @PathVariable UUID studentId,
@@ -80,7 +80,7 @@ public class StudentGuardianController {
     }
 
     @DeleteMapping("/{guardianId}")
-    @PreAuthorize("hasAuthority('STUDENT_GUARDIAN_DELETE') or hasAuthority('STUDENT_UPDATE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("(hasAuthority('STUDENT_GUARDIAN_DELETE') or hasAuthority('STUDENT_UPDATE')) and @dataAccess.canAccessStudent(authentication, #studentId, 'STUDENT')")
     @Operation(summary = "Delete guardian", description = "Soft deletes a guardian record")
     public ResponseEntity<ApiResponse<Void>> deleteGuardian(
             @PathVariable UUID studentId,

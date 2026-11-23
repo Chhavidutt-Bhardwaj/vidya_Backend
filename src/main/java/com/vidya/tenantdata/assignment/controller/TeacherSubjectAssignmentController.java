@@ -46,7 +46,7 @@ public class TeacherSubjectAssignmentController {
     private final TeacherSubjectAssignmentService teacherAssignmentService;
 
     @PostMapping
-    @PreAuthorize("hasAuthority('TEACHER_SUBJECT_ASSIGNMENT_CREATE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('TEACHER_SUBJECT_ASSIGNMENT_CREATE') and @dataAccess.hasFullScope(authentication, 'STAFF')")
     @Operation(summary = "Create teacher subject assignment", description = "Assigns a teacher to a subject for an academic class/section")
     public ResponseEntity<ApiResponse<TeacherAssignmentDetailResponse>> createAssignment(
             @Valid @RequestBody CreateTeacherAssignmentRequest request) {
@@ -57,7 +57,7 @@ public class TeacherSubjectAssignmentController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAuthority('TEACHER_SUBJECT_ASSIGNMENT_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('TEACHER_SUBJECT_ASSIGNMENT_READ') and @dataAccess.canQueryAssignments(authentication, #teacherId, #sectionId, #academicClassId)")
     @Operation(summary = "Search teacher assignments", description = "Lists teacher assignments with filtering and pagination")
     public ResponseEntity<PagedApiResponse<TeacherAssignmentResponse>> searchAssignments(
             @RequestParam(required = false) UUID teacherId,
@@ -76,7 +76,7 @@ public class TeacherSubjectAssignmentController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('TEACHER_SUBJECT_ASSIGNMENT_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('TEACHER_SUBJECT_ASSIGNMENT_READ') and @dataAccess.canAccessTeacherSubjectAssignment(authentication, #id, null)")
     @Operation(summary = "Get teacher assignment by ID", description = "Retrieves teacher assignment details by UUID")
     public ResponseEntity<ApiResponse<TeacherAssignmentDetailResponse>> getAssignment(
             @Parameter(description = "Assignment UUID") @PathVariable UUID id) {
@@ -86,7 +86,7 @@ public class TeacherSubjectAssignmentController {
     }
 
     @GetMapping("/code/{assignmentCode}")
-    @PreAuthorize("hasAuthority('TEACHER_SUBJECT_ASSIGNMENT_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('TEACHER_SUBJECT_ASSIGNMENT_READ') and @dataAccess.canAccessTeacherSubjectAssignment(authentication, null, #assignmentCode)")
     @Operation(summary = "Get teacher assignment by code", description = "Retrieves teacher assignment details by business code")
     public ResponseEntity<ApiResponse<TeacherAssignmentDetailResponse>> getAssignmentByCode(
             @Parameter(description = "Assignment business code") @PathVariable String assignmentCode) {
@@ -96,7 +96,7 @@ public class TeacherSubjectAssignmentController {
     }
 
     @GetMapping("/teacher/{teacherId}")
-    @PreAuthorize("hasAuthority('TEACHER_SUBJECT_ASSIGNMENT_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('TEACHER_SUBJECT_ASSIGNMENT_READ') and @dataAccess.canAccessStaff(authentication, #teacherId, 'STAFF')")
     @Operation(summary = "Get active assignments for teacher", description = "Retrieves all active teaching assignments for a specific teacher")
     public ResponseEntity<ApiResponse<List<TeacherAssignmentResponse>>> getActiveAssignmentsByTeacher(
             @Parameter(description = "Teacher Staff UUID") @PathVariable UUID teacherId,
@@ -107,7 +107,7 @@ public class TeacherSubjectAssignmentController {
     }
 
     @GetMapping("/class/{academicClassId}")
-    @PreAuthorize("hasAuthority('TEACHER_SUBJECT_ASSIGNMENT_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('TEACHER_SUBJECT_ASSIGNMENT_READ') and @dataAccess.canQueryAssignments(authentication, null, #sectionId, #academicClassId)")
     @Operation(summary = "Get active assignments for class/section", description = "Retrieves all active teacher assignments for a specific class and optional section")
     public ResponseEntity<ApiResponse<List<TeacherAssignmentResponse>>> getActiveAssignmentsByClass(
             @Parameter(description = "Academic Class UUID") @PathVariable UUID academicClassId,
@@ -119,7 +119,7 @@ public class TeacherSubjectAssignmentController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAuthority('TEACHER_SUBJECT_ASSIGNMENT_UPDATE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('TEACHER_SUBJECT_ASSIGNMENT_UPDATE') and @dataAccess.hasFullScope(authentication, 'STAFF')")
     @Operation(summary = "Update teacher assignment", description = "Updates teacher assignment properties")
     public ResponseEntity<ApiResponse<TeacherAssignmentDetailResponse>> updateAssignment(
             @Parameter(description = "Assignment UUID") @PathVariable UUID id,
@@ -130,7 +130,7 @@ public class TeacherSubjectAssignmentController {
     }
 
     @PatchMapping("/{id}/status")
-    @PreAuthorize("hasAuthority('TEACHER_SUBJECT_ASSIGNMENT_STATUS_UPDATE') or hasAuthority('TEACHER_SUBJECT_ASSIGNMENT_UPDATE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("(hasAuthority('TEACHER_SUBJECT_ASSIGNMENT_STATUS_UPDATE') or hasAuthority('TEACHER_SUBJECT_ASSIGNMENT_UPDATE')) and @dataAccess.hasFullScope(authentication, 'STAFF')")
     @Operation(summary = "Update teacher assignment status", description = "Transitions teacher assignment status")
     public ResponseEntity<ApiResponse<TeacherAssignmentDetailResponse>> updateStatus(
             @Parameter(description = "Assignment UUID") @PathVariable UUID id,
@@ -141,7 +141,7 @@ public class TeacherSubjectAssignmentController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('TEACHER_SUBJECT_ASSIGNMENT_DELETE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('TEACHER_SUBJECT_ASSIGNMENT_DELETE') and @dataAccess.hasFullScope(authentication, 'STAFF')")
     @Operation(summary = "Delete teacher assignment", description = "Soft-deletes a teacher subject assignment")
     public ResponseEntity<ApiResponse<Void>> deleteAssignment(
             @Parameter(description = "Assignment UUID") @PathVariable UUID id) {

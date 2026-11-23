@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<!--
+  Sample screen for: Fees & finance (counter, online, auto-debit)
+  Plain HTML + CSS with static sample data generated from the API (APiReqDoc/samples/api/fee/).
+  Each section names the endpoints that feed it. Rebuild it in the frontend framework; this file is not served by any controller.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fees &amp; finance (counter, online, auto-debit)</title>
+<link rel="stylesheet" href="samples.css">
+</head>
+<body>
+<header class="topbar"><a class="brand" href="index.html">Vidya</a><h1>Fees &amp; finance (counter, online, auto-debit)</h1></header>
+<div class="layout">
+<nav class="side">
+<a href="security.html">Login, sessions, roles &amp; access</a>
+<a href="dashboard.html">Overview dashboard</a>
+<a href="student.html">Students (SIS, admission, enrolment, guardians)</a>
+<a href="staff.html">Staff &amp; HR set-up</a>
+<a href="user.html">School users &amp; accounts</a>
+<a href="academic.html">Academic years, classes, sections, set-up</a>
+<a href="subject.html">Subjects &amp; curriculum</a>
+<a href="assignment.html">Class teachers &amp; subject teachers</a>
+<a href="timetable.html">Timetable, bells, rooms, substitutions</a>
+<a href="calendar.html">Calendar &amp; holidays</a>
+<a href="attendance.html">Student attendance</a>
+<a href="examination.html">Exams, schedules, marks, grading</a>
+<a href="assessment.html">Assessments, question bank, report cards</a>
+<a href="fee.html" class="on">Fees &amp; finance (counter, online, auto-debit)</a>
+<a href="engagement.html">Communication, homework, daily report, parent portal</a>
+<a href="operations.html">Operations set-up (fees, attendance, transport, library)</a>
+<a href="readiness.html">School readiness</a>
+<a href="platform-school.html">Platform: schools &amp; campuses</a>
+<a href="platform-onboarding.html">Platform: onboarding</a>
+<a href="platform-workflow.html">Platform: onboarding workflow</a>
+<a href="platform-subscription.html">Platform: subscriptions &amp; plans</a>
+<a href="platform-payment.html">Platform: subscription payments</a>
+<a href="platform-community.html">Platform: communities (trusts / groups)</a>
+<a href="platform-hub.html">Platform: hub</a>
+<a href="platform-analytics.html">Platform: analytics</a>
+<a href="platform-support.html">Platform: support queries</a>
+</nav>
+<main>
+<div class="tabs"><a href="#FeeController">Fees</a><a href="#FeeWebhookController">Fees – gateway webhooks</a><a href="#OnlineFeeController">Fees – online</a><a href="#StudentFeeController">Fees</a></div>
+
+<!-- FeeController · samples/api/fee/FeeController.md -->
+<section class="card" id="FeeController">
+<h2>Fees</h2>
+<p class="muted">Fee invoices, ledgers, payments, receipts, defaulters, reminders and concessions</p>
+<!-- GET /api/v1/fees/ledgers -->
+<form class="filters">
+<label>Academic year id<input type="text" name="academicYearId" value="e007272e-5984-3753-9104-2d899e58fb35"></label>
+<label>Search<input type="text" name="search" value="riya"></label>
+<label>Class id<input type="text" name="classId" value="252772cc-cb7b-3270-a6ca-44f70c0449d3"></label>
+<label>Section id<input type="text" name="sectionId" value="1c35581b-02b2-3f00-bdbc-29ea5acdbfba"></label>
+<label>Status<input type="text" name="status" value="PAID"></label>
+<label>Fee head id<input type="text" name="feeHeadId" value="8e01ffa0-92bb-39a5-8a6c-d2fd1130eb93"></label>
+<label>Installment id<input type="text" name="installmentId" value="77b077ed-a249-3985-8c59-230105655bf6"></label>
+<button type="button" class="btn primary">Apply</button>
+</form>
+<div class="scroll"><table>
+<thead><tr><th>Invoice number</th><th>Admission number</th><th>Roll number</th><th>Student name</th><th>Class name</th><th>Section name</th><th>Parent name</th><th>Parent phone</th><th></th></tr></thead>
+<tbody>
+<tr><td>INV/26/00101</td><td>VGS/2019/101</td><td>12</td><td>Riya Rao</td><td>Class 9</td><td>A</td><td>Asha Rao</td><td>9811111121</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>INV/26/00102</td><td>VGS/2019/102</td><td>13</td><td>Aman Verma</td><td>Class 4</td><td>B</td><td>Rakesh Verma</td><td>9822222232</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>INV/26/00103</td><td>VGS/2019/103</td><td>14</td><td>Kavya Iyer</td><td>Class 10</td><td>C</td><td>Meena Iyer</td><td>9833333343</td><td class="actions"><a href="#">Open</a></td></tr>
+</tbody>
+</table></div>
+<p class="muted small">Source: <code>GET /api/v1/fees/ledgers</code></p>
+<!-- GET /api/v1/fees/ledgers/{ledgerId} -->
+<h3>Details</h3>
+<dl class="details">
+<div><dt>Academic year name</dt><dd>2026-27</dd></div>
+<div><dt>Late fine paise</dt><dd>₹2,500.00</dd></div>
+</dl>
+<p class="muted small">Source: <code>GET /api/v1/fees/ledgers/{ledgerId}</code></p>
+<!-- POST /api/v1/fees/payments -->
+<details class="form"><summary>Record a counter payment</summary>
+<form>
+<label>Student id *<input type="text" name="studentId" value="6fb53156-1fd8-3f64-9c4f-f647e3d28066" required></label>
+<label>Academic year id<input type="text" name="academicYearId" value="e007272e-5984-3753-9104-2d899e58fb35"></label>
+<label>Amount paise *<input type="number" name="amountPaise" value="250000" required></label>
+<label>Mode *<select name="mode"><option>CASH</option><option>UPI</option><option>CARD</option><option>CHEQUE</option><option>BANK_TRANSFER</option><option>DD</option><option>NACH</option><option>ONLINE</option></select></label>
+<label>Reference no<input type="text" name="referenceNo" value="REF-2026-0001"></label>
+<label>Cheque date<input type="date" name="chequeDate" value="2026-11-22"></label>
+<label>Bank name<input type="text" name="bankName" value="Collect payment 1"></label>
+<label>Paid on<input type="date" name="paidOn" value="2026-11-22"></label>
+<label class="wide">Allocation<span class="muted small">array of object Allocation (see the API file)</span></label>
+<label class="wide">Remarks<textarea name="remarks" rows="2">Checked and approved</textarea></label>
+<label class="wide">Send receipt<span class="muted small">object SendReceipt (see the API file)</span></label>
+<div class="wide"><button type="button" class="btn primary">Save</button> <button type="reset" class="btn">Reset</button></div>
+</form>
+</details>
+<details class="endpoints"><summary>All endpoints of this section (21)</summary>
+<table>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/fees/summary</code></td><td>Fee KPI cards</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/fees/reports/collections</code></td><td>Collections report</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/fees/invoices/generate</code></td><td>Bill students from the class fee structures</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/fees/ledgers</code></td><td>Student ledgers</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/fees/ledgers/{ledgerId}</code></td><td>One student's ledger</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/fees/ledgers/{ledgerId}/charges</code></td><td>Add a one-off charge</td></tr>
+<tr><td><span class="verb delete">DELETE</span></td><td><code>/api/v1/fees/ledgers/{ledgerId}/lines/{lineId}</code></td><td>Cancel a ledger line</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/fees/payments</code></td><td>Record a counter payment</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/fees/payments</code></td><td>Payments day book</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/fees/payments/{paymentId}/cheque-status</code></td><td>Cheque cleared or bounced</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/fees/payments/{paymentId}/reverse</code></td><td>Reverse a payment</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/fees/receipts/{paymentId}</code></td><td>Receipt</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/fees/receipts/{paymentId}/send</code></td><td>Send the receipt to guardians again</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/fees/defaulters</code></td><td>Defaulters and ageing</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/fees/reminders</code></td><td>Remind guardians</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/fees/concession-requests</code></td><td>Concession requests</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/fees/concession-requests/{id}</code></td><td>One concession request</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/fees/concession-requests</code></td><td>Ask for a concession</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/fees/concession-requests/{id}/approve</code></td><td>Approve a concession</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/fees/concession-requests/{id}/reject</code></td><td>Reject a concession</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/fees/concession-requests/{id}/revoke</code></td><td>Revoke an approved concession</td></tr>
+</table>
+</details>
+</section>
+
+<!-- FeeWebhookController · samples/api/fee/FeeWebhookController.md -->
+<section class="card" id="FeeWebhookController">
+<h2>Fees – gateway webhooks</h2>
+<p class="muted">Cashfree / Razorpay callbacks for school fee mandates, debits, links and orders</p>
+<details class="endpoints"><summary>All endpoints of this section (1)</summary>
+<table>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/webhooks/fees/{tenantCode}/{provider}</code></td><td>Gateway webhook for school fees</td></tr>
+</table>
+</details>
+</section>
+
+<!-- OnlineFeeController · samples/api/fee/OnlineFeeController.md -->
+<section class="card" id="OnlineFeeController">
+<h2>Fees – online</h2>
+<p class="muted">Gateways, auto-debit mandates and monthly debits, payment links and orders</p>
+<!-- GET /api/v1/fees/online/debits -->
+<form class="filters">
+<label>Month<input type="month" name="month" value="2026-11"></label>
+<label>Status<input type="text" name="status" value="SCHEDULED"></label>
+<label>Mandate id<input type="text" name="mandateId" value="4f8d2636-4b04-312b-b672-76ee6c358fa2"></label>
+<label>Student id<input type="text" name="studentId" value="6fb53156-1fd8-3f64-9c4f-f647e3d28066"></label>
+<button type="button" class="btn primary">Apply</button>
+</form>
+<div class="scroll"><table>
+<thead><tr><th>Reference</th><th>Payer name</th><th>Method</th><th>Provider</th><th>Student name</th><th>Class name</th><th>Cycle month</th><th>Attempt no</th><th></th></tr></thead>
+<tbody>
+<tr><td>REF-2026-0001</td><td>Asha Rao</td><td>Activity based</td><td>Sample provider</td><td>Riya Rao</td><td>Class 9</td><td>2026-11-22</td><td>1</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>REF-2026-0002</td><td>Rakesh Verma</td><td>Activity based</td><td>Sample provider 2</td><td>Aman Verma</td><td>Class 4</td><td>2026-11-21</td><td>2</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>REF-2026-0003</td><td>Meena Iyer</td><td>Activity based</td><td>Sample provider 3</td><td>Kavya Iyer</td><td>Class 10</td><td>2026-11-20</td><td>3</td><td class="actions"><a href="#">Open</a></td></tr>
+</tbody>
+</table></div>
+<p class="muted small">Source: <code>GET /api/v1/fees/online/debits</code></p>
+<!-- GET /api/v1/fees/online/mandates/{id} -->
+<h3>Details</h3>
+<dl class="details">
+<div><dt>Reference</dt><dd>REF-2026-0001</dd></div>
+<div><dt>Provider</dt><dd><span class="pill ">CASHFREE</span></dd></div>
+<div><dt>Method</dt><dd><span class="pill ">ENACH</span></dd></div>
+<div><dt>Status</dt><dd><span class="pill warn">PENDING</span></dd></div>
+<div><dt>Payer name</dt><dd>Asha Rao</dd></div>
+<div><dt>Payer email</dt><dd>asha.rao@example.com</dd></div>
+<div><dt>Payer phone</dt><dd>9811111121</dd></div>
+<div><dt>Max amount paise</dt><dd>₹2,500.00</dd></div>
+<div><dt>Expires on</dt><dd>2027-03-31</dd></div>
+<div><dt>Auth url</dt><dd>https://app.vidya.io/mandate/1</dd></div>
+<div><dt>Session id</dt><dd>c3a80c07-b4b8-3655-ab19-8c2304daa67f</dd></div>
+<div><dt>Activated at</dt><dd>2026-11-22T04:30:00Z</dd></div>
+</dl>
+<p class="muted small">Source: <code>GET /api/v1/fees/online/mandates/{id}</code></p>
+<!-- POST /api/v1/fees/online/mandates -->
+<details class="form"><summary>Set up an auto-debit mandate</summary>
+<form>
+<label>Guardian id<input type="text" name="guardianId" value="f94c801f-590b-3c34-b052-1cd946fb489e"></label>
+<label class="wide">Student ids<span class="muted small">array of uuid (see the API file)</span></label>
+<label>Method *<select name="method"><option>ENACH</option><option>UPI</option></select></label>
+<label>Provider<select name="provider"><option value="">Any</option><option>CASHFREE</option><option>RAZORPAY</option></select></label>
+<label>Max amount paise<input type="number" name="maxAmountPaise" value="250000"></label>
+<label class="check"><input type="checkbox" name="notifyPayer" checked> Notify payer</label>
+<div class="wide"><button type="button" class="btn primary">Save</button> <button type="reset" class="btn">Reset</button></div>
+</form>
+</details>
+<details class="endpoints"><summary>All endpoints of this section (20)</summary>
+<table>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/fees/online/settings</code></td><td>Online fee and auto-debit settings</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/fees/online/settings</code></td><td>Change online fee and auto-debit settings</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/fees/online/gateways</code></td><td>The school's gateway accounts</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/fees/online/gateways/{provider}</code></td><td>Connect or update a gateway account</td></tr>
+<tr><td><span class="verb delete">DELETE</span></td><td><code>/api/v1/fees/online/gateways/{provider}</code></td><td>Disconnect a gateway account</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/fees/online/mandates</code></td><td>Set up an auto-debit mandate</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/fees/online/mandates</code></td><td>Mandates of the school</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/fees/online/mandates/mine</code></td><td>The caller's own mandates (parent app)</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/fees/online/mandates/{id}</code></td><td>One mandate</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/fees/online/mandates/{id}/refresh</code></td><td>Ask the gateway for the mandate's state now</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/fees/online/mandates/{id}/cancel</code></td><td>Cancel a mandate</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/fees/online/debits</code></td><td>Auto-debits</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/fees/online/debits/summary</code></td><td>Auto-debit totals of a month</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/fees/online/debits/run</code></td><td>Run the auto-debit job now</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/fees/online/debits/runs</code></td><td>Recent auto-debit runs</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/fees/online/debits/{id}/cancel</code></td><td>Skip a scheduled debit</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/fees/online/checkouts</code></td><td>Create a payment link or checkout order</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/fees/online/checkouts/{id}</code></td><td>One payment link / order with what each child got</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/fees/online/checkouts/{id}/cancel</code></td><td>Cancel an unpaid payment link / order</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/fees/online/students/{studentId}</code></td><td>A child's online fees</td></tr>
+</table>
+</details>
+</section>
+
+<!-- StudentFeeController · samples/api/fee/StudentFeeController.md -->
+<section class="card" id="StudentFeeController">
+<h2>Fees</h2>
+<!-- GET /api/v1/students/{studentId}/fees -->
+<h3>Details</h3>
+<dl class="details">
+<div><dt>Academic year name</dt><dd>2026-27</dd></div>
+<div><dt>Late fine paise</dt><dd>₹2,500.00</dd></div>
+</dl>
+<p class="muted small">Source: <code>GET /api/v1/students/{studentId}/fees</code></p>
+<details class="endpoints"><summary>All endpoints of this section (1)</summary>
+<table>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/students/{studentId}/fees</code></td><td>A student's ledger</td></tr>
+</table>
+</details>
+</section>
+</main>
+</div>
+</body>
+</html>

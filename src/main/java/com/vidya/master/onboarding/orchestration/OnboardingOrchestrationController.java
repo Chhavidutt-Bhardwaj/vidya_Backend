@@ -6,7 +6,6 @@ import com.vidya.master.onboarding.orchestration.dto.CompleteOnboardingRequest;
 import com.vidya.master.onboarding.orchestration.dto.OnboardingActivationResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -14,6 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.UUID;
 
@@ -25,11 +25,12 @@ public class OnboardingOrchestrationController {
 
     private final OnboardingOrchestrationService orchestrationService;
 
+    @PreAuthorize("hasAuthority('ONBOARDING_ACTIVATE') and hasAuthority('TENANT_PROVISION') and @tenantAuthorizationService.canAccessOnboarding(authentication, #id)")
     @PostMapping("/{id}/activate")
-    @Operation(summary = "Complete onboarding workflow and trigger tenant provisioning & activation")
+    @Operation(summary = "Provision (if needed) and activate an APPROVED onboarding. Plan/payment fields in the body are deprecated and ignored.")
     public ResponseEntity<ApiResponse<OnboardingActivationResponse>> completeOnboardingAndActivate(
             @PathVariable UUID id,
-            @Valid @RequestBody CompleteOnboardingRequest request) {
+            @RequestBody(required = false) CompleteOnboardingRequest request) {
         OnboardingActivationResponse response = orchestrationService.completeOnboardingAndActivate(id, request);
         return ResponseEntity.ok(ApiResponse.success(
                 ApiResponseCode.ONBOARDING_APPROVED,

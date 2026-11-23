@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<!--
+  Sample screen for: Communication, homework, daily report, parent portal
+  Plain HTML + CSS with static sample data generated from the API (APiReqDoc/samples/api/engagement/).
+  Each section names the endpoints that feed it. Rebuild it in the frontend framework; this file is not served by any controller.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Communication, homework, daily report, parent portal</title>
+<link rel="stylesheet" href="samples.css">
+</head>
+<body>
+<header class="topbar"><a class="brand" href="index.html">Vidya</a><h1>Communication, homework, daily report, parent portal</h1></header>
+<div class="layout">
+<nav class="side">
+<a href="security.html">Login, sessions, roles &amp; access</a>
+<a href="dashboard.html">Overview dashboard</a>
+<a href="student.html">Students (SIS, admission, enrolment, guardians)</a>
+<a href="staff.html">Staff &amp; HR set-up</a>
+<a href="user.html">School users &amp; accounts</a>
+<a href="academic.html">Academic years, classes, sections, set-up</a>
+<a href="subject.html">Subjects &amp; curriculum</a>
+<a href="assignment.html">Class teachers &amp; subject teachers</a>
+<a href="timetable.html">Timetable, bells, rooms, substitutions</a>
+<a href="calendar.html">Calendar &amp; holidays</a>
+<a href="attendance.html">Student attendance</a>
+<a href="examination.html">Exams, schedules, marks, grading</a>
+<a href="assessment.html">Assessments, question bank, report cards</a>
+<a href="fee.html">Fees &amp; finance (counter, online, auto-debit)</a>
+<a href="engagement.html" class="on">Communication, homework, daily report, parent portal</a>
+<a href="operations.html">Operations set-up (fees, attendance, transport, library)</a>
+<a href="readiness.html">School readiness</a>
+<a href="platform-school.html">Platform: schools &amp; campuses</a>
+<a href="platform-onboarding.html">Platform: onboarding</a>
+<a href="platform-workflow.html">Platform: onboarding workflow</a>
+<a href="platform-subscription.html">Platform: subscriptions &amp; plans</a>
+<a href="platform-payment.html">Platform: subscription payments</a>
+<a href="platform-community.html">Platform: communities (trusts / groups)</a>
+<a href="platform-hub.html">Platform: hub</a>
+<a href="platform-analytics.html">Platform: analytics</a>
+<a href="platform-support.html">Platform: support queries</a>
+</nav>
+<main>
+<div class="tabs"><a href="#AnnouncementController">Announcements</a><a href="#ClassActivityController">Class Activities</a><a href="#DailyReportController">Daily Activity Report</a><a href="#HomeworkController">Homework</a><a href="#NotificationInboxController">Notification Inbox</a><a href="#ParentPortalController">Parent Portal</a><a href="#StudentRemarkController">Student Remarks</a></div>
+
+<!-- AnnouncementController · samples/api/engagement/AnnouncementController.md -->
+<section class="card" id="AnnouncementController">
+<h2>Announcements</h2>
+<p class="muted">Notices to the school, a class or a section. Publishing notifies guardians; EMERGENCY ignores quiet hours</p>
+<!-- GET /api/v1/announcements -->
+<form class="filters">
+<label>Status<select name="status"><option value="">Any</option><option>DRAFT</option><option>PUBLISHED</option><option>WITHDRAWN</option></select></label>
+<label>Audience<select name="audience"><option value="">Any</option><option>SCHOOL</option><option>CLASS</option><option>SECTION</option></select></label>
+<label>Academic class id<input type="text" name="academicClassId" value="544208c0-8100-3d80-a220-cccbfc29768b"></label>
+<label>Limit<input type="number" name="limit" value="20"></label>
+<button type="button" class="btn primary">Apply</button>
+</form>
+<div class="scroll"><table>
+<thead><tr><th>Announcement code</th><th>Title</th><th>Body</th><th>Audience</th><th>Class name</th><th>Section name</th><th>Priority</th><th>Status</th><th></th></tr></thead>
+<tbody>
+<tr><td>A-001</td><td>Announcement 1</td><td>Please bring the signed consent slip by Friday.</td><td><span class="pill ">SCHOOL</span></td><td>Class 9</td><td>A</td><td><span class="pill ">NORMAL</span></td><td><span class="pill warn">DRAFT</span></td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>A-002</td><td>Announcement 2</td><td>Please bring the signed consent slip by Friday.</td><td><span class="pill ">CLASS</span></td><td>Class 4</td><td>B</td><td><span class="pill ">IMPORTANT</span></td><td><span class="pill ok">PUBLISHED</span></td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>A-003</td><td>Announcement 3</td><td>Please bring the signed consent slip by Friday.</td><td><span class="pill ">SECTION</span></td><td>Class 10</td><td>C</td><td><span class="pill ">EMERGENCY</span></td><td><span class="pill ">WITHDRAWN</span></td><td class="actions"><a href="#">Open</a></td></tr>
+</tbody>
+</table></div>
+<p class="muted small">Source: <code>GET /api/v1/announcements</code></p>
+<!-- POST /api/v1/announcements -->
+<details class="form"><summary>Write an announcement</summary>
+<form>
+<label>Title *<input type="text" name="title" value="Announcement 1" required></label>
+<label class="wide">Body *<textarea name="body" rows="2">Please bring the signed consent slip by Friday.</textarea></label>
+<label>Audience *<select name="audience"><option>SCHOOL</option><option>CLASS</option><option>SECTION</option></select></label>
+<label>Academic class id<input type="text" name="academicClassId" value="544208c0-8100-3d80-a220-cccbfc29768b"></label>
+<label>Section id<input type="text" name="sectionId" value="1c35581b-02b2-3f00-bdbc-29ea5acdbfba"></label>
+<label>Priority<select name="priority"><option value="">Any</option><option>NORMAL</option><option>IMPORTANT</option><option>EMERGENCY</option></select></label>
+<label class="check"><input type="checkbox" name="notifyFamilies" checked> Notify families</label>
+<label>Expires on<input type="date" name="expiresOn" value="2027-03-31"></label>
+<label class="check"><input type="checkbox" name="publish" checked> Publish</label>
+<div class="wide"><button type="button" class="btn primary">Save</button> <button type="reset" class="btn">Reset</button></div>
+</form>
+</details>
+<details class="endpoints"><summary>All endpoints of this section (6)</summary>
+<table>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/announcements</code></td><td>Announcements (staff)</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/announcements</code></td><td>Write an announcement</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/announcements/{id}</code></td><td>Change a draft</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/announcements/{id}/publish</code></td><td>Publish a draft</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/announcements/{id}/withdraw</code></td><td>Withdraw</td></tr>
+<tr><td><span class="verb delete">DELETE</span></td><td><code>/api/v1/announcements/{id}</code></td><td>Delete a draft or withdrawn announcement</td></tr>
+</table>
+</details>
+</section>
+
+<!-- ClassActivityController · samples/api/engagement/ClassActivityController.md -->
+<section class="card" id="ClassActivityController">
+<h2>Class Activities</h2>
+<p class="muted">What a class or section did on a day (lab, sports, trip, event ...), for the daily report</p>
+<!-- GET /api/v1/class-activities -->
+<form class="filters">
+<label>Academic year id<input type="text" name="academicYearId" value="e007272e-5984-3753-9104-2d899e58fb35"></label>
+<label>Academic class id<input type="text" name="academicClassId" value="544208c0-8100-3d80-a220-cccbfc29768b"></label>
+<label>Section id<input type="text" name="sectionId" value="1c35581b-02b2-3f00-bdbc-29ea5acdbfba"></label>
+<label>From<input type="date" name="from" value="2026-04-01"></label>
+<label>To<input type="date" name="to" value="2027-03-31"></label>
+<label>Limit<input type="number" name="limit" value="20"></label>
+<button type="button" class="btn primary">Apply</button>
+</form>
+<div class="scroll"><table>
+<thead><tr><th>Activity code</th><th>Class name</th><th>Section name</th><th>Subject name</th><th>Teacher name</th><th>Activity date</th><th>Activity type</th><th>Title</th><th></th></tr></thead>
+<tbody>
+<tr><td>CA-001</td><td>Class 9</td><td>A</td><td>Mathematics</td><td>Neha Sharma</td><td>2026-11-22</td><td><span class="pill ">LESSON</span></td><td>Class activity 1</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>CA-002</td><td>Class 4</td><td>B</td><td>Science</td><td>Vikram Singh</td><td>2026-11-21</td><td><span class="pill ">LAB</span></td><td>Class activity 2</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>CA-003</td><td>Class 10</td><td>C</td><td>English</td><td>Farah Khan</td><td>2026-11-20</td><td><span class="pill ">PROJECT</span></td><td>Class activity 3</td><td class="actions"><a href="#">Open</a></td></tr>
+</tbody>
+</table></div>
+<p class="muted small">Source: <code>GET /api/v1/class-activities</code></p>
+<!-- POST /api/v1/class-activities -->
+<details class="form"><summary>Record a class activity</summary>
+<form>
+<label>Academic year id *<input type="text" name="academicYearId" value="e007272e-5984-3753-9104-2d899e58fb35" required></label>
+<label>Academic class id *<input type="text" name="academicClassId" value="544208c0-8100-3d80-a220-cccbfc29768b" required></label>
+<label>Section id<input type="text" name="sectionId" value="1c35581b-02b2-3f00-bdbc-29ea5acdbfba"></label>
+<label>Subject id<input type="text" name="subjectId" value="9802ac29-d6e2-3a81-b8c9-08ed66ecb32b"></label>
+<label>Activity date *<input type="date" name="activityDate" value="2026-11-22" required></label>
+<label>Activity type *<select name="activityType"><option>LESSON</option><option>LAB</option><option>PROJECT</option><option>SPORTS</option><option>ART</option><option>MUSIC</option><option>FIELD_TRIP</option><option>ASSEMBLY</option><option>EVENT</option><option>ASSESSMENT</option><option>OTHER</option></select></label>
+<label>Title *<input type="text" name="title" value="Class activity 1" required></label>
+<label class="wide">Description<textarea name="description" rows="2">Class activity for the 2026-27 session</textarea></label>
+<div class="wide"><button type="button" class="btn primary">Save</button> <button type="reset" class="btn">Reset</button></div>
+</form>
+</details>
+<details class="endpoints"><summary>All endpoints of this section (4)</summary>
+<table>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/class-activities</code></td><td>Class activities (staff)</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/class-activities</code></td><td>Record a class activity</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/class-activities/{id}</code></td><td>Update</td></tr>
+<tr><td><span class="verb delete">DELETE</span></td><td><code>/api/v1/class-activities/{id}</code></td><td>Delete</td></tr>
+</table>
+</details>
+</section>
+
+<!-- DailyReportController · samples/api/engagement/DailyReportController.md -->
+<section class="card" id="DailyReportController">
+<h2>Daily Activity Report</h2>
+<p class="muted">Per-student daily summary (attendance, homework, lessons, activities, announcements, remarks), its settings and send history. Families: /api/v1/parent/daily-report</p>
+<!-- GET /api/v1/daily-reports/runs -->
+<form class="filters">
+<label>Limit<input type="number" name="limit" value="20"></label>
+<button type="button" class="btn primary">Apply</button>
+</form>
+<div class="scroll"><table>
+<thead><tr><th>Report date</th><th>Trigger</th><th>Status</th><th>Skip reason</th><th>Students</th><th>Recipients</th><th>Messages</th><th>Started at</th><th></th></tr></thead>
+<tbody>
+<tr><td>2026-11-22</td><td><span class="pill warn">SCHEDULED</span></td><td><span class="pill ">RUNNING</span></td><td>Requested by the parent</td><td>42</td><td>1</td><td>14</td><td>2026-04-01T04:30:00Z</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>2026-11-21</td><td><span class="pill ">MANUAL</span></td><td><span class="pill ok">COMPLETED</span></td><td>Entered by mistake</td><td>37</td><td>2</td><td>14</td><td>2026-04-01T04:30:00Z</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>2026-11-20</td><td><span class="pill warn">SCHEDULED</span></td><td><span class="pill ">SKIPPED</span></td><td>Medical leave</td><td>18</td><td>3</td><td>14</td><td>2026-04-01T04:30:00Z</td><td class="actions"><a href="#">Open</a></td></tr>
+</tbody>
+</table></div>
+<p class="muted small">Source: <code>GET /api/v1/daily-reports/runs</code></p>
+<!-- GET /api/v1/daily-reports/students/{studentId} -->
+<h3>Details</h3>
+<dl class="details">
+<div><dt>Student code</dt><dd>DAR-001</dd></div>
+<div><dt>Student name</dt><dd>Riya Rao</dd></div>
+<div><dt>Enrolled</dt><dd><span class="pill ok">Yes</span></dd></div>
+<div><dt>Class name</dt><dd>Class 9</dd></div>
+<div><dt>Section name</dt><dd>A</dd></div>
+<div><dt>Roll number</dt><dd>12</dd></div>
+<div><dt>Date</dt><dd>2026-11-22</dd></div>
+<div><dt>Day status</dt><dd><span class="pill ">WORKING</span></dd></div>
+<div><dt>Holiday name</dt><dd>Daily activity report 1</dd></div>
+</dl>
+<p class="muted small">Source: <code>GET /api/v1/daily-reports/students/{studentId}</code></p>
+<!-- POST /api/v1/daily-reports/runs -->
+<details class="form"><summary>Send a day's report now</summary>
+<form>
+<label>Date<input type="date" name="date" value="2026-11-22"></label>
+<div class="wide"><button type="button" class="btn primary">Save</button> <button type="reset" class="btn">Reset</button></div>
+</form>
+</details>
+<details class="endpoints"><summary>All endpoints of this section (7)</summary>
+<table>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/daily-reports/students/{studentId}</code></td><td>One student's daily report</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/daily-reports/sections/{sectionId}</code></td><td>Daily reports of a section</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/daily-reports/settings</code></td><td>Settings</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/daily-reports/settings</code></td><td>Turn the daily report on / off, set the send time and what it contains</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/daily-reports/runs</code></td><td>Send history</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/daily-reports/runs</code></td><td>Send a day's report now</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/daily-reports/outbox</code></td><td>Recent outgoing messages</td></tr>
+</table>
+</details>
+</section>
+
+<!-- HomeworkController · samples/api/engagement/HomeworkController.md -->
+<section class="card" id="HomeworkController">
+<h2>Homework</h2>
+<p class="muted">Homework set by subject teachers; shown to families in the daily report and /api/v1/parent</p>
+<!-- GET /api/v1/homework -->
+<form class="filters">
+<label>Academic year id<input type="text" name="academicYearId" value="e007272e-5984-3753-9104-2d899e58fb35"></label>
+<label>Academic class id<input type="text" name="academicClassId" value="544208c0-8100-3d80-a220-cccbfc29768b"></label>
+<label>Section id<input type="text" name="sectionId" value="1c35581b-02b2-3f00-bdbc-29ea5acdbfba"></label>
+<label>Subject id<input type="text" name="subjectId" value="9802ac29-d6e2-3a81-b8c9-08ed66ecb32b"></label>
+<label>Teacher id<input type="text" name="teacherId" value="64150973-9b29-3d23-9f86-9620ae588407"></label>
+<label>From<input type="date" name="from" value="2026-04-01"></label>
+<label>To<input type="date" name="to" value="2027-03-31"></label>
+<label>Limit<input type="number" name="limit" value="20"></label>
+<button type="button" class="btn primary">Apply</button>
+</form>
+<div class="scroll"><table>
+<thead><tr><th>Homework code</th><th>Class name</th><th>Section name</th><th>Subject name</th><th>Teacher name</th><th>Title</th><th>Description</th><th>Assigned on</th><th></th></tr></thead>
+<tbody>
+<tr><td>Exercise 4.2, questions 1 to 10</td><td>Class 9</td><td>A</td><td>Mathematics</td><td>Neha Sharma</td><td>Homework 1</td><td>Homework for the 2026-27 session</td><td>2026-11-22</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>Exercise 4.2, questions 1 to 10</td><td>Class 4</td><td>B</td><td>Science</td><td>Vikram Singh</td><td>Homework 2</td><td>Homework for the 2026-27 session</td><td>2026-11-21</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>Exercise 4.2, questions 1 to 10</td><td>Class 10</td><td>C</td><td>English</td><td>Farah Khan</td><td>Homework 3</td><td>Homework for the 2026-27 session</td><td>2026-11-20</td><td class="actions"><a href="#">Open</a></td></tr>
+</tbody>
+</table></div>
+<p class="muted small">Source: <code>GET /api/v1/homework</code></p>
+<!-- GET /api/v1/homework/{id} -->
+<h3>Details</h3>
+<dl class="details">
+<div><dt>Homework code</dt><dd>Exercise 4.2, questions 1 to 10</dd></div>
+<div><dt>Class name</dt><dd>Class 9</dd></div>
+<div><dt>Section name</dt><dd>A</dd></div>
+<div><dt>Subject name</dt><dd>Mathematics</dd></div>
+<div><dt>Teacher name</dt><dd>Neha Sharma</dd></div>
+<div><dt>Title</dt><dd>Homework 1</dd></div>
+<div><dt>Description</dt><dd>Homework for the 2026-27 session</dd></div>
+<div><dt>Assigned on</dt><dd>2026-11-22</dd></div>
+<div><dt>Due on</dt><dd>2026-12-10</dd></div>
+<div><dt>Status</dt><dd><span class="pill ok">PUBLISHED</span></dd></div>
+<div><dt>Updated at</dt><dd>2026-11-22T04:30:00Z</dd></div>
+</dl>
+<p class="muted small">Source: <code>GET /api/v1/homework/{id}</code></p>
+<!-- POST /api/v1/homework -->
+<details class="form"><summary>Set homework</summary>
+<form>
+<label>Academic year id *<input type="text" name="academicYearId" value="e007272e-5984-3753-9104-2d899e58fb35" required></label>
+<label>Academic class id *<input type="text" name="academicClassId" value="544208c0-8100-3d80-a220-cccbfc29768b" required></label>
+<label>Section id<input type="text" name="sectionId" value="1c35581b-02b2-3f00-bdbc-29ea5acdbfba"></label>
+<label>Subject id *<input type="text" name="subjectId" value="9802ac29-d6e2-3a81-b8c9-08ed66ecb32b" required></label>
+<label>Teacher id<input type="text" name="teacherId" value="64150973-9b29-3d23-9f86-9620ae588407"></label>
+<label>Title *<input type="text" name="title" value="Homework 1" required></label>
+<label class="wide">Description<textarea name="description" rows="2">Homework for the 2026-27 session</textarea></label>
+<label>Assigned on<input type="date" name="assignedOn" value="2026-11-22"></label>
+<label>Due on *<input type="date" name="dueOn" value="2026-12-10" required></label>
+<div class="wide"><button type="button" class="btn primary">Save</button> <button type="reset" class="btn">Reset</button></div>
+</form>
+</details>
+<details class="endpoints"><summary>All endpoints of this section (6)</summary>
+<table>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/homework</code></td><td>Homework list (staff)</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/homework/{id}</code></td><td>Get</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/homework</code></td><td>Set homework</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/homework/{id}</code></td><td>Update</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/homework/{id}/cancel</code></td><td>Cancel homework</td></tr>
+<tr><td><span class="verb delete">DELETE</span></td><td><code>/api/v1/homework/{id}</code></td><td>Delete</td></tr>
+</table>
+</details>
+</section>
+
+<!-- NotificationInboxController · samples/api/engagement/NotificationInboxController.md -->
+<section class="card" id="NotificationInboxController">
+<h2>Notification Inbox</h2>
+<p class="muted">In-app notifications of the signed-in user (daily reports, announcements, alerts)</p>
+<details class="endpoints"><summary>All endpoints of this section (3)</summary>
+<table>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/notifications</code></td><td>My notifications</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/notifications/{id}/read</code></td><td>Read</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/notifications/read-all</code></td><td>Read all</td></tr>
+</table>
+</details>
+</section>
+
+<!-- ParentPortalController · samples/api/engagement/ParentPortalController.md -->
+<section class="card" id="ParentPortalController">
+<h2>Parent Portal</h2>
+<p class="muted">Children, daily activity report, homework, remarks and announcements for the signed-in parent</p>
+<!-- GET /api/v1/parent/children -->
+<div class="scroll"><table>
+<thead><tr><th>Student code</th><th>Name</th><th>Class name</th><th>Section name</th><th>Roll number</th><th></th></tr></thead>
+<tbody>
+<tr><td>C-001</td><td>Child 1</td><td>Class 9</td><td>A</td><td>12</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>C-002</td><td>Child 2</td><td>Class 4</td><td>B</td><td>13</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>C-003</td><td>Child 3</td><td>Class 10</td><td>C</td><td>14</td><td class="actions"><a href="#">Open</a></td></tr>
+</tbody>
+</table></div>
+<p class="muted small">Source: <code>GET /api/v1/parent/children</code></p>
+<!-- GET /api/v1/parent/children/{studentId}/daily-report -->
+<h3>Details</h3>
+<dl class="details">
+<div><dt>Student code</dt><dd>DAR-001</dd></div>
+<div><dt>Student name</dt><dd>Riya Rao</dd></div>
+<div><dt>Enrolled</dt><dd><span class="pill ok">Yes</span></dd></div>
+<div><dt>Class name</dt><dd>Class 9</dd></div>
+<div><dt>Section name</dt><dd>A</dd></div>
+<div><dt>Roll number</dt><dd>12</dd></div>
+<div><dt>Date</dt><dd>2026-11-22</dd></div>
+<div><dt>Day status</dt><dd><span class="pill ">WORKING</span></dd></div>
+<div><dt>Holiday name</dt><dd>Daily activity report 1</dd></div>
+</dl>
+<p class="muted small">Source: <code>GET /api/v1/parent/children/{studentId}/daily-report</code></p>
+<details class="endpoints"><summary>All endpoints of this section (6)</summary>
+<table>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/parent/children</code></td><td>My children</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/parent/daily-report</code></td><td>Today's report for all my children</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/parent/children/{studentId}/daily-report</code></td><td>Child report</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/parent/children/{studentId}/homework</code></td><td>A child's homework</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/parent/children/{studentId}/remarks</code></td><td>Teacher remarks about a child</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/parent/announcements</code></td><td>Announcements for my children</td></tr>
+</table>
+</details>
+</section>
+
+<!-- StudentRemarkController · samples/api/engagement/StudentRemarkController.md -->
+<section class="card" id="StudentRemarkController">
+<h2>Student Remarks</h2>
+<p class="muted">Teachers' daily remarks about students; visible ones go into the daily report</p>
+<!-- GET /api/v1/student-remarks -->
+<form class="filters">
+<label>Student id<input type="text" name="studentId" value="6fb53156-1fd8-3f64-9c4f-f647e3d28066"></label>
+<label>Section id<input type="text" name="sectionId" value="1c35581b-02b2-3f00-bdbc-29ea5acdbfba"></label>
+<label>From<input type="date" name="from" value="2026-04-01"></label>
+<label>To<input type="date" name="to" value="2027-03-31"></label>
+<label>Limit<input type="number" name="limit" value="20"></label>
+<button type="button" class="btn primary">Apply</button>
+</form>
+<div class="scroll"><table>
+<thead><tr><th>Student name</th><th>Remark date</th><th>Teacher name</th><th>Subject name</th><th>Category</th><th>Sentiment</th><th>Remark</th><th>Visible to guardians</th><th></th></tr></thead>
+<tbody>
+<tr><td>Riya Rao</td><td>2026-11-22</td><td>Neha Sharma</td><td>Mathematics</td><td><span class="pill ">ACADEMIC</span></td><td><span class="pill ">POSITIVE</span></td><td>Checked and approved</td><td><span class="pill ok">Yes</span></td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>Aman Verma</td><td>2026-11-21</td><td>Vikram Singh</td><td>Science</td><td><span class="pill ">BEHAVIOUR</span></td><td><span class="pill ">NEUTRAL</span></td><td>Please correct the dates</td><td><span class="pill ok">Yes</span></td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>Kavya Iyer</td><td>2026-11-20</td><td>Farah Khan</td><td>English</td><td><span class="pill ">PARTICIPATION</span></td><td><span class="pill ">CONCERN</span></td><td>Verified with the class teacher</td><td><span class="pill">No</span></td><td class="actions"><a href="#">Open</a></td></tr>
+</tbody>
+</table></div>
+<p class="muted small">Source: <code>GET /api/v1/student-remarks</code></p>
+<!-- POST /api/v1/student-remarks -->
+<details class="form"><summary>Write remarks for one or many students</summary>
+<form>
+<label>Remark date<input type="date" name="remarkDate" value="2026-11-22"></label>
+<label class="wide">Remarks *<span class="muted small">array of object RemarkRow (see the API file)</span></label>
+<div class="wide"><button type="button" class="btn primary">Save</button> <button type="reset" class="btn">Reset</button></div>
+</form>
+</details>
+<details class="endpoints"><summary>All endpoints of this section (4)</summary>
+<table>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/student-remarks</code></td><td>Remarks of a student or a section</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/student-remarks</code></td><td>Write remarks for one or many students</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/student-remarks/{id}</code></td><td>Update</td></tr>
+<tr><td><span class="verb delete">DELETE</span></td><td><code>/api/v1/student-remarks/{id}</code></td><td>Delete</td></tr>
+</table>
+</details>
+</section>
+</main>
+</div>
+</body>
+</html>

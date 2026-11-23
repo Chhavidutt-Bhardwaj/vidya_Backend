@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<!--
+  Sample screen for: Student attendance
+  Plain HTML + CSS with static sample data generated from the API (APiReqDoc/samples/api/attendance/).
+  Each section names the endpoints that feed it. Rebuild it in the frontend framework; this file is not served by any controller.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student attendance</title>
+<link rel="stylesheet" href="samples.css">
+</head>
+<body>
+<header class="topbar"><a class="brand" href="index.html">Vidya</a><h1>Student attendance</h1></header>
+<div class="layout">
+<nav class="side">
+<a href="security.html">Login, sessions, roles &amp; access</a>
+<a href="dashboard.html">Overview dashboard</a>
+<a href="student.html">Students (SIS, admission, enrolment, guardians)</a>
+<a href="staff.html">Staff &amp; HR set-up</a>
+<a href="user.html">School users &amp; accounts</a>
+<a href="academic.html">Academic years, classes, sections, set-up</a>
+<a href="subject.html">Subjects &amp; curriculum</a>
+<a href="assignment.html">Class teachers &amp; subject teachers</a>
+<a href="timetable.html">Timetable, bells, rooms, substitutions</a>
+<a href="calendar.html">Calendar &amp; holidays</a>
+<a href="attendance.html" class="on">Student attendance</a>
+<a href="examination.html">Exams, schedules, marks, grading</a>
+<a href="assessment.html">Assessments, question bank, report cards</a>
+<a href="fee.html">Fees &amp; finance (counter, online, auto-debit)</a>
+<a href="engagement.html">Communication, homework, daily report, parent portal</a>
+<a href="operations.html">Operations set-up (fees, attendance, transport, library)</a>
+<a href="readiness.html">School readiness</a>
+<a href="platform-school.html">Platform: schools &amp; campuses</a>
+<a href="platform-onboarding.html">Platform: onboarding</a>
+<a href="platform-workflow.html">Platform: onboarding workflow</a>
+<a href="platform-subscription.html">Platform: subscriptions &amp; plans</a>
+<a href="platform-payment.html">Platform: subscription payments</a>
+<a href="platform-community.html">Platform: communities (trusts / groups)</a>
+<a href="platform-hub.html">Platform: hub</a>
+<a href="platform-analytics.html">Platform: analytics</a>
+<a href="platform-support.html">Platform: support queries</a>
+</nav>
+<main>
+
+<!-- StudentAttendanceController · samples/api/attendance/StudentAttendanceController.md -->
+<section class="card" id="StudentAttendanceController">
+<h2>Student Attendance</h2>
+<p class="muted">Daily student attendance management for the active school tenant</p>
+<!-- GET /api/v1/attendance/missing -->
+<form class="filters">
+<label>Section id<input type="text" name="sectionId" value="1c35581b-02b2-3f00-bdbc-29ea5acdbfba"></label>
+<label>Academic year id<input type="text" name="academicYearId" value="e007272e-5984-3753-9104-2d899e58fb35"></label>
+<label>From<input type="date" name="from" value="2026-04-01"></label>
+<label>To<input type="date" name="to" value="2027-03-31"></label>
+<button type="button" class="btn primary">Apply</button>
+</form>
+<div class="scroll"><table>
+<thead><tr><th>Value</th><th></th></tr></thead>
+<tbody>
+<tr><td>2026-11-22</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>2026-11-21</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>2026-11-20</td><td class="actions"><a href="#">Open</a></td></tr>
+</tbody>
+</table></div>
+<p class="muted small">Source: <code>GET /api/v1/attendance/missing</code></p>
+<!-- GET /api/v1/attendance/{id} -->
+<h3>Details</h3>
+<dl class="details">
+<div><dt>Attendance code</dt><dd>A-001</dd></div>
+<div><dt>Student code</dt><dd>A-001</dd></div>
+<div><dt>Student name</dt><dd>Riya Rao</dd></div>
+<div><dt>Academic year code</dt><dd>A-001</dd></div>
+<div><dt>Academic year name</dt><dd>2026-27</dd></div>
+<div><dt>Academic class code</dt><dd>Class 9</dd></div>
+<div><dt>Academic class name</dt><dd>Class 9</dd></div>
+<div><dt>Section code</dt><dd>A-001</dd></div>
+<div><dt>Section name</dt><dd>A</dd></div>
+<div><dt>Attendance date</dt><dd>2027-03-31</dd></div>
+<div><dt>Status</dt><dd><span class="pill ok">PRESENT</span></dd></div>
+<div><dt>Remarks</dt><dd>Checked and approved</dd></div>
+</dl>
+<p class="muted small">Source: <code>GET /api/v1/attendance/{id}</code></p>
+<!-- POST /api/v1/attendance -->
+<details class="form"><summary>Mark attendance for a student</summary>
+<form>
+<label>Student id *<input type="text" name="studentId" value="6fb53156-1fd8-3f64-9c4f-f647e3d28066" required></label>
+<label>Academic year id *<input type="text" name="academicYearId" value="e007272e-5984-3753-9104-2d899e58fb35" required></label>
+<label>Academic class id *<input type="text" name="academicClassId" value="544208c0-8100-3d80-a220-cccbfc29768b" required></label>
+<label>Section id *<input type="text" name="sectionId" value="1c35581b-02b2-3f00-bdbc-29ea5acdbfba" required></label>
+<label>Attendance date *<input type="date" name="attendanceDate" value="2027-03-31" required></label>
+<label>Status *<select name="status"><option>PRESENT</option><option>ABSENT</option><option>LATE</option><option>HALF_DAY</option><option>EXCUSED</option><option>DELETED</option></select></label>
+<label class="wide">Remarks<textarea name="remarks" rows="2">Checked and approved</textarea></label>
+<label class="check"><input type="checkbox" name="allowNonWorkingDay" checked> Allow non working day</label>
+<label class="wide">Override reason<textarea name="overrideReason" rows="2">Requested by the parent</textarea></label>
+<div class="wide"><button type="button" class="btn primary">Save</button> <button type="reset" class="btn">Reset</button></div>
+</form>
+</details>
+<details class="endpoints"><summary>All endpoints of this section (11)</summary>
+<table>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/attendance</code></td><td>Mark attendance for a student</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/attendance/bulk</code></td><td>Bulk mark / upsert attendance for a section</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/attendance/{id}</code></td><td>Get attendance record by ID</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/attendance/{id}</code></td><td>Correct attendance record</td></tr>
+<tr><td><span class="verb patch">PATCH</span></td><td><code>/api/v1/attendance/{id}/status</code></td><td>Update attendance status</td></tr>
+<tr><td><span class="verb delete">DELETE</span></td><td><code>/api/v1/attendance/{id}</code></td><td>Delete attendance record</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/attendance/students/{studentId}</code></td><td>Get student attendance history</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/attendance/students/{studentId}/summary</code></td><td>Get attendance summary for a student</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/attendance/sections/{sectionId}/daily</code></td><td>Daily section attendance sheet</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/attendance/sections/{sectionId}</code></td><td>Section attendance history</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/attendance/missing</code></td><td>Get missing attendance dates for a section</td></tr>
+</table>
+</details>
+</section>
+</main>
+</div>
+</body>
+</html>

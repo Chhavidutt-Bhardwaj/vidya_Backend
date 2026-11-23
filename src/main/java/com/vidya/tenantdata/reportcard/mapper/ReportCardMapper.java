@@ -61,6 +61,11 @@ public class ReportCardMapper {
                 .resultStatus(card.getResultStatus())
                 .status(card.getStatus())
                 .publishedAt(card.getPublishedAt())
+                .assessmentSchemeId(card.getAssessmentSchemeId())
+                .cumulativePercentage(card.getCumulativePercentage())
+                .cumulativeGrade(card.getCumulativeGrade())
+                .graceApplied(card.isGraceApplied())
+                .resultNote(card.getResultNote())
                 .subjectResults(subjectDtos)
                 .remarks(remarkDtos)
                 .createdAt(card.getCreatedAt())
@@ -87,6 +92,11 @@ public class ReportCardMapper {
                 .isPassing(result.isPassing())
                 .isAbsent(result.isAbsent())
                 .isExempt(result.isExempt())
+                .category(result.getCategory())
+                .graceMarks(result.getGraceMarks())
+                .adjustmentMarks(result.getAdjustmentMarks())
+                .countedInTotal(result.isCountedInTotal())
+                .componentBreakdown(result.getComponentBreakdown())
                 .build();
     }
 

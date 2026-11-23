@@ -184,9 +184,10 @@ class OnboardingServiceTest {
     }
 
     @Test
-    @DisplayName("approveOnboarding should transition to APPROVED")
+    @DisplayName("approveOnboarding should transition a paid onboarding to APPROVED")
     void approveOnboarding_Success() {
-        sampleOnboarding.setStatus(OnboardingStatus.VERIFIED);
+        // I0: approval requires PAYMENT_COMPLETED (or an authorized PAYMENT_WAIVED); VERIFIED is no longer enough.
+        sampleOnboarding.setStatus(OnboardingStatus.PAYMENT_COMPLETED);
 
         when(schoolOnboardingRepository.findById(onboardingId)).thenReturn(Optional.of(sampleOnboarding));
         when(schoolOnboardingRepository.save(any(SchoolOnboarding.class))).thenReturn(sampleOnboarding);
@@ -195,6 +196,40 @@ class OnboardingServiceTest {
 
         assertThat(response).isNotNull();
         assertThat(sampleOnboarding.getStatus()).isEqualTo(OnboardingStatus.APPROVED);
+    }
+
+    @Test
+    @DisplayName("I0: approveOnboarding from VERIFIED (unpaid) is rejected")
+    void approveOnboarding_Unpaid_Rejected() {
+        sampleOnboarding.setStatus(OnboardingStatus.VERIFIED);
+        when(schoolOnboardingRepository.findById(onboardingId)).thenReturn(Optional.of(sampleOnboarding));
+
+        assertThatThrownBy(() -> onboardingService.approveOnboarding(onboardingId, "skip payment"))
+                .isInstanceOf(com.vidya.common.exception.InvalidStateTransitionException.class);
+        assertThat(sampleOnboarding.getStatus()).isEqualTo(OnboardingStatus.VERIFIED);
+    }
+
+    @Test
+    @DisplayName("I0: approveOnboarding after an authorized waiver succeeds")
+    void approveOnboarding_Waived_Succeeds() {
+        sampleOnboarding.setStatus(OnboardingStatus.PAYMENT_WAIVED);
+        when(schoolOnboardingRepository.findById(onboardingId)).thenReturn(Optional.of(sampleOnboarding));
+        when(schoolOnboardingRepository.save(any(SchoolOnboarding.class))).thenReturn(sampleOnboarding);
+
+        onboardingService.approveOnboarding(onboardingId, "trial");
+        assertThat(sampleOnboarding.getStatus()).isEqualTo(OnboardingStatus.APPROVED);
+    }
+
+    @Test
+    @DisplayName("I0: an ACTIVE onboarding cannot be rejected through the normal workflow")
+    void rejectOnboarding_Active_Rejected() {
+        sampleOnboarding.setStatus(OnboardingStatus.ACTIVE);
+        when(schoolOnboardingRepository.findById(onboardingId)).thenReturn(Optional.of(sampleOnboarding));
+
+        assertThatThrownBy(() -> onboardingService.rejectOnboarding(onboardingId,
+                new com.vidya.master.onboarding.dto.RejectOnboardingRequest("late rejection")))
+                .isInstanceOf(com.vidya.common.exception.InvalidStateTransitionException.class);
+        assertThat(sampleOnboarding.getStatus()).isEqualTo(OnboardingStatus.ACTIVE);
     }
 
     @Test

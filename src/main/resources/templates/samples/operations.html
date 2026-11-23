@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<!--
+  Sample screen for: Operations set-up (fees, attendance, transport, library)
+  Plain HTML + CSS with static sample data generated from the API (APiReqDoc/samples/api/operations/).
+  Each section names the endpoints that feed it. Rebuild it in the frontend framework; this file is not served by any controller.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Operations set-up (fees, attendance, transport, library)</title>
+<link rel="stylesheet" href="samples.css">
+</head>
+<body>
+<header class="topbar"><a class="brand" href="index.html">Vidya</a><h1>Operations set-up (fees, attendance, transport, library)</h1></header>
+<div class="layout">
+<nav class="side">
+<a href="security.html">Login, sessions, roles &amp; access</a>
+<a href="dashboard.html">Overview dashboard</a>
+<a href="student.html">Students (SIS, admission, enrolment, guardians)</a>
+<a href="staff.html">Staff &amp; HR set-up</a>
+<a href="user.html">School users &amp; accounts</a>
+<a href="academic.html">Academic years, classes, sections, set-up</a>
+<a href="subject.html">Subjects &amp; curriculum</a>
+<a href="assignment.html">Class teachers &amp; subject teachers</a>
+<a href="timetable.html">Timetable, bells, rooms, substitutions</a>
+<a href="calendar.html">Calendar &amp; holidays</a>
+<a href="attendance.html">Student attendance</a>
+<a href="examination.html">Exams, schedules, marks, grading</a>
+<a href="assessment.html">Assessments, question bank, report cards</a>
+<a href="fee.html">Fees &amp; finance (counter, online, auto-debit)</a>
+<a href="engagement.html">Communication, homework, daily report, parent portal</a>
+<a href="operations.html" class="on">Operations set-up (fees, attendance, transport, library)</a>
+<a href="readiness.html">School readiness</a>
+<a href="platform-school.html">Platform: schools &amp; campuses</a>
+<a href="platform-onboarding.html">Platform: onboarding</a>
+<a href="platform-workflow.html">Platform: onboarding workflow</a>
+<a href="platform-subscription.html">Platform: subscriptions &amp; plans</a>
+<a href="platform-payment.html">Platform: subscription payments</a>
+<a href="platform-community.html">Platform: communities (trusts / groups)</a>
+<a href="platform-hub.html">Platform: hub</a>
+<a href="platform-analytics.html">Platform: analytics</a>
+<a href="platform-support.html">Platform: support queries</a>
+</nav>
+<main>
+
+<!-- OperationsConfigController · samples/api/operations/OperationsConfigController.md -->
+<section class="card" id="OperationsConfigController">
+<h2>Operational Configuration</h2>
+<p class="muted">Fee setup, attendance rules, transport, library rules, communication and a readiness overview. Timetable setup: /api/v1/bell-schedules, /api/v1/rooms, /api/v1/timetables; examination setup: /api/v1/exams/*</p>
+<!-- GET /api/v1/operations-config/fees/heads -->
+<div class="scroll"><table>
+<thead><tr><th>Code</th><th>Name</th><th>Category</th><th>Frequency</th><th>Optional</th><th>Refundable</th><th>Description</th><th>Sort order</th><th></th></tr></thead>
+<tbody>
+<tr><td>FH-001</td><td>Fee head 1</td><td><span class="pill ">TUITION</span></td><td><span class="pill ">ONE_TIME</span></td><td><span class="pill ok">Yes</span></td><td><span class="pill ok">Yes</span></td><td>Fee head for the 2026-27 session</td><td>1</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>FH-002</td><td>Fee head 2</td><td><span class="pill ">ADMISSION</span></td><td><span class="pill ">ANNUAL</span></td><td><span class="pill ok">Yes</span></td><td><span class="pill ok">Yes</span></td><td>Fee head for the 2026-27 session</td><td>2</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>FH-003</td><td>Fee head 3</td><td><span class="pill ">EXAMINATION</span></td><td><span class="pill ">HALF_YEARLY</span></td><td><span class="pill">No</span></td><td><span class="pill">No</span></td><td>Fee head for the 2026-27 session</td><td>3</td><td class="actions"><a href="#">Open</a></td></tr>
+</tbody>
+</table></div>
+<p class="muted small">Source: <code>GET /api/v1/operations-config/fees/heads</code></p>
+<!-- POST /api/v1/operations-config/fees/heads -->
+<details class="form"><summary>Add a fee head</summary>
+<form>
+<label>Name *<input type="text" name="name" value="Fee head 1" required></label>
+<label>Code<input type="text" name="code" value="FH-001"></label>
+<label>Category<select name="category"><option value="">Any</option><option>TUITION</option><option>ADMISSION</option><option>EXAMINATION</option><option>TRANSPORT</option><option>LIBRARY</option><option>LABORATORY</option><option>ACTIVITY</option><option>HOSTEL</option><option>UNIFORM</option><option>BOOKS</option><option>DEPOSIT</option><option>OTHER</option></select></label>
+<label>Frequency<select name="frequency"><option value="">Any</option><option>ONE_TIME</option><option>ANNUAL</option><option>HALF_YEARLY</option><option>QUARTERLY</option><option>MONTHLY</option></select></label>
+<label class="check"><input type="checkbox" name="optional" checked> Optional</label>
+<label class="check"><input type="checkbox" name="refundable" checked> Refundable</label>
+<label class="wide">Description<textarea name="description" rows="2">Fee head for the 2026-27 session</textarea></label>
+<label>Sort order<input type="number" name="sortOrder" value="1"></label>
+<label>Status<select name="status"><option value="">Any</option><option>ACTIVE</option><option>INACTIVE</option></select></label>
+<div class="wide"><button type="button" class="btn primary">Save</button> <button type="reset" class="btn">Reset</button></div>
+</form>
+</details>
+<details class="endpoints"><summary>All endpoints of this section (40)</summary>
+<table>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/operations-config/overview</code></td><td>How far operations are set up</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/operations-config/fees/heads</code></td><td>Fee heads</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/operations-config/fees/heads</code></td><td>Add a fee head</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/operations-config/fees/heads/standard</code></td><td>Add the standard fee heads</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/operations-config/fees/heads/{id}</code></td><td>Change a fee head</td></tr>
+<tr><td><span class="verb delete">DELETE</span></td><td><code>/api/v1/operations-config/fees/heads/{id}</code></td><td>Delete a fee head</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/operations-config/fees/settings</code></td><td>Fee settings of a year</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/operations-config/fees/settings</code></td><td>Save the fee settings of a year</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/operations-config/fees/installments</code></td><td>Instalment plan of a year</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/operations-config/fees/installments</code></td><td>Replace the instalment plan</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/operations-config/fees/installments/generate</code></td><td>Generate the instalment plan</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/operations-config/fees/structures</code></td><td>Fee structures of a year</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/operations-config/fees/structures</code></td><td>Save a fee structure for one or more classes</td></tr>
+<tr><td><span class="verb patch">PATCH</span></td><td><code>/api/v1/operations-config/fees/structures/{id}/status</code></td><td>Make a fee structure DRAFT, ACTIVE or ARCHIVED</td></tr>
+<tr><td><span class="verb delete">DELETE</span></td><td><code>/api/v1/operations-config/fees/structures/{id}</code></td><td>Delete a fee structure</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/operations-config/fees/structures/copy</code></td><td>Copy fee structures from another year</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/operations-config/fees/concessions</code></td><td>Concession types</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/operations-config/fees/concessions</code></td><td>Add a concession type</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/operations-config/fees/concessions/{id}</code></td><td>Change a concession type</td></tr>
+<tr><td><span class="verb delete">DELETE</span></td><td><code>/api/v1/operations-config/fees/concessions/{id}</code></td><td>Delete a concession type</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/operations-config/attendance/settings</code></td><td>Attendance rules</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/operations-config/attendance/settings</code></td><td>Save the attendance rules</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/operations-config/transport/vehicles</code></td><td>Vehicles</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/operations-config/transport/vehicles</code></td><td>Add a vehicle</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/operations-config/transport/vehicles/{id}</code></td><td>Change a vehicle</td></tr>
+<tr><td><span class="verb delete">DELETE</span></td><td><code>/api/v1/operations-config/transport/vehicles/{id}</code></td><td>Delete a vehicle</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/operations-config/transport/routes</code></td><td>Routes with their stops</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/operations-config/transport/routes</code></td><td>Save a route with its stops</td></tr>
+<tr><td><span class="verb delete">DELETE</span></td><td><code>/api/v1/operations-config/transport/routes/{id}</code></td><td>Delete a route</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/operations-config/library/settings</code></td><td>Lending rules</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/operations-config/library/settings</code></td><td>Save the lending rules</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/operations-config/library/categories</code></td><td>Book categories</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/operations-config/library/categories</code></td><td>Add a book category</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/operations-config/library/categories/{id}</code></td><td>Change a book category</td></tr>
+<tr><td><span class="verb delete">DELETE</span></td><td><code>/api/v1/operations-config/library/categories/{id}</code></td><td>Delete a book category</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/operations-config/communication/settings</code></td><td>Channels and sender</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/operations-config/communication/settings</code></td><td>Save channels and sender</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/operations-config/communication/templates</code></td><td>Message templates</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/operations-config/communication/templates/{event}</code></td><td>Save the template of an event</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/operations-config/communication/templates/{event}/reset</code></td><td>Reset a template to the built-in wording</td></tr>
+</table>
+</details>
+</section>
+</main>
+</div>
+</body>
+</html>

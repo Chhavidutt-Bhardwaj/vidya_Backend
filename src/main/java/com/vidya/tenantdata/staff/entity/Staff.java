@@ -75,6 +75,32 @@ public class Staff {
     @Column(name = "department", length = 150)
     private String department;
 
+    @Column(name = "department_id")
+    private UUID departmentId;
+
+    @Column(name = "designation_id")
+    private UUID designationId;
+
+    @Column(name = "reporting_to_staff_id")
+    private UUID reportingToStaffId;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "employment_type", length = 30)
+    private com.vidya.tenantdata.staff.enums.EmploymentType employmentType;
+
+    @Column(name = "qualification")
+    private String qualification;
+
+    @Column(name = "experience_years")
+    private java.math.BigDecimal experienceYears;
+
+    /** Teaching load limit used for warnings when assigning periods; null = no limit. */
+    @Column(name = "max_periods_per_week")
+    private Integer maxPeriodsPerWeek;
+
+    @Column(name = "last_working_date")
+    private java.time.LocalDate lastWorkingDate;
+
     @Column(name = "deleted_at")
     private Instant deletedAt;
 

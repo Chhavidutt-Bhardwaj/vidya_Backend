@@ -48,7 +48,7 @@ public class BellScheduleController {
     private final BellScheduleService bellScheduleService;
 
     @PostMapping
-    @PreAuthorize("hasAuthority('BELL_SCHEDULE_CREATE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('BELL_SCHEDULE_CREATE')")
     @Operation(summary = "Create bell schedule", description = "Creates a new bell schedule with periods")
     public ResponseEntity<ApiResponse<BellScheduleResponse>> createBellSchedule(
             @Valid @RequestBody CreateBellScheduleRequest request
@@ -60,7 +60,7 @@ public class BellScheduleController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAuthority('BELL_SCHEDULE_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('BELL_SCHEDULE_READ')")
     @Operation(summary = "Search bell schedules", description = "Searches bell schedules with pagination")
     public ResponseEntity<PagedApiResponse<BellScheduleResponse>> searchBellSchedules(
             @Parameter(description = "Search by schedule name or code")
@@ -74,7 +74,7 @@ public class BellScheduleController {
     }
 
     @GetMapping("/default")
-    @PreAuthorize("hasAuthority('BELL_SCHEDULE_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('BELL_SCHEDULE_READ')")
     @Operation(summary = "Get default bell schedule", description = "Fetches the active default bell schedule for the school")
     public ResponseEntity<ApiResponse<BellScheduleResponse>> getDefaultSchedule() {
         BellScheduleResponse response = bellScheduleService.getDefaultSchedule();
@@ -82,7 +82,7 @@ public class BellScheduleController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('BELL_SCHEDULE_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('BELL_SCHEDULE_READ')")
     @Operation(summary = "Get bell schedule by ID", description = "Fetches a bell schedule with all its period slots")
     public ResponseEntity<ApiResponse<BellScheduleResponse>> getBellScheduleById(@PathVariable UUID id) {
         BellScheduleResponse response = bellScheduleService.getBellScheduleById(id);
@@ -90,7 +90,7 @@ public class BellScheduleController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAuthority('BELL_SCHEDULE_UPDATE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('BELL_SCHEDULE_UPDATE')")
     @Operation(summary = "Update bell schedule", description = "Updates an existing bell schedule and its period configuration")
     public ResponseEntity<ApiResponse<BellScheduleResponse>> updateBellSchedule(
             @PathVariable UUID id,
@@ -102,7 +102,7 @@ public class BellScheduleController {
     }
 
     @PatchMapping("/{id}/status")
-    @PreAuthorize("hasAuthority('BELL_SCHEDULE_UPDATE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('BELL_SCHEDULE_UPDATE')")
     @Operation(summary = "Update bell schedule status", description = "Updates the active/inactive status of a bell schedule")
     public ResponseEntity<ApiResponse<BellScheduleResponse>> updateBellScheduleStatus(
             @PathVariable UUID id,
@@ -114,7 +114,7 @@ public class BellScheduleController {
     }
 
     @PostMapping("/{id}/set-default")
-    @PreAuthorize("hasAuthority('BELL_SCHEDULE_UPDATE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('BELL_SCHEDULE_UPDATE')")
     @Operation(summary = "Set default bell schedule", description = "Sets the specified bell schedule as the school default")
     public ResponseEntity<ApiResponse<BellScheduleResponse>> setDefaultSchedule(@PathVariable UUID id) {
         log.info("REST: Set default bell schedule [{}]", id);
@@ -123,7 +123,7 @@ public class BellScheduleController {
     }
 
     @PostMapping("/{id}/clone")
-    @PreAuthorize("hasAuthority('BELL_SCHEDULE_CREATE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('BELL_SCHEDULE_CREATE')")
     @Operation(summary = "Clone bell schedule", description = "Duplicates an existing bell schedule and all its period slots")
     public ResponseEntity<ApiResponse<BellScheduleResponse>> cloneSchedule(@PathVariable UUID id) {
         log.info("REST: Clone bell schedule [{}]", id);
@@ -133,7 +133,7 @@ public class BellScheduleController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('BELL_SCHEDULE_DELETE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('BELL_SCHEDULE_DELETE')")
     @Operation(summary = "Delete bell schedule", description = "Soft deletes a bell schedule")
     public ResponseEntity<ApiResponse<Void>> deleteBellSchedule(@PathVariable UUID id) {
         log.info("REST: Delete bell schedule [{}]", id);
@@ -144,7 +144,7 @@ public class BellScheduleController {
     // ── Period Endpoints ──────────────────────────────────────────────────────
 
     @GetMapping("/{id}/periods")
-    @PreAuthorize("hasAuthority('BELL_SCHEDULE_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('BELL_SCHEDULE_READ')")
     @Operation(summary = "Get periods for schedule", description = "Lists all periods belonging to a bell schedule ordered by sequence")
     public ResponseEntity<ApiResponse<List<PeriodResponse>>> getPeriodsByScheduleId(@PathVariable UUID id) {
         List<PeriodResponse> periods = bellScheduleService.getPeriodsByScheduleId(id);
@@ -152,7 +152,7 @@ public class BellScheduleController {
     }
 
     @PostMapping("/{id}/periods")
-    @PreAuthorize("hasAuthority('BELL_SCHEDULE_UPDATE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('BELL_SCHEDULE_UPDATE')")
     @Operation(summary = "Add period to schedule", description = "Adds a single period slot to an existing bell schedule")
     public ResponseEntity<ApiResponse<PeriodResponse>> addPeriod(
             @PathVariable UUID id,
@@ -165,7 +165,7 @@ public class BellScheduleController {
     }
 
     @PutMapping("/{id}/periods/{periodId}")
-    @PreAuthorize("hasAuthority('BELL_SCHEDULE_UPDATE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('BELL_SCHEDULE_UPDATE')")
     @Operation(summary = "Update period", description = "Updates a period's details or timing")
     public ResponseEntity<ApiResponse<PeriodResponse>> updatePeriod(
             @PathVariable UUID id,
@@ -178,7 +178,7 @@ public class BellScheduleController {
     }
 
     @DeleteMapping("/{id}/periods/{periodId}")
-    @PreAuthorize("hasAuthority('BELL_SCHEDULE_UPDATE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('BELL_SCHEDULE_UPDATE')")
     @Operation(summary = "Delete period", description = "Soft deletes a period slot from a bell schedule")
     public ResponseEntity<ApiResponse<Void>> deletePeriod(
             @PathVariable UUID id,
@@ -190,7 +190,7 @@ public class BellScheduleController {
     }
 
     @PutMapping("/{id}/periods")
-    @PreAuthorize("hasAuthority('BELL_SCHEDULE_UPDATE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('BELL_SCHEDULE_UPDATE')")
     @Operation(summary = "Bulk replace periods", description = "Replaces all period slots for a schedule")
     public ResponseEntity<ApiResponse<List<PeriodResponse>>> bulkReplacePeriods(
             @PathVariable UUID id,

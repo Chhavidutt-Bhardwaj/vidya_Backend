@@ -45,7 +45,7 @@ public class StudentEnrollmentController {
     private final StudentEnrollmentService enrollmentService;
 
     @PostMapping({"/api/v1/tenant/students/{studentId}/enrollments", "/api/v1/students/{studentId}/enrollments"})
-    @PreAuthorize("hasAuthority('STUDENT_ENROLL') or hasAuthority('STUDENT_CREATE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("(hasAuthority('STUDENT_ENROLL') or hasAuthority('STUDENT_CREATE')) and @dataAccess.canAccessStudent(authentication, #studentId, 'STUDENT')")
     @Operation(summary = "Create academic enrollment for student", description = "Enrolls a student in an academic year, class, and optional section")
     public ResponseEntity<ApiResponse<EnrollmentDetailResponse>> createEnrollment(
             @PathVariable UUID studentId,
@@ -57,7 +57,7 @@ public class StudentEnrollmentController {
     }
 
     @GetMapping({"/api/v1/tenant/students/{studentId}/enrollments", "/api/v1/students/{studentId}/enrollments"})
-    @PreAuthorize("hasAuthority('STUDENT_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('STUDENT_READ') and @dataAccess.canAccessStudent(authentication, #studentId, 'STUDENT')")
     @Operation(summary = "List academic enrollments for student", description = "Retrieves complete historical and active enrollments of a student")
     public ResponseEntity<ApiResponse<List<EnrollmentResponse>>> getStudentEnrollments(
             @PathVariable UUID studentId) {
@@ -67,7 +67,7 @@ public class StudentEnrollmentController {
     }
 
     @GetMapping({"/api/v1/tenant/students/{studentId}/current-enrollment", "/api/v1/students/{studentId}/current-enrollment"})
-    @PreAuthorize("hasAuthority('STUDENT_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('STUDENT_READ') and @dataAccess.canAccessStudent(authentication, #studentId, 'STUDENT')")
     @Operation(summary = "Get current active enrollment for student", description = "Retrieves active placement in the current academic year along with enrolled subjects")
     public ResponseEntity<ApiResponse<CurrentEnrollmentResponse>> getCurrentEnrollment(
             @PathVariable UUID studentId) {
@@ -77,7 +77,7 @@ public class StudentEnrollmentController {
     }
 
     @GetMapping({"/api/v1/tenant/enrollments/{id}", "/api/v1/enrollments/{id}"})
-    @PreAuthorize("hasAuthority('STUDENT_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('STUDENT_READ') and @dataAccess.canAccessEnrollment(authentication, #id, 'STUDENT')")
     @Operation(summary = "Get enrollment by UUID", description = "Retrieves full enrollment details including allocated subjects")
     public ResponseEntity<ApiResponse<EnrollmentDetailResponse>> getEnrollmentById(
             @PathVariable UUID id) {
@@ -87,7 +87,7 @@ public class StudentEnrollmentController {
     }
 
     @GetMapping({"/api/v1/tenant/enrollments/code/{code}", "/api/v1/enrollments/code/{code}"})
-    @PreAuthorize("hasAuthority('STUDENT_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('STUDENT_READ') and @dataAccess.canAccessEnrollmentCode(authentication, #code, 'STUDENT')")
     @Operation(summary = "Get enrollment by business code", description = "Retrieves enrollment details by code (e.g. ENR-A1B2C3D4)")
     public ResponseEntity<ApiResponse<EnrollmentDetailResponse>> getEnrollmentByCode(
             @PathVariable String code) {
@@ -97,7 +97,7 @@ public class StudentEnrollmentController {
     }
 
     @PutMapping({"/api/v1/tenant/enrollments/{id}", "/api/v1/enrollments/{id}"})
-    @PreAuthorize("hasAuthority('STUDENT_UPDATE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('STUDENT_UPDATE') and @dataAccess.canAccessEnrollment(authentication, #id, 'STUDENT')")
     @Operation(summary = "Update enrollment", description = "Updates roll number, section, or remarks for an enrollment")
     public ResponseEntity<ApiResponse<EnrollmentDetailResponse>> updateEnrollment(
             @PathVariable UUID id,
@@ -108,7 +108,7 @@ public class StudentEnrollmentController {
     }
 
     @PostMapping({"/api/v1/tenant/enrollments/{id}/withdraw", "/api/v1/enrollments/{id}/withdraw"})
-    @PreAuthorize("hasAuthority('STUDENT_WITHDRAW') or hasAuthority('STUDENT_UPDATE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("(hasAuthority('STUDENT_WITHDRAW') or hasAuthority('STUDENT_UPDATE')) and @dataAccess.canAccessEnrollment(authentication, #id, 'STUDENT')")
     @Operation(summary = "Withdraw student enrollment", description = "Marks enrollment as WITHDRAWN with effective date and reason")
     public ResponseEntity<ApiResponse<EnrollmentDetailResponse>> withdrawStudent(
             @PathVariable UUID id,
@@ -119,7 +119,7 @@ public class StudentEnrollmentController {
     }
 
     @PostMapping({"/api/v1/tenant/enrollments/{id}/transfer", "/api/v1/enrollments/{id}/transfer"})
-    @PreAuthorize("hasAuthority('STUDENT_TRANSFER') or hasAuthority('STUDENT_UPDATE') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("(hasAuthority('STUDENT_TRANSFER') or hasAuthority('STUDENT_UPDATE')) and @dataAccess.canAccessEnrollment(authentication, #id, 'STUDENT')")
     @Operation(summary = "Transfer student enrollment", description = "Transfers student to a new class or section preserving historical enrollment")
     public ResponseEntity<ApiResponse<EnrollmentDetailResponse>> transferStudent(
             @PathVariable UUID id,
@@ -130,7 +130,7 @@ public class StudentEnrollmentController {
     }
 
     @GetMapping({"/api/v1/tenant/enrollments", "/api/v1/enrollments"})
-    @PreAuthorize("hasAuthority('STUDENT_READ') or hasRole('SCHOOL_ADMIN') or hasRole('SCHOOL_OWNER') or hasRole('PLATFORM_ADMIN') or hasRole('PLATFORM_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('STUDENT_READ') and @dataAccess.canQueryStudents(authentication, #studentId, #sectionId, 'STUDENT')")
     @Operation(summary = "Search enrollments", description = "Searches student academic enrollments across years, classes, and sections with pagination")
     public ResponseEntity<PagedApiResponse<EnrollmentResponse>> searchEnrollments(
             @RequestParam(required = false) UUID studentId,

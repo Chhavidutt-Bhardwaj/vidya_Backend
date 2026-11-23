@@ -1,49 +1,50 @@
 package com.vidya.master.onboarding.orchestration;
 
+import com.vidya.common.exception.BusinessException;
+import com.vidya.common.exception.InvalidStateTransitionException;
 import com.vidya.master.onboarding.entity.OnboardingSource;
 import com.vidya.master.onboarding.entity.OnboardingStatus;
 import com.vidya.master.onboarding.entity.SchoolOnboarding;
 import com.vidya.master.onboarding.orchestration.dto.CompleteOnboardingRequest;
 import com.vidya.master.onboarding.orchestration.dto.OnboardingActivationResponse;
-import com.vidya.master.onboarding.repository.OnboardingActivityRepository;
 import com.vidya.master.onboarding.repository.SchoolOnboardingRepository;
-import com.vidya.master.payment.dto.InitiatePaymentResponse;
-import com.vidya.master.payment.dto.PaymentTransactionResponse;
-import com.vidya.master.payment.entity.PaymentMethod;
 import com.vidya.master.payment.entity.PaymentProvider;
-import com.vidya.master.payment.entity.PaymentStatus;
-import com.vidya.master.payment.service.PaymentService;
 import com.vidya.master.school.entity.School;
 import com.vidya.master.school.entity.SchoolBoard;
 import com.vidya.master.school.entity.SchoolStatus;
 import com.vidya.master.school.entity.SchoolType;
-import com.vidya.master.school.repository.SchoolRepository;
-import com.vidya.master.subscription.dto.SchoolSubscriptionResponse;
 import com.vidya.master.subscription.entity.BillingCycle;
-import com.vidya.master.subscription.entity.SubscriptionStatus;
-import com.vidya.master.subscription.service.SchoolSubscriptionService;
-import com.vidya.master.tenant.entity.Tenant;
-import com.vidya.master.tenant.repository.TenantRepository;
-import com.vidya.tenant.provisioning.TenantProvisioningService;
+import com.vidya.master.workflow.dto.WorkflowActivationResponse;
+import com.vidya.master.workflow.service.SchoolOnboardingWorkflowService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.math.BigDecimal;
 import java.time.Instant;
-import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+/**
+ * {@code /activate} contract since onboarding I0: it only finishes an APPROVED onboarding
+ * (provision if needed, then activate) by delegating to the guarded workflow service. It never
+ * subscribes, takes or self-confirms a payment, or activates an unapproved onboarding.
+ */
 @ExtendWith(MockitoExtension.class)
 class OnboardingOrchestrationServiceTest {
 
@@ -51,39 +52,21 @@ class OnboardingOrchestrationServiceTest {
     private SchoolOnboardingRepository onboardingRepository;
 
     @Mock
-    private SchoolRepository schoolRepository;
-
-    @Mock
-    private SchoolSubscriptionService subscriptionService;
-
-    @Mock
-    private PaymentService paymentService;
-
-    @Mock
-    private TenantRepository tenantRepository;
-
-    @Mock
-    private TenantProvisioningService tenantProvisioningService;
-
-    @Mock
-    private OnboardingActivityRepository activityRepository;
+    private SchoolOnboardingWorkflowService workflowService;
 
     @InjectMocks
     private OnboardingOrchestrationServiceImpl orchestrationService;
 
     private UUID onboardingId;
     private UUID schoolId;
-    private UUID planId;
     private SchoolOnboarding onboarding;
-    private School school;
 
     @BeforeEach
     void setUp() {
         onboardingId = UUID.randomUUID();
         schoolId = UUID.randomUUID();
-        planId = UUID.randomUUID();
 
-        school = new School(
+        School school = new School(
                 "SCH-12345678",
                 "Greenwood High",
                 "Greenwood Education Trust",
@@ -97,88 +80,35 @@ class OnboardingOrchestrationServiceTest {
         );
         school.setId(schoolId);
 
-        onboarding = new SchoolOnboarding(
-                "ONB-12345678",
-                school,
-                OnboardingSource.DIRECT,
-                null,
-                null
-        );
+        onboarding = new SchoolOnboarding("ONB-12345678", school, OnboardingSource.DIRECT, null, null);
         onboarding.setId(onboardingId);
         onboarding.setStatus(OnboardingStatus.APPROVED);
     }
 
-    @Test
-    @DisplayName("completeOnboardingAndActivate should execute complete pipeline and return activation response")
-    void completeOnboardingAndActivate_Success() {
-        CompleteOnboardingRequest request = CompleteOnboardingRequest.builder()
-                .planId(planId)
-                .billingCycle(BillingCycle.ANNUAL)
-                .paymentProvider(PaymentProvider.MANUAL)
-                .paymentMethod(PaymentMethod.NEFT)
-                .referenceNumber("NEFT-UTR-999")
-                .confirmedBy("superadmin@vidya.io")
-                .build();
-
-        SchoolSubscriptionResponse sampleSubscription = new SchoolSubscriptionResponse(
-                UUID.randomUUID(),
-                "SUB-99999",
-                schoolId,
-                planId,
-                "PREMIUM",
-                1,
-                LocalDate.now(),
-                LocalDate.now().plusYears(1),
-                BillingCycle.ANNUAL,
-                new BigDecimal("50000.00"),
-                BigDecimal.ZERO,
-                new BigDecimal("9000.00"),
-                new BigDecimal("59000.00"),
-                "INR",
-                SubscriptionStatus.ACTIVE,
-                true,
-                null,
-                Instant.now(),
-                Instant.now()
-        );
-
-        InitiatePaymentResponse sampleInitiatePayment = InitiatePaymentResponse.builder()
-                .transactionCode("TXN-PAY-001")
+    private WorkflowActivationResponse activated() {
+        return WorkflowActivationResponse.builder()
+                .onboardingId(onboardingId)
+                .onboardingCode("ONB-12345678")
                 .schoolId(schoolId)
-                .amount(new BigDecimal("59000.00"))
-                .currency("INR")
-                .status(PaymentStatus.INITIATED)
-                .paymentProvider(PaymentProvider.MANUAL)
-                .build();
-
-        PaymentTransactionResponse sampleConfirmedPayment = PaymentTransactionResponse.builder()
+                .schoolCode("SCH-12345678")
+                .tenantId(UUID.randomUUID())
+                .tenantCode("gw123456")
+                .databaseName("vidya_tenant_gw123456")
+                .subscriptionCode("SUB-99999")
                 .transactionCode("TXN-PAY-001")
-                .status(PaymentStatus.SUCCESS)
-                .paymentMethod(PaymentMethod.NEFT)
-                .providerTransactionId("NEFT-UTR-999")
+                .onboardingStatus(OnboardingStatus.ACTIVE)
+                .message("School onboarding successfully activated and tenant operational")
+                .activatedAt(Instant.now())
                 .build();
+    }
 
-        Tenant sampleTenant = Tenant.create(
-                schoolId,
-                "gw123456",
-                "localhost",
-                5432,
-                "vidya_tenant_gw123456",
-                "TENANT_DB_USER",
-                "TENANT_DB_PASS"
-        );
-
+    @Test
+    @DisplayName("completeOnboardingAndActivate provisions and activates an APPROVED onboarding via the workflow")
+    void completeOnboardingAndActivate_Success() {
         when(onboardingRepository.findById(onboardingId)).thenReturn(Optional.of(onboarding));
-        when(schoolRepository.findById(schoolId)).thenReturn(Optional.of(school));
-        when(subscriptionService.subscribeSchool(any())).thenReturn(sampleSubscription);
-        when(paymentService.initiatePayment(any())).thenReturn(sampleInitiatePayment);
-        when(paymentService.confirmManualPayment(any())).thenReturn(sampleConfirmedPayment);
-        when(tenantRepository.findBySchoolId(schoolId)).thenReturn(Optional.of(sampleTenant));
-        when(tenantRepository.save(any())).thenReturn(sampleTenant);
-        when(schoolRepository.save(any())).thenReturn(school);
-        when(onboardingRepository.save(any())).thenReturn(onboarding);
+        when(workflowService.activateSchool(eq(onboardingId), any())).thenReturn(activated());
 
-        OnboardingActivationResponse response = orchestrationService.completeOnboardingAndActivate(onboardingId, request);
+        OnboardingActivationResponse response = orchestrationService.completeOnboardingAndActivate(onboardingId, null);
 
         assertThat(response).isNotNull();
         assertThat(response.getStatus()).isEqualTo(OnboardingStatus.ACTIVE);
@@ -186,8 +116,66 @@ class OnboardingOrchestrationServiceTest {
         assertThat(response.getSubscriptionCode()).isEqualTo("SUB-99999");
         assertThat(response.getTransactionCode()).isEqualTo("TXN-PAY-001");
 
-        verify(tenantProvisioningService).startProvisioning(sampleTenant.getId());
-        verify(tenantProvisioningService).executeProvisioning(sampleTenant.getId());
-        verify(activityRepository).save(any());
+        verify(workflowService).provisionTenant(eq(onboardingId), isNull());
+        verify(workflowService).activateSchool(eq(onboardingId), any());
+    }
+
+    @Test
+    @DisplayName("an already PROVISIONED onboarding is activated without re-provisioning")
+    void completeOnboardingAndActivate_AlreadyProvisioned_SkipsProvisioning() {
+        onboarding.setStatus(OnboardingStatus.PROVISIONED);
+        when(onboardingRepository.findById(onboardingId)).thenReturn(Optional.of(onboarding));
+        when(workflowService.activateSchool(eq(onboardingId), any())).thenReturn(activated());
+
+        orchestrationService.completeOnboardingAndActivate(onboardingId, null);
+
+        verify(workflowService, never()).provisionTenant(any(), any());
+        verify(workflowService).activateSchool(eq(onboardingId), any());
+    }
+
+    @Test
+    @DisplayName("deprecated plan/payment fields are ignored — no subscription or self-confirmed payment")
+    void completeOnboardingAndActivate_DeprecatedPaymentFields_Ignored() {
+        when(onboardingRepository.findById(onboardingId)).thenReturn(Optional.of(onboarding));
+        when(workflowService.activateSchool(eq(onboardingId), any())).thenReturn(activated());
+
+        CompleteOnboardingRequest legacy = CompleteOnboardingRequest.builder()
+                .planId(UUID.randomUUID())
+                .billingCycle(BillingCycle.ANNUAL)
+                .paymentProvider(PaymentProvider.MANUAL)
+                .confirmedBy("someone-else")
+                .build();
+
+        orchestrationService.completeOnboardingAndActivate(onboardingId, legacy);
+
+        verify(workflowService, never()).selectPlan(any(), any());
+        verify(workflowService, never()).initiatePayment(any(), any());
+        verify(workflowService, never()).waivePayment(any(), any());
+    }
+
+    @ParameterizedTest(name = "activation from {0} is rejected")
+    @EnumSource(value = OnboardingStatus.class, names = {
+            "DRAFT", "SUBMITTED", "VERIFICATION_PENDING", "VERIFIED", "PLAN_SELECTED",
+            "PAYMENT_PENDING", "PAYMENT_COMPLETED", "PAYMENT_WAIVED", "APPROVAL_PENDING",
+            "REJECTED", "CANCELLED"})
+    @DisplayName("I0: onboardings that are not approved cannot be activated")
+    void completeOnboardingAndActivate_NotApproved_Rejected(OnboardingStatus status) {
+        onboarding.setStatus(status);
+        when(onboardingRepository.findById(onboardingId)).thenReturn(Optional.of(onboarding));
+
+        assertThatThrownBy(() -> orchestrationService.completeOnboardingAndActivate(onboardingId, null))
+                .isInstanceOf(InvalidStateTransitionException.class);
+        verifyNoInteractions(workflowService);
+    }
+
+    @Test
+    @DisplayName("an ACTIVE onboarding is reported as already active")
+    void completeOnboardingAndActivate_AlreadyActive() {
+        onboarding.setStatus(OnboardingStatus.ACTIVE);
+        when(onboardingRepository.findById(onboardingId)).thenReturn(Optional.of(onboarding));
+
+        assertThatThrownBy(() -> orchestrationService.completeOnboardingAndActivate(onboardingId, null))
+                .isInstanceOf(BusinessException.class);
+        verifyNoInteractions(workflowService);
     }
 }

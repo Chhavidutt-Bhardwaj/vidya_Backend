@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<!--
+  Sample screen for: Overview dashboard
+  Plain HTML + CSS with static sample data generated from the API (APiReqDoc/samples/api/dashboard/).
+  Each section names the endpoints that feed it. Rebuild it in the frontend framework; this file is not served by any controller.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Overview dashboard</title>
+<link rel="stylesheet" href="samples.css">
+</head>
+<body>
+<header class="topbar"><a class="brand" href="index.html">Vidya</a><h1>Overview dashboard</h1></header>
+<div class="layout">
+<nav class="side">
+<a href="security.html">Login, sessions, roles &amp; access</a>
+<a href="dashboard.html" class="on">Overview dashboard</a>
+<a href="student.html">Students (SIS, admission, enrolment, guardians)</a>
+<a href="staff.html">Staff &amp; HR set-up</a>
+<a href="user.html">School users &amp; accounts</a>
+<a href="academic.html">Academic years, classes, sections, set-up</a>
+<a href="subject.html">Subjects &amp; curriculum</a>
+<a href="assignment.html">Class teachers &amp; subject teachers</a>
+<a href="timetable.html">Timetable, bells, rooms, substitutions</a>
+<a href="calendar.html">Calendar &amp; holidays</a>
+<a href="attendance.html">Student attendance</a>
+<a href="examination.html">Exams, schedules, marks, grading</a>
+<a href="assessment.html">Assessments, question bank, report cards</a>
+<a href="fee.html">Fees &amp; finance (counter, online, auto-debit)</a>
+<a href="engagement.html">Communication, homework, daily report, parent portal</a>
+<a href="operations.html">Operations set-up (fees, attendance, transport, library)</a>
+<a href="readiness.html">School readiness</a>
+<a href="platform-school.html">Platform: schools &amp; campuses</a>
+<a href="platform-onboarding.html">Platform: onboarding</a>
+<a href="platform-workflow.html">Platform: onboarding workflow</a>
+<a href="platform-subscription.html">Platform: subscriptions &amp; plans</a>
+<a href="platform-payment.html">Platform: subscription payments</a>
+<a href="platform-community.html">Platform: communities (trusts / groups)</a>
+<a href="platform-hub.html">Platform: hub</a>
+<a href="platform-analytics.html">Platform: analytics</a>
+<a href="platform-support.html">Platform: support queries</a>
+</nav>
+<main>
+
+<!-- DashboardController · samples/api/dashboard/DashboardController.md -->
+<section class="card" id="DashboardController">
+<h2>Dashboard</h2>
+<p class="muted">School overview: KPIs, school snapshot, live operations, quick counts, trends and action items</p>
+<!-- GET /api/v1/dashboard/action-items -->
+<form class="filters">
+<label>Academic year id<input type="text" name="academicYearId" value="e007272e-5984-3753-9104-2d899e58fb35"></label>
+<label>Type<select name="type"><option value="">Any</option><option>LESSON_PLAN_REVIEW</option><option>MARKS_LOCK</option><option>REPORT_CARD_PUBLISH</option><option>REEVALUATION_REQUEST</option><option>FEE_CONCESSION</option><option>FEE_DEBIT_ERROR</option><option>FEE_UNALLOCATED</option><option>FEE_MANDATE_STALLED</option></select></label>
+<button type="button" class="btn primary">Apply</button>
+</form>
+<div class="scroll"><table>
+<thead><tr><th>Id</th><th>Type</th><th>Title</th><th>Description</th><th>Raised by</th><th>Raised at</th><th>Entity id</th><th>Href</th><th></th></tr></thead>
+<tbody>
+<tr><td>Sample id</td><td><span class="pill ">LESSON_PLAN_REVIEW</span></td><td>Action 1</td><td>Action for the 2026-27 session</td><td>Neha Sharma</td><td>2026-11-22T04:30:00Z</td><td>209cda6f-e839-328e-ac20-617e88087f16</td><td>https://app.vidya.io/action/1</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>Sample id 2</td><td><span class="pill ">MARKS_LOCK</span></td><td>Action 2</td><td>Action for the 2026-27 session</td><td>Vikram Singh</td><td>2026-11-21T04:30:00Z</td><td>2d0224be-bf93-3ada-baf4-fcd5273f69d9</td><td>https://app.vidya.io/action/2</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>Sample id 3</td><td><span class="pill ">REPORT_CARD_PUBLISH</span></td><td>Action 3</td><td>Action for the 2026-27 session</td><td>Farah Khan</td><td>2026-11-20T04:30:00Z</td><td>5db92f6c-e571-35ec-822f-fd0071514ff2</td><td>https://app.vidya.io/action/3</td><td class="actions"><a href="#">Open</a></td></tr>
+</tbody>
+</table></div>
+<p class="muted small">Source: <code>GET /api/v1/dashboard/action-items</code></p>
+<details class="endpoints"><summary>All endpoints of this section (13)</summary>
+<table>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/dashboard</code></td><td>Everything on the home screen</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/dashboard/kpis</code></td><td>Hero KPIs</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/dashboard/snapshot</code></td><td>School at a glance</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/dashboard/operations-pulse</code></td><td>Live operations tiles for today</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/dashboard/quick-counts</code></td><td>Badge counts</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/dashboard/attendance-trend</code></td><td>Daily attendance rate</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/dashboard/enrollment-by-class</code></td><td>Students per class</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/dashboard/fee-trend</code></td><td>Fee collections per day</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/dashboard/fee-breakdown</code></td><td>Fees per head and per class</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/dashboard/auto-debit</code></td><td>This month's auto-debit</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/dashboard/export</code></td><td>Export the summary as CSV</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/dashboard/action-items</code></td><td>Waiting for my approval</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/dashboard/action-items/{id}/dismiss</code></td><td>Hide an action item</td></tr>
+</table>
+</details>
+</section>
+</main>
+</div>
+</body>
+</html>

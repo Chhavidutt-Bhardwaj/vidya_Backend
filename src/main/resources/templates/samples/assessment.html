@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<!--
+  Sample screen for: Assessments, question bank, report cards
+  Plain HTML + CSS with static sample data generated from the API (APiReqDoc/samples/api/assessment/).
+  Each section names the endpoints that feed it. Rebuild it in the frontend framework; this file is not served by any controller.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Assessments, question bank, report cards</title>
+<link rel="stylesheet" href="samples.css">
+</head>
+<body>
+<header class="topbar"><a class="brand" href="index.html">Vidya</a><h1>Assessments, question bank, report cards</h1></header>
+<div class="layout">
+<nav class="side">
+<a href="security.html">Login, sessions, roles &amp; access</a>
+<a href="dashboard.html">Overview dashboard</a>
+<a href="student.html">Students (SIS, admission, enrolment, guardians)</a>
+<a href="staff.html">Staff &amp; HR set-up</a>
+<a href="user.html">School users &amp; accounts</a>
+<a href="academic.html">Academic years, classes, sections, set-up</a>
+<a href="subject.html">Subjects &amp; curriculum</a>
+<a href="assignment.html">Class teachers &amp; subject teachers</a>
+<a href="timetable.html">Timetable, bells, rooms, substitutions</a>
+<a href="calendar.html">Calendar &amp; holidays</a>
+<a href="attendance.html">Student attendance</a>
+<a href="examination.html">Exams, schedules, marks, grading</a>
+<a href="assessment.html" class="on">Assessments, question bank, report cards</a>
+<a href="fee.html">Fees &amp; finance (counter, online, auto-debit)</a>
+<a href="engagement.html">Communication, homework, daily report, parent portal</a>
+<a href="operations.html">Operations set-up (fees, attendance, transport, library)</a>
+<a href="readiness.html">School readiness</a>
+<a href="platform-school.html">Platform: schools &amp; campuses</a>
+<a href="platform-onboarding.html">Platform: onboarding</a>
+<a href="platform-workflow.html">Platform: onboarding workflow</a>
+<a href="platform-subscription.html">Platform: subscriptions &amp; plans</a>
+<a href="platform-payment.html">Platform: subscription payments</a>
+<a href="platform-community.html">Platform: communities (trusts / groups)</a>
+<a href="platform-hub.html">Platform: hub</a>
+<a href="platform-analytics.html">Platform: analytics</a>
+<a href="platform-support.html">Platform: support queries</a>
+</nav>
+<main>
+<div class="tabs"><a href="#AssessmentAnalyticsController">Assessment analytics</a><a href="#AssessmentController">Formative &amp; summative assessments</a><a href="#CompetencyController">Competencies &amp; outcomes</a><a href="#ModerationController">Grace, moderation &amp; re-evaluation</a><a href="#OmrController">OMR evaluation</a><a href="#OnlineExamController">Online exams</a><a href="#QuestionBankController">Question bank &amp; papers</a><a href="#ReportCardController">Report cards</a><a href="#SchemeController">Assessment schemes</a></div>
+
+<!-- AssessmentAnalyticsController · samples/api/assessment/AssessmentAnalyticsController.md -->
+<section class="card" id="AssessmentAnalyticsController">
+<h2>Assessment analytics</h2>
+<p class="muted">Subject-wise performance, year-over-year comparison, student progress, learning-outcome attainment and question item analysis</p>
+<!-- GET /api/v1/assessment-analytics/students/{studentId}/outcomes -->
+<form class="filters">
+<label>Exam term id<input type="text" name="examTermId" value="23a4db43-c2de-3139-b32e-1d991aea45e7"></label>
+<button type="button" class="btn primary">Apply</button>
+</form>
+<div class="scroll"><table>
+<thead><tr><th>Code</th><th>Statement</th><th>Subject name</th><th>Questions</th><th>Students</th><th>Attainment</th><th>Level</th><th>Students below half</th><th></th></tr></thead>
+<tbody>
+<tr><td>OA-001</td><td>Haryana</td><td>Mathematics</td><td>1</td><td>42</td><td>10.5</td><td>Level 1</td><td>42</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>OA-002</td><td>Haryana</td><td>Science</td><td>2</td><td>37</td><td>8.0</td><td>Level 2</td><td>37</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>OA-003</td><td>Haryana</td><td>English</td><td>3</td><td>18</td><td>12.25</td><td>Level 3</td><td>18</td><td class="actions"><a href="#">Open</a></td></tr>
+</tbody>
+</table></div>
+<p class="muted small">Source: <code>GET /api/v1/assessment-analytics/students/{studentId}/outcomes</code></p>
+<!-- GET /api/v1/assessment-analytics/students/{studentId}/progress -->
+<h3>Details</h3>
+<dl class="details">
+<div><dt>Student name</dt><dd>Riya Rao</dd></div>
+<div><dt>Overall trend</dt><dd><span class="pill ">IMPROVING</span></dd></div>
+</dl>
+<p class="muted small">Source: <code>GET /api/v1/assessment-analytics/students/{studentId}/progress</code></p>
+<details class="endpoints"><summary>All endpoints of this section (6)</summary>
+<table>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/assessment-analytics/classes/{academicClassId}/terms/{examTermId}</code></td><td>Subject-wise performance</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/assessment-analytics/classes/{academicClassId}/years</code></td><td>Year-over-year comparison</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/assessment-analytics/classes/{academicClassId}/terms/{examTermId}/outcomes</code></td><td>Outcome attainment of a class</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/assessment-analytics/students/{studentId}/progress</code></td><td>Student progress</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/assessment-analytics/students/{studentId}/outcomes</code></td><td>Student outcomes</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/assessment-analytics/question-papers/{paperId}/item-analysis</code></td><td>Item analysis</td></tr>
+</table>
+</details>
+</section>
+
+<!-- AssessmentController · samples/api/assessment/AssessmentController.md -->
+<section class="card" id="AssessmentController">
+<h2>Formative &amp; summative assessments</h2>
+<p class="muted">Class tests, projects, quizzes, orals, practicals ... recorded under a component of the class's assessment scheme; they feed term results</p>
+<!-- GET /api/v1/assessments -->
+<form class="filters">
+<label>Exam term id<input type="text" name="examTermId" value="23a4db43-c2de-3139-b32e-1d991aea45e7"></label>
+<label>Academic class id<input type="text" name="academicClassId" value="544208c0-8100-3d80-a220-cccbfc29768b"></label>
+<label>Section id<input type="text" name="sectionId" value="1c35581b-02b2-3f00-bdbc-29ea5acdbfba"></label>
+<label>Subject id<input type="text" name="subjectId" value="9802ac29-d6e2-3a81-b8c9-08ed66ecb32b"></label>
+<button type="button" class="btn primary">Apply</button>
+</form>
+<div class="scroll"><table>
+<thead><tr><th>Assessment code</th><th>Component code</th><th>Component name</th><th>Assessment type</th><th>Exam term name</th><th>Class name</th><th>Section name</th><th>Subject name</th><th></th></tr></thead>
+<tbody>
+<tr><td>A-001</td><td>A-001</td><td>Assessment 1</td><td><span class="pill ">FORMATIVE</span></td><td>Term 1</td><td>Class 9</td><td>A</td><td>Mathematics</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>A-002</td><td>A-002</td><td>Assessment 2</td><td><span class="pill ">SUMMATIVE</span></td><td>Term 1</td><td>Class 4</td><td>B</td><td>Science</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>A-003</td><td>A-003</td><td>Assessment 3</td><td><span class="pill ">FORMATIVE</span></td><td>Term 1</td><td>Class 10</td><td>C</td><td>English</td><td class="actions"><a href="#">Open</a></td></tr>
+</tbody>
+</table></div>
+<p class="muted small">Source: <code>GET /api/v1/assessments</code></p>
+<!-- GET /api/v1/assessments/{id} -->
+<h3>Details</h3>
+<dl class="details">
+<div><dt>Assessment code</dt><dd>A-001</dd></div>
+<div><dt>Component code</dt><dd>A-001</dd></div>
+<div><dt>Component name</dt><dd>Assessment 1</dd></div>
+<div><dt>Assessment type</dt><dd><span class="pill ">FORMATIVE</span></dd></div>
+<div><dt>Exam term name</dt><dd>Term 1</dd></div>
+<div><dt>Class name</dt><dd>Class 9</dd></div>
+<div><dt>Section name</dt><dd>A</dd></div>
+<div><dt>Subject name</dt><dd>Mathematics</dd></div>
+<div><dt>Title</dt><dd>Assessment 1</dd></div>
+<div><dt>Assessment date</dt><dd>2026-11-22</dd></div>
+<div><dt>Max marks</dt><dd>78.5</dd></div>
+<div><dt>Mode</dt><dd><span class="pill ">OFFLINE</span></dd></div>
+</dl>
+<p class="muted small">Source: <code>GET /api/v1/assessments/{id}</code></p>
+<!-- POST /api/v1/assessments -->
+<details class="form"><summary>Record an assessment</summary>
+<form>
+<label>Component id *<input type="text" name="componentId" value="339abb0f-9217-3a48-972a-dc60b6f8a89b" required></label>
+<label>Exam term id *<input type="text" name="examTermId" value="23a4db43-c2de-3139-b32e-1d991aea45e7" required></label>
+<label>Academic class id *<input type="text" name="academicClassId" value="544208c0-8100-3d80-a220-cccbfc29768b" required></label>
+<label>Section id<input type="text" name="sectionId" value="1c35581b-02b2-3f00-bdbc-29ea5acdbfba"></label>
+<label>Subject id *<input type="text" name="subjectId" value="9802ac29-d6e2-3a81-b8c9-08ed66ecb32b" required></label>
+<label>Title *<input type="text" name="title" value="Assessment 1" required></label>
+<label>Assessment date *<input type="date" name="assessmentDate" value="2026-11-22" required></label>
+<label>Max marks *<input type="number" name="maxMarks" value="78.5" required></label>
+<label>Mode<select name="mode"><option value="">Any</option><option>OFFLINE</option><option>ONLINE</option><option>OMR</option><option>PROJECT</option><option>ORAL</option><option>PRACTICAL</option><option>OBSERVATION</option></select></label>
+<div class="wide"><button type="button" class="btn primary">Save</button> <button type="reset" class="btn">Reset</button></div>
+</form>
+</details>
+<details class="endpoints"><summary>All endpoints of this section (8)</summary>
+<table>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/assessments</code></td><td>List</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/assessments/{id}</code></td><td>Assessment with scores</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/assessments</code></td><td>Record an assessment</td></tr>
+<tr><td><span class="verb patch">PATCH</span></td><td><code>/api/v1/assessments/{id}</code></td><td>Update</td></tr>
+<tr><td><span class="verb delete">DELETE</span></td><td><code>/api/v1/assessments/{id}</code></td><td>Delete</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/assessments/{id}/scores</code></td><td>Enter scores</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/assessments/{id}/lock</code></td><td>Lock</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/assessments/{id}/unlock</code></td><td>Unlock</td></tr>
+</table>
+</details>
+</section>
+
+<!-- CompetencyController · samples/api/assessment/CompetencyController.md -->
+<section class="card" id="CompetencyController">
+<h2>Competencies &amp; outcomes</h2>
+<p class="muted">Competency framework, learning outcomes mapped to syllabus topics, competency / outcome ratings and co-scholastic grades per term</p>
+<!-- GET /api/v1/competencies -->
+<form class="filters">
+<label>Subject id<input type="text" name="subjectId" value="9802ac29-d6e2-3a81-b8c9-08ed66ecb32b"></label>
+<label>Category<select name="category"><option value="">Any</option><option>SUBJECT</option><option>SKILL</option><option>SOCIO_EMOTIONAL</option><option>PHYSICAL</option><option>CREATIVE</option><option>DIGITAL</option><option>OTHER</option></select></label>
+<button type="button" class="btn primary">Apply</button>
+</form>
+<div class="scroll"><table>
+<thead><tr><th>Code</th><th>Name</th><th>Description</th><th>Category</th><th>Subject name</th><th>Board</th><th>Status</th><th>Outcomes</th><th></th></tr></thead>
+<tbody>
+<tr><td>C-001</td><td>Competency 1</td><td>Competency for the 2026-27 session</td><td><span class="pill ">SUBJECT</span></td><td>Mathematics</td><td><span class="pill ">CBSE</span></td><td><span class="pill ok">ACTIVE</span></td><td>1</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>C-002</td><td>Competency 2</td><td>Competency for the 2026-27 session</td><td><span class="pill ">SKILL</span></td><td>Science</td><td><span class="pill ">ICSE</span></td><td><span class="pill ">RETIRED</span></td><td>2</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>C-003</td><td>Competency 3</td><td>Competency for the 2026-27 session</td><td><span class="pill ">SOCIO_EMOTIONAL</span></td><td>English</td><td><span class="pill ">ISC</span></td><td><span class="pill ok">ACTIVE</span></td><td>3</td><td class="actions"><a href="#">Open</a></td></tr>
+</tbody>
+</table></div>
+<p class="muted small">Source: <code>GET /api/v1/competencies</code></p>
+<!-- GET /api/v1/learning-outcomes/{id} -->
+<h3>Details</h3>
+<dl class="details">
+<div><dt>Code</dt><dd>O-001</dd></div>
+<div><dt>Competency name</dt><dd>Outcome 1</dd></div>
+<div><dt>Subject name</dt><dd>Mathematics</dd></div>
+<div><dt>Class name</dt><dd>Class 9</dd></div>
+<div><dt>Statement</dt><dd>Haryana</dd></div>
+<div><dt>Bloom level</dt><dd><span class="pill ">REMEMBER</span></dd></div>
+<div><dt>Board</dt><dd><span class="pill ">CBSE</span></dd></div>
+<div><dt>Sort order</dt><dd>1</dd></div>
+<div><dt>Status</dt><dd><span class="pill ok">ACTIVE</span></dd></div>
+<div><dt>Questions</dt><dd>1</dd></div>
+</dl>
+<p class="muted small">Source: <code>GET /api/v1/learning-outcomes/{id}</code></p>
+<!-- POST /api/v1/competencies -->
+<details class="form"><summary>Create competency</summary>
+<form>
+<label>Code *<input type="text" name="code" value="C-001" required></label>
+<label>Name *<input type="text" name="name" value="Competency 1" required></label>
+<label class="wide">Description<textarea name="description" rows="2">Competency for the 2026-27 session</textarea></label>
+<label>Category<select name="category"><option value="">Any</option><option>SUBJECT</option><option>SKILL</option><option>SOCIO_EMOTIONAL</option><option>PHYSICAL</option><option>CREATIVE</option><option>DIGITAL</option><option>OTHER</option></select></label>
+<label>Subject id<input type="text" name="subjectId" value="9802ac29-d6e2-3a81-b8c9-08ed66ecb32b"></label>
+<label>Board<select name="board"><option value="">Any</option><option>CBSE</option><option>ICSE</option><option>ISC</option><option>STATE</option><option>IB</option><option>IGCSE</option><option>CUSTOM</option></select></label>
+<label>Parent id<input type="text" name="parentId" value="0bf6a36d-f507-3bd0-8a4f-f5f5bcd3f150"></label>
+<label>Status<select name="status"><option value="">Any</option><option>ACTIVE</option><option>RETIRED</option></select></label>
+<div class="wide"><button type="button" class="btn primary">Save</button> <button type="reset" class="btn">Reset</button></div>
+</form>
+</details>
+<details class="endpoints"><summary>All endpoints of this section (14)</summary>
+<table>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/competencies</code></td><td>Competencies</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/competencies</code></td><td>Create competency</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/competencies/{id}</code></td><td>Update competency</td></tr>
+<tr><td><span class="verb delete">DELETE</span></td><td><code>/api/v1/competencies/{id}</code></td><td>Delete competency</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/learning-outcomes</code></td><td>Learning outcomes</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/learning-outcomes/{id}</code></td><td>Outcome</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/learning-outcomes</code></td><td>Add learning outcomes</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/learning-outcomes/{id}</code></td><td>Update outcome</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/learning-outcomes/{id}/syllabus-topics</code></td><td>Map to syllabus topics</td></tr>
+<tr><td><span class="verb delete">DELETE</span></td><td><code>/api/v1/learning-outcomes/{id}</code></td><td>Delete outcome</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/competency-ratings</code></td><td>Rate students</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/competency-ratings</code></td><td>Ratings</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/co-scholastic-grades</code></td><td>Grade co-scholastic areas</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/co-scholastic-grades</code></td><td>Co scholastic</td></tr>
+</table>
+</details>
+</section>
+
+<!-- ModerationController · samples/api/assessment/ModerationController.md -->
+<section class="card" id="ModerationController">
+<h2>Grace, moderation &amp; re-evaluation</h2>
+<p class="muted">Every change to a mark after entry, kept beside the raw mark; only approved changes count in results</p>
+<!-- GET /api/v1/moderation -->
+<form class="filters">
+<label>Exam subject config id<input type="text" name="examSubjectConfigId" value="cb2dada2-e1c0-326e-852d-6e1124c53715"></label>
+<button type="button" class="btn primary">Apply</button>
+</form>
+<div class="scroll"><table>
+<thead><tr><th>Batch code</th><th>Method</th><th>Value</th><th>Only below</th><th>Reason</th><th>Status</th><th>Students affected</th><th>Applied at</th><th></th></tr></thead>
+<tbody>
+<tr><td>MB-001</td><td><span class="pill ">ADD_FLAT</span></td><td>10.5</td><td>10.5</td><td>Requested by the parent</td><td><span class="pill ">APPLIED</span></td><td>42</td><td>2026-11-22T04:30:00Z</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>MB-002</td><td><span class="pill ">ADD_PERCENT_OF_MAX</span></td><td>8.0</td><td>8.0</td><td>Entered by mistake</td><td><span class="pill ">REVERTED</span></td><td>37</td><td>2026-11-21T04:30:00Z</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>MB-003</td><td><span class="pill ">SCALE_FACTOR</span></td><td>12.25</td><td>12.25</td><td>Medical leave</td><td><span class="pill ">APPLIED</span></td><td>18</td><td>2026-11-20T04:30:00Z</td><td class="actions"><a href="#">Open</a></td></tr>
+</tbody>
+</table></div>
+<p class="muted small">Source: <code>GET /api/v1/moderation</code></p>
+<!-- POST /api/v1/moderation -->
+<details class="form"><summary>Moderate an exam paper</summary>
+<form>
+<label>Exam subject config id *<input type="text" name="examSubjectConfigId" value="cb2dada2-e1c0-326e-852d-6e1124c53715" required></label>
+<label>Method *<select name="method"><option>ADD_FLAT</option><option>ADD_PERCENT_OF_MAX</option><option>SCALE_FACTOR</option><option>RAISE_TO_PASS_WITHIN</option></select></label>
+<label>Value *<input type="number" name="value" value="10.5" required></label>
+<label>Only below<input type="number" name="onlyBelow" value="10.5"></label>
+<label class="wide">Reason<textarea name="reason" rows="2">Requested by the parent</textarea></label>
+<div class="wide"><button type="button" class="btn primary">Save</button> <button type="reset" class="btn">Reset</button></div>
+</form>
+</details>
+<details class="endpoints"><summary>All endpoints of this section (15)</summary>
+<table>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/mark-adjustments</code></td><td>Mark changes</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/mark-adjustments</code></td><td>Propose grace or a correction</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/mark-adjustments/{id}/approve</code></td><td>Approve</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/mark-adjustments/{id}/reject</code></td><td>Reject</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/mark-adjustments/{id}/revert</code></td><td>Revert</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/moderation/preview</code></td><td>Preview moderation</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/moderation</code></td><td>Moderate an exam paper</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/moderation</code></td><td>Batches</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/moderation/{id}/revert</code></td><td>Revert batch</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/reevaluation-requests</code></td><td>Ask for re-evaluation</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/reevaluation-requests/mine</code></td><td>My / my children's requests</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/reevaluation-requests/{id}/withdraw</code></td><td>Withdraw</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/reevaluation-requests</code></td><td>Requests</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/reevaluation-requests/{id}/assign</code></td><td>Assign a reviewer</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/reevaluation-requests/{id}/decide</code></td><td>Decide</td></tr>
+</table>
+</details>
+</section>
+
+<!-- OmrController · samples/api/assessment/OmrController.md -->
+<section class="card" id="OmrController">
+<h2>OMR evaluation</h2>
+<p class="muted">Scanner exports scored against the answer key of each set, reviewed, then posted as marks</p>
+<!-- GET /api/v1/omr/batches -->
+<form class="filters">
+<label>Question paper id<input type="text" name="questionPaperId" value="d96bb0a9-e00f-349b-a024-0b197dd7e64f"></label>
+<button type="button" class="btn primary">Apply</button>
+</form>
+<div class="scroll"><table>
+<thead><tr><th>Batch code</th><th>Source</th><th>Negative marking</th><th>Status</th><th>Sheets total</th><th>Sheets matched</th><th>Sheets error</th><th>Max score</th><th></th></tr></thead>
+<tbody>
+<tr><td>B-001</td><td>WEBSITE</td><td><span class="pill ok">Yes</span></td><td><span class="pill ">EVALUATED</span></td><td>42</td><td>1</td><td>1</td><td>78.5</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>B-002</td><td>WEBSITE</td><td><span class="pill ok">Yes</span></td><td><span class="pill ">POSTED</span></td><td>37</td><td>2</td><td>2</td><td>64.0</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>B-003</td><td>WEBSITE</td><td><span class="pill">No</span></td><td><span class="pill ">EVALUATED</span></td><td>18</td><td>3</td><td>3</td><td>91.0</td><td class="actions"><a href="#">Open</a></td></tr>
+</tbody>
+</table></div>
+<p class="muted small">Source: <code>GET /api/v1/omr/batches</code></p>
+<!-- GET /api/v1/omr/batches/{id} -->
+<h3>Details</h3>
+<dl class="details">
+<div><dt>Batch code</dt><dd>B-001</dd></div>
+<div><dt>Source</dt><dd>WEBSITE</dd></div>
+<div><dt>Negative marking</dt><dd><span class="pill ok">Yes</span></dd></div>
+<div><dt>Status</dt><dd><span class="pill ">EVALUATED</span></dd></div>
+<div><dt>Sheets total</dt><dd>42</dd></div>
+<div><dt>Sheets matched</dt><dd>1</dd></div>
+<div><dt>Sheets error</dt><dd>1</dd></div>
+<div><dt>Max score</dt><dd>78.5</dd></div>
+<div><dt>Postable</dt><dd><span class="pill ok">Yes</span></dd></div>
+<div><dt>Not postable reason</dt><dd>482913</dd></div>
+<div><dt>Posted at</dt><dd>2026-11-22T04:30:00Z</dd></div>
+<div><dt>Created at</dt><dd>2026-11-22T04:30:00Z</dd></div>
+</dl>
+<p class="muted small">Source: <code>GET /api/v1/omr/batches/{id}</code></p>
+<!-- POST /api/v1/omr/batches -->
+<details class="form"><summary>Evaluate sheets (JSON)</summary>
+<form>
+<label>Question paper id *<input type="text" name="questionPaperId" value="d96bb0a9-e00f-349b-a024-0b197dd7e64f" required></label>
+<label>Section id<input type="text" name="sectionId" value="1c35581b-02b2-3f00-bdbc-29ea5acdbfba"></label>
+<label>Exam subject config id<input type="text" name="examSubjectConfigId" value="cb2dada2-e1c0-326e-852d-6e1124c53715"></label>
+<label>Assessment id<input type="text" name="assessmentId" value="c05a2850-5c2b-34c2-8501-5204749f2531"></label>
+<label class="check"><input type="checkbox" name="negativeMarking" checked> Negative marking</label>
+<label>Source<input type="text" name="source" value="WEBSITE"></label>
+<label>Csv<input type="text" name="csv" value="Sample csv"></label>
+<label class="wide">Sheets<span class="muted small">array of object SheetInput (see the API file)</span></label>
+<div class="wide"><button type="button" class="btn primary">Save</button> <button type="reset" class="btn">Reset</button></div>
+</form>
+</details>
+<details class="endpoints"><summary>All endpoints of this section (5)</summary>
+<table>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/omr/batches</code></td><td>Evaluate sheets (JSON)</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/omr/batches</code></td><td>Evaluate sheets (CSV upload)</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/omr/batches</code></td><td>Batches</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/omr/batches/{id}</code></td><td>Batch</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/omr/batches/{id}/post</code></td><td>Post marks</td></tr>
+</table>
+</details>
+</section>
+
+<!-- OnlineExamController · samples/api/assessment/OnlineExamController.md -->
+<section class="card" id="OnlineExamController">
+<h2>Online exams</h2>
+<p class="muted">Timed exams on finalised question papers: per-student shuffling, autosave, automatic marking of objective questions, teacher marking of written answers, result release and posting to exam / assessment marks</p>
+<!-- GET /api/v1/online-exams -->
+<form class="filters">
+<label>Academic class id<input type="text" name="academicClassId" value="544208c0-8100-3d80-a220-cccbfc29768b"></label>
+<label>Section id<input type="text" name="sectionId" value="1c35581b-02b2-3f00-bdbc-29ea5acdbfba"></label>
+<button type="button" class="btn primary">Apply</button>
+</form>
+<div class="scroll"><table>
+<thead><tr><th>Exam code</th><th>Title</th><th>Paper code</th><th>Subject name</th><th>Opens at</th><th>Closes at</th><th>Duration minutes</th><th>Shuffle questions</th><th></th></tr></thead>
+<tbody>
+<tr><td>E-001</td><td>Exam 1</td><td>E-001</td><td>Mathematics</td><td>2026-11-22T04:30:00Z</td><td>2026-11-22T04:30:00Z</td><td>45</td><td><span class="pill ok">Yes</span></td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>E-002</td><td>Exam 2</td><td>E-002</td><td>Science</td><td>2026-11-21T04:30:00Z</td><td>2026-11-21T04:30:00Z</td><td>45</td><td><span class="pill ok">Yes</span></td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>E-003</td><td>Exam 3</td><td>E-003</td><td>English</td><td>2026-11-20T04:30:00Z</td><td>2026-11-20T04:30:00Z</td><td>45</td><td><span class="pill">No</span></td><td class="actions"><a href="#">Open</a></td></tr>
+</tbody>
+</table></div>
+<p class="muted small">Source: <code>GET /api/v1/online-exams</code></p>
+<!-- GET /api/v1/online-exams/{id} -->
+<h3>Details</h3>
+<dl class="details">
+<div><dt>Exam code</dt><dd>E-001</dd></div>
+<div><dt>Title</dt><dd>Exam 1</dd></div>
+<div><dt>Paper code</dt><dd>E-001</dd></div>
+<div><dt>Subject name</dt><dd>Mathematics</dd></div>
+<div><dt>Opens at</dt><dd>2026-11-22T04:30:00Z</dd></div>
+<div><dt>Closes at</dt><dd>2026-11-22T04:30:00Z</dd></div>
+<div><dt>Duration minutes</dt><dd>45</dd></div>
+<div><dt>Shuffle questions</dt><dd><span class="pill ok">Yes</span></dd></div>
+<div><dt>Shuffle options</dt><dd><span class="pill ok">Yes</span></dd></div>
+<div><dt>Negative marking</dt><dd><span class="pill ok">Yes</span></dd></div>
+<div><dt>Max attempts</dt><dd>100</dd></div>
+<div><dt>Result visibility</dt><dd><span class="pill ">IMMEDIATE</span></dd></div>
+</dl>
+<p class="muted small">Source: <code>GET /api/v1/online-exams/{id}</code></p>
+<!-- POST /api/v1/online-exams -->
+<details class="form"><summary>Create</summary>
+<form>
+<label>Title *<input type="text" name="title" value="Exam 1" required></label>
+<label>Question paper id *<input type="text" name="questionPaperId" value="d96bb0a9-e00f-349b-a024-0b197dd7e64f" required></label>
+<label>Section id<input type="text" name="sectionId" value="1c35581b-02b2-3f00-bdbc-29ea5acdbfba"></label>
+<label>Exam subject config id<input type="text" name="examSubjectConfigId" value="cb2dada2-e1c0-326e-852d-6e1124c53715"></label>
+<label>Assessment id<input type="text" name="assessmentId" value="c05a2850-5c2b-34c2-8501-5204749f2531"></label>
+<label>Opens at *<input type="text" name="opensAt" value="2026-11-22T04:30:00Z" required></label>
+<label>Closes at *<input type="text" name="closesAt" value="2026-11-22T04:30:00Z" required></label>
+<label>Duration minutes<input type="number" name="durationMinutes" value="45"></label>
+<label class="check"><input type="checkbox" name="shuffleQuestions" checked> Shuffle questions</label>
+<label class="check"><input type="checkbox" name="shuffleOptions" checked> Shuffle options</label>
+<label class="check"><input type="checkbox" name="negativeMarking" checked> Negative marking</label>
+<label>Max attempts<input type="number" name="maxAttempts" value="100"></label>
+<label>Result visibility<select name="resultVisibility"><option value="">Any</option><option>IMMEDIATE</option><option>AFTER_CLOSE</option><option>AFTER_PUBLISH</option></select></label>
+<label>Instructions<input type="text" name="instructions" value="Answer all questions. Calculators are not allowed."></label>
+<div class="wide"><button type="button" class="btn primary">Save</button> <button type="reset" class="btn">Reset</button></div>
+</form>
+</details>
+<details class="endpoints"><summary>All endpoints of this section (15)</summary>
+<table>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/online-exams</code></td><td>Create</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/online-exams/{id}</code></td><td>Change an exam</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/online-exams/{id}/schedule</code></td><td>Schedule</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/online-exams/{id}/cancel</code></td><td>Cancel</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/online-exams</code></td><td>Online exams</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/online-exams/{id}</code></td><td>Get</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/online-exams/{id}/attempts</code></td><td>Start or resume</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/online-exams/attempts/{attemptId}</code></td><td>Attempt</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/online-exams/attempts/{attemptId}/answers</code></td><td>Save answers</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/online-exams/attempts/{attemptId}/submit</code></td><td>Submit</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/online-exams/{id}/attempts</code></td><td>Attempts</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/online-exams/{id}/manual-grading</code></td><td>Written answers to mark</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/online-exams/{id}/manual-grading</code></td><td>Grade</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/online-exams/{id}/publish-results</code></td><td>Release results</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/online-exams/{id}/post-marks</code></td><td>Post marks</td></tr>
+</table>
+</details>
+</section>
+
+<!-- QuestionBankController · samples/api/assessment/QuestionBankController.md -->
+<section class="card" id="QuestionBankController">
+<h2>Question bank &amp; papers</h2>
+<p class="muted">Questions in ten formats with difficulty, Bloom level and learning outcomes; review workflow; blueprints; automatic paper generation in sets; manual assembly; answer keys</p>
+<!-- GET /api/v1/questions -->
+<form class="filters">
+<label>Subject id<input type="text" name="subjectId" value="9802ac29-d6e2-3a81-b8c9-08ed66ecb32b"></label>
+<label>Academic class id<input type="text" name="academicClassId" value="544208c0-8100-3d80-a220-cccbfc29768b"></label>
+<label>Type<select name="type"><option value="">Any</option><option>MCQ_SINGLE</option><option>MCQ_MULTI</option><option>TRUE_FALSE</option><option>ASSERTION_REASON</option><option>FILL_BLANK</option><option>NUMERICAL</option><option>MATCH_FOLLOWING</option><option>SHORT_ANSWER</option><option>LONG_ANSWER</option><option>CASE_BASED</option></select></label>
+<label>Difficulty<select name="difficulty"><option value="">Any</option><option>EASY</option><option>MEDIUM</option><option>HARD</option></select></label>
+<label>Status<select name="status"><option value="">Any</option><option>DRAFT</option><option>SUBMITTED</option><option>APPROVED</option><option>RETIRED</option></select></label>
+<label>Unit id<input type="text" name="unitId" value="87e9a69b-94d8-3943-9df8-c9c97ec853d0"></label>
+<label>Q<input type="text" name="q" value="riya"></label>
+<button type="button" class="btn primary">Apply</button>
+</form>
+<div class="scroll"><table>
+<thead><tr><th>Question code</th><th>Subject name</th><th>Class name</th><th>Question type</th><th>Difficulty</th><th>Bloom level</th><th>Marks</th><th>Negative marks</th><th></th></tr></thead>
+<tbody>
+<tr><td>What is 3/4 + 1/8?</td><td>Mathematics</td><td>Class 9</td><td><span class="pill ">MCQ_SINGLE</span></td><td><span class="pill ">EASY</span></td><td><span class="pill ">REMEMBER</span></td><td>78.5</td><td>78.5</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>What is 3/4 + 1/8?</td><td>Science</td><td>Class 4</td><td><span class="pill ">MCQ_MULTI</span></td><td><span class="pill ">MEDIUM</span></td><td><span class="pill ">UNDERSTAND</span></td><td>64.0</td><td>64.0</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>What is 3/4 + 1/8?</td><td>English</td><td>Class 10</td><td><span class="pill ">TRUE_FALSE</span></td><td><span class="pill ">HARD</span></td><td><span class="pill ">APPLY</span></td><td>91.0</td><td>91.0</td><td class="actions"><a href="#">Open</a></td></tr>
+</tbody>
+</table></div>
+<p class="muted small">Source: <code>GET /api/v1/questions</code></p>
+<!-- GET /api/v1/questions/{id} -->
+<h3>Details</h3>
+<dl class="details">
+<div><dt>Question code</dt><dd>What is 3/4 + 1/8?</dd></div>
+<div><dt>Subject name</dt><dd>Mathematics</dd></div>
+<div><dt>Class name</dt><dd>Class 9</dd></div>
+<div><dt>Question type</dt><dd><span class="pill ">MCQ_SINGLE</span></dd></div>
+<div><dt>Difficulty</dt><dd><span class="pill ">EASY</span></dd></div>
+<div><dt>Bloom level</dt><dd><span class="pill ">REMEMBER</span></dd></div>
+<div><dt>Marks</dt><dd>78.5</dd></div>
+<div><dt>Negative marks</dt><dd>78.5</dd></div>
+<div><dt>Stem</dt><dd>What is 3/4 + 1/8?</dd></div>
+<div><dt>Explanation</dt><dd>Common denominator is 8, so 6/8 + 1/8 = 7/8.</dd></div>
+<div><dt>Expected seconds</dt><dd>1</dd></div>
+<div><dt>Language</dt><dd>English</dd></div>
+</dl>
+<p class="muted small">Source: <code>GET /api/v1/questions/{id}</code></p>
+<!-- POST /api/v1/questions -->
+<details class="form"><summary>Add a question</summary>
+<form>
+<label>Subject id *<input type="text" name="subjectId" value="9802ac29-d6e2-3a81-b8c9-08ed66ecb32b" required></label>
+<label>Academic class id<input type="text" name="academicClassId" value="544208c0-8100-3d80-a220-cccbfc29768b"></label>
+<label>Syllabus unit id<input type="text" name="syllabusUnitId" value="eb29b4a7-b67c-3ec8-830c-53fa77df3afd"></label>
+<label>Syllabus topic id<input type="text" name="syllabusTopicId" value="ad705818-1ed4-30b0-a16f-14de9ce25cb1"></label>
+<label>Question type *<select name="questionType"><option>MCQ_SINGLE</option><option>MCQ_MULTI</option><option>TRUE_FALSE</option><option>ASSERTION_REASON</option><option>FILL_BLANK</option><option>NUMERICAL</option><option>MATCH_FOLLOWING</option><option>SHORT_ANSWER</option><option>LONG_ANSWER</option><option>CASE_BASED</option></select></label>
+<label>Difficulty<select name="difficulty"><option value="">Any</option><option>EASY</option><option>MEDIUM</option><option>HARD</option></select></label>
+<label>Bloom level<select name="bloomLevel"><option value="">Any</option><option>REMEMBER</option><option>UNDERSTAND</option><option>APPLY</option><option>ANALYSE</option><option>EVALUATE</option><option>CREATE</option></select></label>
+<label>Marks<input type="number" name="marks" value="78.5"></label>
+<label>Negative marks<input type="number" name="negativeMarks" value="78.5"></label>
+<label>Stem *<input type="text" name="stem" value="What is 3/4 + 1/8?" required></label>
+<label class="wide">Options<span class="muted small">object (map) (see the API file)</span></label>
+<label class="wide">Answer<span class="muted small">object (map) (see the API file)</span></label>
+<label>Explanation<input type="text" name="explanation" value="Common denominator is 8, so 6/8 + 1/8 = 7/8."></label>
+<label>Expected seconds<input type="number" name="expectedSeconds" value="1"></label>
+<label>Language<input type="text" name="language" value="English"></label>
+<label>Board<select name="board"><option value="">Any</option><option>CBSE</option><option>ICSE</option><option>ISC</option><option>STATE</option><option>IB</option><option>IGCSE</option><option>CUSTOM</option></select></label>
+<div class="wide"><button type="button" class="btn primary">Save</button> <button type="reset" class="btn">Reset</button></div>
+</form>
+</details>
+<details class="endpoints"><summary>All endpoints of this section (25)</summary>
+<table>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/questions</code></td><td>Search</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/questions/{id}</code></td><td>Get</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/questions/pool</code></td><td>Approved questions per type and difficulty</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/questions</code></td><td>Add a question</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/questions/bulk</code></td><td>Add up to 200 questions</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/questions/{id}</code></td><td>Edit</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/questions/{id}/submit</code></td><td>Submit</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/questions/{id}/review</code></td><td>Approve or return</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/questions/{id}/retire</code></td><td>Retire</td></tr>
+<tr><td><span class="verb delete">DELETE</span></td><td><code>/api/v1/questions/{id}</code></td><td>Delete</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/blueprints</code></td><td>Blueprints</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/blueprints/{id}</code></td><td>Blueprint</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/blueprints</code></td><td>Design a blueprint</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/blueprints/{id}</code></td><td>Update blueprint</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/blueprints/{id}/archive</code></td><td>Archive blueprint</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/blueprints/{id}/check</code></td><td>Can the bank fill it?</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/blueprints/{id}/generate</code></td><td>Generate a paper</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/question-papers</code></td><td>Assemble a paper by hand</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/question-papers</code></td><td>List</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/question-papers/{id}</code></td><td>Paper</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/question-papers/{id}/answer-key</code></td><td>Answer key</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/question-papers/{id}/items/{itemId}</code></td><td>Swap a question</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/question-papers/{id}/finalise</code></td><td>Finalise</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/question-papers/{id}/archive</code></td><td>Archive</td></tr>
+<tr><td><span class="verb delete">DELETE</span></td><td><code>/api/v1/question-papers/{id}</code></td><td>Delete a draft paper</td></tr>
+</table>
+</details>
+</section>
+
+<!-- ReportCardController · samples/api/assessment/ReportCardController.md -->
+<section class="card" id="ReportCardController">
+<h2>Report cards</h2>
+<p class="muted">Term results calculated with the class's assessment scheme (any board): components, grace, compartment, grades, ranks, cumulative result; holistic progress card</p>
+<!-- GET /api/v1/report-cards -->
+<form class="filters">
+<label>Exam term id<input type="text" name="examTermId" value="23a4db43-c2de-3139-b32e-1d991aea45e7"></label>
+<label>Academic class id<input type="text" name="academicClassId" value="544208c0-8100-3d80-a220-cccbfc29768b"></label>
+<label>Section id<input type="text" name="sectionId" value="1c35581b-02b2-3f00-bdbc-29ea5acdbfba"></label>
+<label>Status<select name="status"><option value="">Any</option><option>DRAFT</option><option>GENERATED</option><option>PUBLISHED</option><option>REVOKED</option></select></label>
+<button type="button" class="btn primary">Apply</button>
+</form>
+<div class="scroll"><table>
+<thead><tr><th>Report card code</th><th>Exam term name</th><th>Academic year name</th><th>Academic class name</th><th>Section name</th><th>Student name</th><th>Admission number</th><th>Roll number</th><th></th></tr></thead>
+<tbody>
+<tr><td>SRC-001</td><td>Term 1</td><td>2026-27</td><td>Class 9</td><td>A</td><td>Riya Rao</td><td>VGS/2019/101</td><td>1</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>SRC-002</td><td>Term 1</td><td>2026-27</td><td>Class 4</td><td>B</td><td>Aman Verma</td><td>VGS/2019/102</td><td>2</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>SRC-003</td><td>Term 1</td><td>2026-27</td><td>Class 10</td><td>C</td><td>Kavya Iyer</td><td>VGS/2019/103</td><td>3</td><td class="actions"><a href="#">Open</a></td></tr>
+</tbody>
+</table></div>
+<p class="muted small">Source: <code>GET /api/v1/report-cards</code></p>
+<!-- GET /api/v1/report-cards/{id} -->
+<h3>Details</h3>
+<dl class="details">
+<div><dt>Report card code</dt><dd>SRC-001</dd></div>
+<div><dt>Exam term name</dt><dd>Term 1</dd></div>
+<div><dt>Academic year name</dt><dd>2026-27</dd></div>
+<div><dt>Academic class name</dt><dd>Class 9</dd></div>
+<div><dt>Section name</dt><dd>A</dd></div>
+<div><dt>Student name</dt><dd>Riya Rao</dd></div>
+<div><dt>Admission number</dt><dd>VGS/2019/101</dd></div>
+<div><dt>Roll number</dt><dd>1</dd></div>
+<div><dt>Total max marks</dt><dd>78.5</dd></div>
+<div><dt>Total marks obtained</dt><dd>78.5</dd></div>
+<div><dt>Percentage</dt><dd>85.5</dd></div>
+<div><dt>Overall grade</dt><dd>A1</dd></div>
+</dl>
+<p class="muted small">Source: <code>GET /api/v1/report-cards/{id}</code></p>
+<!-- POST /api/v1/report-cards/publish -->
+<details class="form"><summary>Publish</summary>
+<form>
+<label>Term id *<input type="text" name="termId" value="ae88005d-90ef-314f-a4f1-fe569d56108e" required></label>
+<label>Class id *<input type="text" name="classId" value="252772cc-cb7b-3270-a6ca-44f70c0449d3" required></label>
+<label>Section id<input type="text" name="sectionId" value="1c35581b-02b2-3f00-bdbc-29ea5acdbfba"></label>
+<div class="wide"><button type="button" class="btn primary">Save</button> <button type="reset" class="btn">Reset</button></div>
+</form>
+</details>
+<details class="endpoints"><summary>All endpoints of this section (8)</summary>
+<table>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/report-cards/generate</code></td><td>Calculate results</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/report-cards</code></td><td>Search</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/report-cards/{id}</code></td><td>Report card</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/report-cards/{id}/holistic</code></td><td>Holistic progress card</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/report-cards/students/{studentId}</code></td><td>By student</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/report-cards/{id}/remarks</code></td><td>Class teacher / principal / counselor remark</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/report-cards/publish</code></td><td>Publish</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/report-cards/{id}/revoke</code></td><td>Revoke</td></tr>
+</table>
+</details>
+</section>
+
+<!-- SchemeController · samples/api/assessment/SchemeController.md -->
+<section class="card" id="SchemeController">
+<h2>Assessment schemes</h2>
+<p class="muted">Board-wise evaluation schemes (CBSE, ICSE/ISC, state, IB, IGCSE, custom) mapped to classes per year: formative / summative components and weights, scholastic and co-scholastic areas, pass, grace, compartment and grading rules</p>
+<!-- GET /api/v1/assessment-schemes -->
+<form class="filters">
+<label>Academic year id<input type="text" name="academicYearId" value="e007272e-5984-3753-9104-2d899e58fb35"></label>
+<button type="button" class="btn primary">Apply</button>
+</form>
+<div class="scroll"><table>
+<thead><tr><th>Scheme code</th><th>Name</th><th>Board</th><th>Description</th><th>Preset key</th><th>Scholastic grading scale name</th><th>Subject pass percent</th><th>Overall pass percent</th><th></th></tr></thead>
+<tbody>
+<tr><td>S-001</td><td>Scheme 1</td><td><span class="pill ">CBSE</span></td><td>Scheme for the 2026-27 session</td><td>uploads/2026/11/scheme-1.pdf</td><td>Scheme 1</td><td>85.5</td><td>85.5</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>S-002</td><td>Scheme 2</td><td><span class="pill ">ICSE</span></td><td>Scheme for the 2026-27 session</td><td>uploads/2026/11/scheme-2.pdf</td><td>Scheme 2</td><td>92.0</td><td>92.0</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>S-003</td><td>Scheme 3</td><td><span class="pill ">ISC</span></td><td>Scheme for the 2026-27 session</td><td>uploads/2026/11/scheme-3.pdf</td><td>Scheme 3</td><td>76.3</td><td>76.3</td><td class="actions"><a href="#">Open</a></td></tr>
+</tbody>
+</table></div>
+<p class="muted small">Source: <code>GET /api/v1/assessment-schemes</code></p>
+<!-- GET /api/v1/assessment-schemes/{id} -->
+<h3>Details</h3>
+<dl class="details">
+<div><dt>Scheme code</dt><dd>S-001</dd></div>
+<div><dt>Name</dt><dd>Scheme 1</dd></div>
+<div><dt>Board</dt><dd><span class="pill ">CBSE</span></dd></div>
+<div><dt>Description</dt><dd>Scheme for the 2026-27 session</dd></div>
+<div><dt>Preset key</dt><dd>uploads/2026/11/scheme-1.pdf</dd></div>
+<div><dt>Scholastic grading scale name</dt><dd>Scheme 1</dd></div>
+<div><dt>Subject pass percent</dt><dd>85.5</dd></div>
+<div><dt>Overall pass percent</dt><dd>85.5</dd></div>
+<div><dt>Separate component pass</dt><dd><span class="pill ok">Yes</span></dd></div>
+<div><dt>Rounding mode</dt><dd><span class="pill ">NONE</span></dd></div>
+<div><dt>Rounding scale</dt><dd>1</dd></div>
+<div><dt>Best of subjects</dt><dd>1</dd></div>
+</dl>
+<p class="muted small">Source: <code>GET /api/v1/assessment-schemes/{id}</code></p>
+<!-- POST /api/v1/assessment-schemes -->
+<details class="form"><summary>Create a scheme</summary>
+<form>
+<label>Academic year id *<input type="text" name="academicYearId" value="e007272e-5984-3753-9104-2d899e58fb35" required></label>
+<label>Preset key<input type="text" name="presetKey" value="uploads/2026/11/scheme-1.pdf"></label>
+<label>Name *<input type="text" name="name" value="Scheme 1" required></label>
+<label>Board<select name="board"><option value="">Any</option><option>CBSE</option><option>ICSE</option><option>ISC</option><option>STATE</option><option>IB</option><option>IGCSE</option><option>CUSTOM</option></select></label>
+<label class="wide">Description<textarea name="description" rows="2">Scheme for the 2026-27 session</textarea></label>
+<label class="wide">Class ids<span class="muted small">array of uuid (see the API file)</span></label>
+<label>Scholastic grading scale id<input type="text" name="scholasticGradingScaleId" value="ca0be7a0-199e-3d7a-acbb-cb31a60526b5"></label>
+<div class="wide"><button type="button" class="btn primary">Save</button> <button type="reset" class="btn">Reset</button></div>
+</form>
+</details>
+<details class="endpoints"><summary>All endpoints of this section (14)</summary>
+<table>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/assessment-schemes/presets</code></td><td>Board presets</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/assessment-schemes</code></td><td>List</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/assessment-schemes/for-class</code></td><td>Active scheme of a class</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/assessment-schemes/{id}</code></td><td>Get</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/assessment-schemes</code></td><td>Create a scheme</td></tr>
+<tr><td><span class="verb patch">PATCH</span></td><td><code>/api/v1/assessment-schemes/{id}</code></td><td>Change rules</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/assessment-schemes/{id}/components</code></td><td>Replace components</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/assessment-schemes/{id}/co-scholastic-areas</code></td><td>Areas</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/assessment-schemes/{id}/subjects</code></td><td>Subject categories</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/assessment-schemes/{id}/classes</code></td><td>Classes under the scheme</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/assessment-schemes/{id}/activate</code></td><td>Activate</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/assessment-schemes/{id}/archive</code></td><td>Archive</td></tr>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/assessment-schemes/{id}/copy</code></td><td>Copy to another year</td></tr>
+<tr><td><span class="verb delete">DELETE</span></td><td><code>/api/v1/assessment-schemes/{id}</code></td><td>Delete</td></tr>
+</table>
+</details>
+</section>
+</main>
+</div>
+</body>
+</html>

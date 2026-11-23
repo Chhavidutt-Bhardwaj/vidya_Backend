@@ -42,10 +42,70 @@ vidya:
   school:
     timezone: ${VIDYA_SCHOOL_TIMEZONE:Asia/Kolkata}
 
+  # Parent engagement: daily activity report + notification outbox (see tenantdata/engagement/PARENT_ENGAGEMENT.md)
+  engagement:
+    scheduler:
+      # Background jobs (deliver outbox, send daily reports). Turn off on extra API-only instances if you like;
+      # running them on several servers is safe.
+      enabled: ${VIDYA_ENGAGEMENT_SCHEDULER:true}
+    dispatch-interval: ${VIDYA_ENGAGEMENT_DISPATCH_INTERVAL:PT1M}
+    dispatch-batch-size: 200
+    daily-report-cron: "0 */5 * * * *"
+  # Online fees through each school's own Cashfree / Razorpay account: mandates, monthly auto-debit, links
+  # (see tenantdata/fee/online/ONLINE_FEES.md)
+  fees:
+    online:
+      # 32 random bytes, base64 (openssl rand -base64 32): encrypts the schools' gateway secrets. Without it they cannot be saved.
+      secret-key: ${VIDYA_FEES_GATEWAY_SECRET_KEY:}
+      # Public base URL of this API, for the webhook URLs shown to schools (…/api/v1/webhooks/fees/{tenant}/{gateway})
+      webhook-base-url: ${VIDYA_PUBLIC_API_URL:}
+      scheduler:
+        # Daily auto-debit job and hourly mandate poll. Safe on several servers.
+        enabled: ${VIDYA_FEES_ONLINE_SCHEDULER:true}
+      autodebit-cron: "0 30 7 * * *"
+      mandate-sync-cron: "0 20 * * * *"
+  # Assessment engine (see tenantdata/assessment/ASSESSMENT_ENGINE.md)
+  assessment:
+    scheduler:
+      # Submits online-exam attempts whose time ran out. Safe on several servers (rows are locked).
+      enabled: ${VIDYA_ASSESSMENT_SCHEDULER:true}
+    auto-submit-interval: PT1M
+  notifications:
+    email:
+      # From address for email notifications (needs spring.mail.host). Empty = email messages are SKIPPED.
+      from: ${VIDYA_NOTIFICATION_EMAIL_FROM:}
+
   security:
     login:
       max-failed-attempts: 5
       lockout-minutes: 15
+    # DB-driven roles/permissions (see docs/security/DYNAMIC_ACCESS_CONTROL.md)
+    access:
+      # Per-instance cache of each user's effective permissions. API changes evict immediately;
+      # direct SQL edits go live within this many seconds (or call POST /api/v1/admin/access/cache/evict).
+      cache-ttl-seconds: ${VIDYA_ACCESS_CACHE_TTL_SECONDS:60}
+      # Remove permissions whose feature_code is not enabled for the user's school (plan + overrides).
+      feature-gating-enabled: ${VIDYA_ACCESS_FEATURE_GATING:true}
+    jwt:
+      # Put a snapshot of effective access (perms, roles, features, data scopes, version "av") into
+      # access tokens for the frontend. The server never authorizes from it; it re-reads the DB.
+      embed-access: ${VIDYA_JWT_EMBED_ACCESS:true}
+    session:
+      # Oldest active session is ended when a user logs in on one device too many.
+      max-active-per-user: ${VIDYA_MAX_SESSIONS_PER_USER:10}
+
+  # External holidays / festivals for the holiday planner (suggestions only; admins confirm).
+  # auto = Calendarific when CALENDARIFIC_API_KEY is set, otherwise off. ics = VIDYA_HOLIDAY_ICS_URL feed.
+  holidays:
+    provider: ${VIDYA_HOLIDAY_PROVIDER:auto}
+    calendarific:
+      api-key: ${CALENDARIFIC_API_KEY:}
+      base-url: ${CALENDARIFIC_BASE_URL:https://calendarific.com/api/v2}
+    ics:
+      # e.g. Google "Holidays in India": https://calendar.google.com/calendar/ical/en.indian%23holiday%40group.v.calendar.google.com/public/basic.ics
+      url: ${VIDYA_HOLIDAY_ICS_URL:}
+    timeout-seconds: ${VIDYA_HOLIDAY_TIMEOUT_SECONDS:8}
+    cache-days: ${VIDYA_HOLIDAY_CACHE_DAYS:30}
 
   # Flyway migration locations
   flyway:

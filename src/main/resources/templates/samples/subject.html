@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<!--
+  Sample screen for: Subjects & curriculum
+  Plain HTML + CSS with static sample data generated from the API (APiReqDoc/samples/api/subject/).
+  Each section names the endpoints that feed it. Rebuild it in the frontend framework; this file is not served by any controller.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Subjects &amp; curriculum</title>
+<link rel="stylesheet" href="samples.css">
+</head>
+<body>
+<header class="topbar"><a class="brand" href="index.html">Vidya</a><h1>Subjects &amp; curriculum</h1></header>
+<div class="layout">
+<nav class="side">
+<a href="security.html">Login, sessions, roles &amp; access</a>
+<a href="dashboard.html">Overview dashboard</a>
+<a href="student.html">Students (SIS, admission, enrolment, guardians)</a>
+<a href="staff.html">Staff &amp; HR set-up</a>
+<a href="user.html">School users &amp; accounts</a>
+<a href="academic.html">Academic years, classes, sections, set-up</a>
+<a href="subject.html" class="on">Subjects &amp; curriculum</a>
+<a href="assignment.html">Class teachers &amp; subject teachers</a>
+<a href="timetable.html">Timetable, bells, rooms, substitutions</a>
+<a href="calendar.html">Calendar &amp; holidays</a>
+<a href="attendance.html">Student attendance</a>
+<a href="examination.html">Exams, schedules, marks, grading</a>
+<a href="assessment.html">Assessments, question bank, report cards</a>
+<a href="fee.html">Fees &amp; finance (counter, online, auto-debit)</a>
+<a href="engagement.html">Communication, homework, daily report, parent portal</a>
+<a href="operations.html">Operations set-up (fees, attendance, transport, library)</a>
+<a href="readiness.html">School readiness</a>
+<a href="platform-school.html">Platform: schools &amp; campuses</a>
+<a href="platform-onboarding.html">Platform: onboarding</a>
+<a href="platform-workflow.html">Platform: onboarding workflow</a>
+<a href="platform-subscription.html">Platform: subscriptions &amp; plans</a>
+<a href="platform-payment.html">Platform: subscription payments</a>
+<a href="platform-community.html">Platform: communities (trusts / groups)</a>
+<a href="platform-hub.html">Platform: hub</a>
+<a href="platform-analytics.html">Platform: analytics</a>
+<a href="platform-support.html">Platform: support queries</a>
+</nav>
+<main>
+<div class="tabs"><a href="#CurriculumController">Curricula</a><a href="#CurriculumSubjectController">Curriculum Subjects</a><a href="#SubjectController">Subjects</a></div>
+
+<!-- CurriculumController · samples/api/subject/CurriculumController.md -->
+<section class="card" id="CurriculumController">
+<h2>Curricula</h2>
+<p class="muted">Curriculum structures and academic program definitions for the active tenant</p>
+<!-- GET /api/v1/tenant/curricula -->
+<form class="filters">
+<label>Academic year id<input type="text" name="academicYearId" value="e007272e-5984-3753-9104-2d899e58fb35"></label>
+<label>Status<select name="status"><option value="">Any</option><option>DRAFT</option><option>ACTIVE</option><option>ARCHIVED</option><option>DELETED</option></select></label>
+<label>Query<input type="text" name="query" value="riya"></label>
+<button type="button" class="btn primary">Apply</button>
+</form>
+<div class="scroll"><table>
+<thead><tr><th>Curriculum code</th><th>Academic year code</th><th>Academic year name</th><th>Name</th><th>Description</th><th>Status</th><th>Created at</th><th>Updated at</th><th></th></tr></thead>
+<tbody>
+<tr><td>C-001</td><td>C-001</td><td>2026-27</td><td>Curriculum 1</td><td>Curriculum for the 2026-27 session</td><td><span class="pill warn">DRAFT</span></td><td>2026-11-22T04:30:00Z</td><td>2026-11-22T04:30:00Z</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>C-002</td><td>C-002</td><td>2026-27</td><td>Curriculum 2</td><td>Curriculum for the 2026-27 session</td><td><span class="pill ok">ACTIVE</span></td><td>2026-11-21T04:30:00Z</td><td>2026-11-21T04:30:00Z</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>C-003</td><td>C-003</td><td>2026-27</td><td>Curriculum 3</td><td>Curriculum for the 2026-27 session</td><td><span class="pill ">ARCHIVED</span></td><td>2026-11-20T04:30:00Z</td><td>2026-11-20T04:30:00Z</td><td class="actions"><a href="#">Open</a></td></tr>
+</tbody>
+</table></div>
+<p class="muted small">Source: <code>GET /api/v1/tenant/curricula</code></p>
+<!-- GET /api/v1/tenant/curricula/{id} -->
+<h3>Details</h3>
+<dl class="details">
+<div><dt>Curriculum code</dt><dd>C-001</dd></div>
+<div><dt>Academic year code</dt><dd>C-001</dd></div>
+<div><dt>Academic year name</dt><dd>2026-27</dd></div>
+<div><dt>Name</dt><dd>Curriculum 1</dd></div>
+<div><dt>Description</dt><dd>Curriculum for the 2026-27 session</dd></div>
+<div><dt>Status</dt><dd><span class="pill warn">DRAFT</span></dd></div>
+<div><dt>Created at</dt><dd>2026-11-22T04:30:00Z</dd></div>
+<div><dt>Updated at</dt><dd>2026-11-22T04:30:00Z</dd></div>
+<div><dt>Version</dt><dd>0</dd></div>
+</dl>
+<p class="muted small">Source: <code>GET /api/v1/tenant/curricula/{id}</code></p>
+<!-- POST /api/v1/tenant/curricula -->
+<details class="form"><summary>Create curriculum</summary>
+<form>
+<label>Academic year id *<input type="text" name="academicYearId" value="e007272e-5984-3753-9104-2d899e58fb35" required></label>
+<label>Name *<input type="text" name="name" value="Curriculum 1" required></label>
+<label class="wide">Description<textarea name="description" rows="2">Curriculum for the 2026-27 session</textarea></label>
+<div class="wide"><button type="button" class="btn primary">Save</button> <button type="reset" class="btn">Reset</button></div>
+</form>
+</details>
+<details class="endpoints"><summary>All endpoints of this section (7)</summary>
+<table>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/tenant/curricula</code></td><td>Create curriculum</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/tenant/curricula</code></td><td>Search curricula</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/tenant/curricula/{id}</code></td><td>Get curriculum by ID</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/tenant/curricula/code/{curriculumCode}</code></td><td>Get curriculum by code</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/tenant/curricula/{id}</code></td><td>Update curriculum</td></tr>
+<tr><td><span class="verb patch">PATCH</span></td><td><code>/api/v1/tenant/curricula/{id}/status</code></td><td>Update curriculum status</td></tr>
+<tr><td><span class="verb delete">DELETE</span></td><td><code>/api/v1/tenant/curricula/{id}</code></td><td>Delete curriculum</td></tr>
+</table>
+</details>
+</section>
+
+<!-- CurriculumSubjectController · samples/api/subject/CurriculumSubjectController.md -->
+<section class="card" id="CurriculumSubjectController">
+<h2>Curriculum Subjects</h2>
+<p class="muted">Curriculum subject mapping operations for the active tenant</p>
+<!-- GET /api/v1/tenant/curricula/{curriculumId}/subjects -->
+<form class="filters">
+<label>Academic class id<input type="text" name="academicClassId" value="544208c0-8100-3d80-a220-cccbfc29768b"></label>
+<label>Subject type<select name="subjectType"><option value="">Any</option><option>CORE</option><option>ELECTIVE</option><option>LANGUAGE</option><option>CO_CURRICULAR</option><option>EXTRACURRICULAR</option><option>VOCATIONAL</option><option>OTHER</option></select></label>
+<label class="check"><input type="checkbox" name="isCompulsory" checked> Is compulsory</label>
+<button type="button" class="btn primary">Apply</button>
+</form>
+<div class="scroll"><table>
+<thead><tr><th>Curriculum code</th><th>Subject code</th><th>Subject name</th><th>Subject short name</th><th>Subject type</th><th>Academic class code</th><th>Academic class name</th><th>Compulsory</th><th></th></tr></thead>
+<tbody>
+<tr><td>CS-001</td><td>CS-001</td><td>Mathematics</td><td>Mathematics</td><td><span class="pill ">CORE</span></td><td>Class 9</td><td>Class 9</td><td><span class="pill ok">Yes</span></td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>CS-002</td><td>CS-002</td><td>Science</td><td>Science</td><td><span class="pill ">ELECTIVE</span></td><td>Class 4</td><td>Class 4</td><td><span class="pill ok">Yes</span></td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>CS-003</td><td>CS-003</td><td>English</td><td>English</td><td><span class="pill ">LANGUAGE</span></td><td>Class 10</td><td>Class 10</td><td><span class="pill">No</span></td><td class="actions"><a href="#">Open</a></td></tr>
+</tbody>
+</table></div>
+<p class="muted small">Source: <code>GET /api/v1/tenant/curricula/{curriculumId}/subjects</code></p>
+<!-- GET /api/v1/tenant/curricula/{curriculumId}/subjects/{curriculumSubjectId} -->
+<h3>Details</h3>
+<dl class="details">
+<div><dt>Curriculum code</dt><dd>CS-001</dd></div>
+<div><dt>Subject code</dt><dd>CS-001</dd></div>
+<div><dt>Subject name</dt><dd>Mathematics</dd></div>
+<div><dt>Subject short name</dt><dd>Mathematics</dd></div>
+<div><dt>Subject type</dt><dd><span class="pill ">CORE</span></dd></div>
+<div><dt>Academic class code</dt><dd>Class 9</dd></div>
+<div><dt>Academic class name</dt><dd>Class 9</dd></div>
+<div><dt>Compulsory</dt><dd><span class="pill ok">Yes</span></dd></div>
+<div><dt>Display order</dt><dd>1</dd></div>
+<div><dt>Created at</dt><dd>2026-11-22T04:30:00Z</dd></div>
+<div><dt>Updated at</dt><dd>2026-11-22T04:30:00Z</dd></div>
+</dl>
+<p class="muted small">Source: <code>GET /api/v1/tenant/curricula/{curriculumId}/subjects/{curriculumSubjectId}</code></p>
+<!-- POST /api/v1/tenant/curricula/{curriculumId}/subjects -->
+<details class="form"><summary>Add subject to curriculum</summary>
+<form>
+<label>Subject id *<input type="text" name="subjectId" value="9802ac29-d6e2-3a81-b8c9-08ed66ecb32b" required></label>
+<label>Academic class id *<input type="text" name="academicClassId" value="544208c0-8100-3d80-a220-cccbfc29768b" required></label>
+<label class="check"><input type="checkbox" name="isCompulsory" checked> Is compulsory</label>
+<label>Display order<input type="number" name="displayOrder" value="1"></label>
+<label>Stream id<input type="text" name="streamId" value="0bc1b986-9956-351f-826e-3b61ce1af6b1"></label>
+<div class="wide"><button type="button" class="btn primary">Save</button> <button type="reset" class="btn">Reset</button></div>
+</form>
+</details>
+<details class="endpoints"><summary>All endpoints of this section (5)</summary>
+<table>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/tenant/curricula/{curriculumId}/subjects</code></td><td>Add subject to curriculum</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/tenant/curricula/{curriculumId}/subjects</code></td><td>List curriculum subjects</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/tenant/curricula/{curriculumId}/subjects/{curriculumSubjectId}</code></td><td>Get curriculum subject mapping</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/tenant/curricula/{curriculumId}/subjects/{curriculumSubjectId}</code></td><td>Update curriculum subject</td></tr>
+<tr><td><span class="verb delete">DELETE</span></td><td><code>/api/v1/tenant/curricula/{curriculumId}/subjects/{curriculumSubjectId}</code></td><td>Remove subject from curriculum</td></tr>
+</table>
+</details>
+</section>
+
+<!-- SubjectController · samples/api/subject/SubjectController.md -->
+<section class="card" id="SubjectController">
+<h2>Subjects</h2>
+<p class="muted">Academic subject definitions management for the active school tenant</p>
+<!-- GET /api/v1/tenant/subjects -->
+<form class="filters">
+<label>Subject type<select name="subjectType"><option value="">Any</option><option>CORE</option><option>ELECTIVE</option><option>LANGUAGE</option><option>CO_CURRICULAR</option><option>EXTRACURRICULAR</option><option>VOCATIONAL</option><option>OTHER</option></select></label>
+<label>Status<select name="status"><option value="">Any</option><option>ACTIVE</option><option>INACTIVE</option><option>DELETED</option></select></label>
+<label>Query<input type="text" name="query" value="riya"></label>
+<button type="button" class="btn primary">Apply</button>
+</form>
+<div class="scroll"><table>
+<thead><tr><th>Subject code</th><th>Name</th><th>Short name</th><th>Description</th><th>Subject type</th><th>Status</th><th>Display order</th><th>Created at</th><th></th></tr></thead>
+<tbody>
+<tr><td>S-001</td><td>Subject 1</td><td>Subject 1</td><td>Subject for the 2026-27 session</td><td><span class="pill ">CORE</span></td><td><span class="pill ok">ACTIVE</span></td><td>1</td><td>2026-11-22T04:30:00Z</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>S-002</td><td>Subject 2</td><td>Subject 2</td><td>Subject for the 2026-27 session</td><td><span class="pill ">ELECTIVE</span></td><td><span class="pill bad">INACTIVE</span></td><td>2</td><td>2026-11-21T04:30:00Z</td><td class="actions"><a href="#">Open</a></td></tr>
+<tr><td>S-003</td><td>Subject 3</td><td>Subject 3</td><td>Subject for the 2026-27 session</td><td><span class="pill ">LANGUAGE</span></td><td><span class="pill ">DELETED</span></td><td>3</td><td>2026-11-20T04:30:00Z</td><td class="actions"><a href="#">Open</a></td></tr>
+</tbody>
+</table></div>
+<p class="muted small">Source: <code>GET /api/v1/tenant/subjects</code></p>
+<!-- GET /api/v1/tenant/subjects/{id} -->
+<h3>Details</h3>
+<dl class="details">
+<div><dt>Subject code</dt><dd>S-001</dd></div>
+<div><dt>Name</dt><dd>Subject 1</dd></div>
+<div><dt>Short name</dt><dd>Subject 1</dd></div>
+<div><dt>Description</dt><dd>Subject for the 2026-27 session</dd></div>
+<div><dt>Subject type</dt><dd><span class="pill ">CORE</span></dd></div>
+<div><dt>Status</dt><dd><span class="pill ok">ACTIVE</span></dd></div>
+<div><dt>Display order</dt><dd>1</dd></div>
+<div><dt>Created at</dt><dd>2026-11-22T04:30:00Z</dd></div>
+<div><dt>Updated at</dt><dd>2026-11-22T04:30:00Z</dd></div>
+<div><dt>Version</dt><dd>0</dd></div>
+</dl>
+<p class="muted small">Source: <code>GET /api/v1/tenant/subjects/{id}</code></p>
+<!-- POST /api/v1/tenant/subjects -->
+<details class="form"><summary>Create subject</summary>
+<form>
+<label>Name *<input type="text" name="name" value="Subject 1" required></label>
+<label>Short name<input type="text" name="shortName" value="Subject 1"></label>
+<label class="wide">Description<textarea name="description" rows="2">Subject for the 2026-27 session</textarea></label>
+<label>Subject type *<select name="subjectType"><option>CORE</option><option>ELECTIVE</option><option>LANGUAGE</option><option>CO_CURRICULAR</option><option>EXTRACURRICULAR</option><option>VOCATIONAL</option><option>OTHER</option></select></label>
+<label>Display order<input type="number" name="displayOrder" value="1"></label>
+<div class="wide"><button type="button" class="btn primary">Save</button> <button type="reset" class="btn">Reset</button></div>
+</form>
+</details>
+<details class="endpoints"><summary>All endpoints of this section (7)</summary>
+<table>
+<tr><td><span class="verb post">POST</span></td><td><code>/api/v1/tenant/subjects</code></td><td>Create subject</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/tenant/subjects</code></td><td>Search subjects</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/tenant/subjects/{id}</code></td><td>Get subject by ID</td></tr>
+<tr><td><span class="verb get">GET</span></td><td><code>/api/v1/tenant/subjects/code/{subjectCode}</code></td><td>Get subject by code</td></tr>
+<tr><td><span class="verb put">PUT</span></td><td><code>/api/v1/tenant/subjects/{id}</code></td><td>Update subject</td></tr>
+<tr><td><span class="verb patch">PATCH</span></td><td><code>/api/v1/tenant/subjects/{id}/status</code></td><td>Update subject status</td></tr>
+<tr><td><span class="verb delete">DELETE</span></td><td><code>/api/v1/tenant/subjects/{id}</code></td><td>Delete subject</td></tr>
+</table>
+</details>
+</section>
+</main>
+</div>
+</body>
+</html>

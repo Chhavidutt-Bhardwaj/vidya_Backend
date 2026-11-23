@@ -612,6 +612,10 @@ class SchoolOnboardingWorkflowServiceTest {
         when(adminProvisioningService.provisionInitialAdmin(eq(schoolId), eq(onboardingId), any()))
                 .thenReturn(InitialSchoolAdminResponse.builder().email("admin@greenwood.edu.in").role(PlatformRole.SCHOOL_OWNER).build());
 
+        when(onboardingRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+        when(tenantProvisioningService.startProvisioning(tenantId)).thenReturn(provisioning);
+        when(tenantRepository.findById(tenantId)).thenReturn(Optional.of(tenant));
+
         org.mockito.Mockito.doAnswer(invocation -> {
             provisioning.markCompleted();
             return null;
@@ -661,6 +665,22 @@ class SchoolOnboardingWorkflowServiceTest {
         provisioning.markFailed("Flyway checksum mismatch");
 
         when(onboardingRepository.findById(onboardingId)).thenReturn(Optional.of(onboarding));
+
+        // I0: rejected by the central state machine (PROVISIONING_FAILED -> ACTIVE is not a valid transition)
+        assertThatThrownBy(() -> workflowService.activateSchool(onboardingId, null))
+                .isInstanceOfAny(BusinessException.class, InvalidStateTransitionException.class);
+
+        assertThat(school.getStatus()).isNotEqualTo(SchoolStatus.ACTIVE);
+        assertThat(tenant.getStatus()).isNotEqualTo(TenantStatus.ACTIVE);
+    }
+
+    @Test
+    @DisplayName("I0: PROVISIONED status with an incomplete provisioning record still cannot activate")
+    void scenario17b_ProvisionedStatus_IncompleteRecord_DoesNotActivate() {
+        onboarding.setStatus(OnboardingStatus.PROVISIONED);
+        provisioning.markFailed("Flyway checksum mismatch");
+
+        when(onboardingRepository.findById(onboardingId)).thenReturn(Optional.of(onboarding));
         when(schoolRepository.findById(schoolId)).thenReturn(Optional.of(school));
         when(tenantRepository.findBySchoolId(schoolId)).thenReturn(Optional.of(tenant));
         when(tenantProvisioningRepository.findByTenantId(tenantId)).thenReturn(Optional.of(provisioning));
@@ -668,9 +688,49 @@ class SchoolOnboardingWorkflowServiceTest {
         assertThatThrownBy(() -> workflowService.activateSchool(onboardingId, null))
                 .isInstanceOf(BusinessException.class)
                 .hasMessageContaining("Tenant provisioning is not completed");
-
         assertThat(school.getStatus()).isNotEqualTo(SchoolStatus.ACTIVE);
-        assertThat(tenant.getStatus()).isNotEqualTo(TenantStatus.ACTIVE);
+    }
+
+    @Test
+    @DisplayName("I0: a missing provisioning record is NOT treated as completed")
+    void scenario17c_MissingProvisioningRecord_DoesNotActivate() {
+        onboarding.setStatus(OnboardingStatus.PROVISIONED);
+
+        when(onboardingRepository.findById(onboardingId)).thenReturn(Optional.of(onboarding));
+        when(schoolRepository.findById(schoolId)).thenReturn(Optional.of(school));
+        when(tenantRepository.findBySchoolId(schoolId)).thenReturn(Optional.of(tenant));
+        when(tenantProvisioningRepository.findByTenantId(tenantId)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> workflowService.activateSchool(onboardingId, null))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("NOT_STARTED");
+        assertThat(school.getStatus()).isNotEqualTo(SchoolStatus.ACTIVE);
+    }
+
+    @Test
+    @DisplayName("I0: a DRAFT onboarding cannot be activated or retried into activation")
+    void draftOnboarding_CannotBeActivated() {
+        onboarding.setStatus(OnboardingStatus.DRAFT);
+        when(onboardingRepository.findById(onboardingId)).thenReturn(Optional.of(onboarding));
+
+        assertThatThrownBy(() -> workflowService.activateSchool(onboardingId, null))
+                .isInstanceOf(InvalidStateTransitionException.class);
+        assertThatThrownBy(() -> workflowService.retryWorkflow(onboardingId, null))
+                .isInstanceOf(InvalidStateTransitionException.class);
+        assertThat(onboarding.getStatus()).isEqualTo(OnboardingStatus.DRAFT);
+    }
+
+    @Test
+    @DisplayName("I0: approval requires a settled or waived payment")
+    void approval_RequiresSettledPayment() {
+        for (OnboardingStatus s : new OnboardingStatus[]{OnboardingStatus.VERIFIED, OnboardingStatus.PLAN_SELECTED,
+                OnboardingStatus.PAYMENT_PENDING, OnboardingStatus.DRAFT}) {
+            onboarding.setStatus(s);
+            when(onboardingRepository.findById(onboardingId)).thenReturn(Optional.of(onboarding));
+            assertThatThrownBy(() -> workflowService.approveOnboarding(onboardingId, null))
+                    .as("approve from %s", s)
+                    .isInstanceOf(InvalidStateTransitionException.class);
+        }
     }
 
     // -------------------------------------------------------------------------

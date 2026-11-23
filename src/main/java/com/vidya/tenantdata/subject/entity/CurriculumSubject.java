@@ -57,6 +57,10 @@ public class CurriculumSubject {
     @Column(name = "display_order", nullable = false)
     private Integer displayOrder = 0;
 
+    /** Only for sections of this stream; null = every section of the class. */
+    @Column(name = "stream_id")
+    private UUID streamId;
+
     @Column(name = "deleted_at")
     private Instant deletedAt;
 
