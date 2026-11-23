@@ -15,7 +15,7 @@
 #      deploy [--force]   Pull; if there are new commits (or --force) build + deploy
 #      start|stop|restart Control the application service
 #      status             Service status, deployed commit and health
-#      logs [-f]          Application log file ($APP_HOME/logs/vidya.log); -f follows it
+#      logs [-f]          Application log file (<project dir>/logs/vidya.log); -f follows it
 #      logs errors [-f]   Only WARN/ERROR lines from the log file
 #      logs journal [-f]  systemd journal (includes startup crashes before logging starts)
 #      logs deploy [-f]   Auto-deploy (pull/build/health-check) history
@@ -57,7 +57,7 @@ HEALTH_TIMEOUT="${HEALTH_TIMEOUT:-180}"
 RELEASES_DIR="$APP_HOME/releases"
 # Must match LOG_PATH in the env file (the app writes $LOG_PATH/vidya.log).
 LOG_DIR=$( { grep -E '^LOG_PATH=' "$ENV_FILE" 2>/dev/null || true; } | tail -1 | cut -d= -f2- | tr -d '"'"'" )
-LOG_DIR="${LOG_DIR:-$APP_HOME/logs}"
+LOG_DIR="${LOG_DIR:-$REPO_DIR/logs}"   # default: <project dir>/logs
 CURRENT_JAR="$APP_HOME/current.jar"
 LOCK_FILE="/run/lock/${APP_NAME}-deploy.lock"
 SERVICE="${APP_NAME}.service"
@@ -170,7 +170,7 @@ cmd_setup() {
     log "Java     : $java_bin ($("$java_bin" -version 2>&1 | head -1))"
     runuser -u "$APP_USER" -- test -x "$java_bin" || die "User $APP_USER cannot execute $java_bin"
 
-    mkdir -p "$RELEASES_DIR" "$LOG_DIR/archive" "$(dirname "$ENV_FILE")"
+    mkdir -p "$RELEASES_DIR" "$(dirname "$ENV_FILE")"
     chown -R "$APP_USER:$(app_user_group)" "$APP_HOME"
     chmod +x "$REPO_DIR/mvnw" "$SCRIPT_PATH"
     as_app git config --global --add safe.directory "$REPO_DIR" || true
@@ -193,8 +193,8 @@ EOF
 SPRING_PROFILES_ACTIVE=prod
 SERVER_PORT=8085
 
-# Log files: $LOG_PATH/vidya.log, rotated daily / at 50MB into $LOG_PATH/archive (gzipped)
-LOG_PATH=/opt/vidya/logs
+# Log files: $LOG_PATH/vidya.log, rotated daily / at 50MB into $LOG_PATH/archive (gzipped).
+# LOG_PATH is added below by setup (default: <project dir>/logs).
 LOG_MAX_FILE_SIZE=50MB
 LOG_MAX_HISTORY_DAYS=30
 LOG_TOTAL_SIZE_CAP=2GB
@@ -229,6 +229,21 @@ CASHFREE_SECRET_KEY=
 EOF
     fi
     chown root:"$(app_user_group)" "$ENV_FILE"; chmod 640 "$ENV_FILE"
+
+    # Logs live in <project dir>/logs unless LOG_PATH was set to something custom.
+    # (/opt/vidya/logs was the previous default and is migrated to the project dir.)
+    local current_log_path
+    current_log_path=$( { grep -E '^LOG_PATH=' "$ENV_FILE" || true; } | tail -1 | cut -d= -f2- | tr -d '"'"'" )
+    if [[ -z $current_log_path || $current_log_path == "/opt/vidya/logs" ]]; then
+        sed -i '/^LOG_PATH=/d' "$ENV_FILE"
+        echo "LOG_PATH=$REPO_DIR/logs" >> "$ENV_FILE"
+        LOG_DIR="$REPO_DIR/logs"
+    else
+        LOG_DIR="$current_log_path"
+    fi
+    mkdir -p "$LOG_DIR/archive"
+    chown -R "$APP_USER:$(app_user_group)" "$LOG_DIR"
+    log "Logs     : $LOG_DIR/vidya.log"
 
     log "Installing $SERVICE"
     cat > "/etc/systemd/system/$SERVICE" <<EOF

@@ -81,7 +81,8 @@ logging:
     com.vidya: INFO
     org.flywaydb: INFO
     com.zaxxer.hikari: WARN
-  # Log file on disk (in addition to the console/journald). LOG_PATH is set in /etc/vidya/vidya.env.
+  # Log file on disk (in addition to the console/journald). LOG_PATH is set in /etc/vidya/vidya.env
+  # by process.sh setup (default: <project dir>/logs).
   file:
     name: ${LOG_PATH:/opt/vidya/logs}/vidya.log
   pattern:
