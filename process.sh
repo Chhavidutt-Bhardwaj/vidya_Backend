@@ -22,7 +22,9 @@
 #      uninstall          Remove the systemd units (keeps releases and env file)
 #
 #  Settings (override via environment or /etc/vidya/deploy.conf):
-#      APP_NAME=vidya  BRANCH=main  APP_USER=vidya  APP_HOME=/opt/vidya
+#      APP_NAME=vidya  BRANCH=main  APP_HOME=/opt/vidya
+#      APP_USER  (default: owner of the repo directory — the app, git and maven run as this user)
+#      JAVA_HOME (default: auto-detected — SDKMAN of APP_USER, PATH, /usr/lib/jvm)
 #      ENV_FILE=/etc/vidya/vidya.env  POLL_INTERVAL=2min  KEEP_RELEASES=5
 #      RUN_TESTS=0  (1 = run unit tests during build; integration tests need Docker)
 #      HEALTH_TIMEOUT=180  (seconds to wait for /actuator/health to report UP)
@@ -37,7 +39,11 @@ SCRIPT_PATH="$REPO_DIR/$(basename "${BASH_SOURCE[0]}")"
 
 APP_NAME="${APP_NAME:-vidya}"
 BRANCH="${BRANCH:-main}"
-APP_USER="${APP_USER:-vidya}"
+# Run as whoever owns the checkout, so their SDKMAN Java, ~/.m2 and git credentials just work.
+_repo_owner=$(stat -c %U "$REPO_DIR" 2>/dev/null || stat -f %Su "$REPO_DIR")
+if [[ -z ${APP_USER:-} ]]; then
+    if [[ $_repo_owner != root ]]; then APP_USER=$_repo_owner; else APP_USER=vidya; fi
+fi
 APP_HOME="${APP_HOME:-/opt/vidya}"
 ENV_FILE="${ENV_FILE:-/etc/vidya/vidya.env}"
 POLL_INTERVAL="${POLL_INTERVAL:-2min}"
@@ -59,9 +65,42 @@ die()  { log "ERROR: $*" >&2; exit 1; }
 
 require_root() { [[ $EUID -eq 0 ]] || die "Run as root: sudo $0 $*"; }
 
-# Run a command as the app user (git + maven never run as root).
+app_user_home()  { getent passwd "$APP_USER" | cut -d: -f6; }
+app_user_group() { id -gn "$APP_USER"; }
+
+# Locate a JDK 25+ even under sudo (which drops the user's PATH / SDKMAN setup).
+detect_java_home() {
+    local candidates=() c home major
+    [[ -n ${JAVA_HOME:-} ]] && candidates+=("$JAVA_HOME")
+    home=$(app_user_home 2>/dev/null || true)
+    [[ -n $home ]] && candidates+=("$home/.sdkman/candidates/java/current")
+    [[ -n ${SUDO_USER:-} ]] && candidates+=("$(getent passwd "$SUDO_USER" | cut -d: -f6)/.sdkman/candidates/java/current")
+    c=$(command -v java 2>/dev/null || true)
+    [[ -n $c ]] && candidates+=("$(dirname "$(dirname "$(readlink -f "$c")")")")
+    for c in /usr/lib/jvm/*; do [[ -d $c ]] && candidates+=("$c"); done
+    for c in "${candidates[@]}"; do
+        [[ -x $c/bin/java ]] || continue
+        c=$(readlink -f "$c")
+        major=$("$c/bin/java" -version 2>&1 | head -1 | sed -E 's/.*version "([0-9]+).*/\1/')
+        if [[ $major =~ ^[0-9]+$ ]] && (( major >= 25 )); then echo "$c"; return 0; fi
+    done
+    return 1
+}
+
+# Run a command as the app user (git + maven never run as root), with a sane HOME/PATH/JAVA_HOME.
 as_app() {
-    if [[ $(id -un) == "$APP_USER" ]]; then "$@"; else runuser -u "$APP_USER" -- "$@"; fi
+    if [[ $(id -un) == "$APP_USER" ]]; then
+        JAVA_HOME="$JAVA_HOME" PATH="$JAVA_HOME/bin:$PATH" "$@"
+    else
+        runuser -u "$APP_USER" -- env HOME="$(app_user_home)" JAVA_HOME="$JAVA_HOME" \
+            PATH="$JAVA_HOME/bin:/usr/local/bin:/usr/bin:/bin" "$@"
+    fi
+}
+
+require_setup() {
+    [[ -f /etc/systemd/system/$SERVICE ]] || die "Not set up yet — run first: sudo $SCRIPT_PATH setup"
+    id -u "$APP_USER" &>/dev/null || die "User '$APP_USER' does not exist — run: sudo $SCRIPT_PATH setup"
+    JAVA_HOME=$(detect_java_home) || die "No Java 25+ found. Set JAVA_HOME in /etc/vidya/deploy.conf"
 }
 
 server_port() {
@@ -96,7 +135,7 @@ previous_release() {
 
 switch_to() {   # atomically repoint current.jar
     ln -sfn "$1" "$CURRENT_JAR.tmp" && mv -Tf "$CURRENT_JAR.tmp" "$CURRENT_JAR"
-    chown -h "$APP_USER:$APP_USER" "$CURRENT_JAR"
+    chown -h "$APP_USER:$(app_user_group)" "$CURRENT_JAR"
 }
 
 prune_releases() {
@@ -112,21 +151,34 @@ cmd_setup() {
     for bin in git curl systemctl flock runuser; do
         command -v "$bin" >/dev/null || die "'$bin' is required but not installed"
     done
-    local java_bin; java_bin=$(command -v java || true)
-    [[ -n $java_bin ]] || die "Java 25 is required (e.g. apt install openjdk-25-jdk-headless)"
-    java_bin=$(readlink -f "$java_bin")
-    local java_major
-    java_major=$("$java_bin" -version 2>&1 | head -1 | sed -E 's/.*version "([0-9]+).*/\1/')
-    (( java_major >= 25 )) || die "Java 25+ required, found $java_major ($java_bin)"
-
-    id -u "$APP_USER" &>/dev/null || {
+    if ! id -u "$APP_USER" &>/dev/null; then
         log "Creating system user $APP_USER"
-        useradd --system --home-dir "$APP_HOME" --shell /usr/sbin/nologin "$APP_USER"
-    }
+        useradd --system --create-home --home-dir "/home/$APP_USER" --shell /usr/sbin/nologin "$APP_USER"
+        chown -R "$APP_USER:$(app_user_group)" "$REPO_DIR"
+    fi
+    log "App user : $APP_USER"
+
+    JAVA_HOME=$(detect_java_home) || die "No Java 25+ found (checked JAVA_HOME, ~$APP_USER/.sdkman, PATH, /usr/lib/jvm).
+       Install one (sdk install java 25.0.1-tem) or pass it: sudo JAVA_HOME=/path/to/jdk $0 setup"
+    local java_bin="$JAVA_HOME/bin/java"
+    log "Java     : $java_bin ($("$java_bin" -version 2>&1 | head -1))"
+    runuser -u "$APP_USER" -- test -x "$java_bin" || die "User $APP_USER cannot execute $java_bin"
+
     mkdir -p "$RELEASES_DIR" "$APP_HOME/logs" "$(dirname "$ENV_FILE")"
-    chown -R "$APP_USER:$APP_USER" "$APP_HOME" "$REPO_DIR"
+    chown -R "$APP_USER:$(app_user_group)" "$APP_HOME"
     chmod +x "$REPO_DIR/mvnw" "$SCRIPT_PATH"
     as_app git config --global --add safe.directory "$REPO_DIR" || true
+
+    # Persist what was detected so timer-driven deploys (no sudo environment) use the same values.
+    cat > /etc/vidya/deploy.conf <<EOF
+# Written by process.sh setup. Edit, then re-run setup to apply to the service.
+APP_USER=$APP_USER
+JAVA_HOME=$JAVA_HOME
+BRANCH=$BRANCH
+APP_HOME=$APP_HOME
+POLL_INTERVAL=$POLL_INTERVAL
+KEEP_RELEASES=$KEEP_RELEASES
+EOF
 
     if [[ ! -f $ENV_FILE ]]; then
         log "Writing env template to $ENV_FILE (edit it before the first deploy!)"
@@ -164,7 +216,7 @@ CASHFREE_APP_ID=
 CASHFREE_SECRET_KEY=
 EOF
     fi
-    chown root:"$APP_USER" "$ENV_FILE"; chmod 640 "$ENV_FILE"
+    chown root:"$(app_user_group)" "$ENV_FILE"; chmod 640 "$ENV_FILE"
 
     log "Installing $SERVICE"
     cat > "/etc/systemd/system/$SERVICE" <<EOF
@@ -176,7 +228,7 @@ Wants=network-online.target
 [Service]
 Type=simple
 User=$APP_USER
-Group=$APP_USER
+Group=$(app_user_group)
 WorkingDirectory=$APP_HOME
 EnvironmentFile=$ENV_FILE
 ExecStart=/bin/sh -c 'exec $java_bin \$JAVA_OPTS -jar $CURRENT_JAR'
@@ -230,6 +282,7 @@ EOF
 # ----------------------------------------------------------------------------- deploy
 cmd_deploy() {
     require_root deploy
+    require_setup
     local force=0; [[ ${1:-} == "--force" ]] && force=1
 
     # Never run two deploys at once (timer + manual).
@@ -265,7 +318,7 @@ cmd_deploy() {
     [[ -n $built ]] || die "Build produced no jar in target/"
 
     local release="$RELEASES_DIR/${APP_NAME}-$(date +%Y%m%d-%H%M%S)-${sha}.jar"
-    install -o "$APP_USER" -g "$APP_USER" -m 644 "$built" "$release"
+    install -o "$APP_USER" -g "$(app_user_group)" -m 644 "$built" "$release"
     local previous; previous=$(current_release)
 
     log "Deploying $(basename "$release")"
@@ -293,6 +346,7 @@ cmd_deploy() {
 # ----------------------------------------------------------------------------- other commands
 cmd_rollback() {
     require_root rollback
+    require_setup
     local prev; prev=$(previous_release)
     [[ -n $prev ]] || die "No previous release in $RELEASES_DIR"
     log "Rolling back to $(basename "$prev")"
