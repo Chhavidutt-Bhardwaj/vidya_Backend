@@ -81,6 +81,19 @@ logging:
     com.vidya: INFO
     org.flywaydb: INFO
     com.zaxxer.hikari: WARN
+  # Log file on disk (in addition to the console/journald). LOG_PATH is set in /etc/vidya/vidya.env.
+  file:
+    name: ${LOG_PATH:/opt/vidya/logs}/vidya.log
+  pattern:
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] [%X{correlationId}] [%X{tenantId}] %-5level %logger{36} - %msg%n"
+  logback:
+    rollingpolicy:
+      # Rolls daily and whenever the file reaches max-file-size; old files are gzipped.
+      file-name-pattern: ${LOG_PATH:/opt/vidya/logs}/archive/vidya-%d{yyyy-MM-dd}.%i.log.gz
+      max-file-size: ${LOG_MAX_FILE_SIZE:50MB}
+      max-history: ${LOG_MAX_HISTORY_DAYS:30}
+      total-size-cap: ${LOG_TOTAL_SIZE_CAP:2GB}
+      clean-history-on-start: false
 
 springdoc:
   api-docs:

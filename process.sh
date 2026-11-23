@@ -15,7 +15,10 @@
 #      deploy [--force]   Pull; if there are new commits (or --force) build + deploy
 #      start|stop|restart Control the application service
 #      status             Service status, deployed commit and health
-#      logs [-f]          Application logs (journald)
+#      logs [-f]          Application log file ($APP_HOME/logs/vidya.log); -f follows it
+#      logs errors [-f]   Only WARN/ERROR lines from the log file
+#      logs journal [-f]  systemd journal (includes startup crashes before logging starts)
+#      logs deploy [-f]   Auto-deploy (pull/build/health-check) history
 #      rollback           Switch back to the previous release
 #      releases           List kept releases
 #      auto-on|auto-off   Enable / disable the auto-deploy timer
@@ -52,6 +55,9 @@ RUN_TESTS="${RUN_TESTS:-0}"
 HEALTH_TIMEOUT="${HEALTH_TIMEOUT:-180}"
 
 RELEASES_DIR="$APP_HOME/releases"
+# Must match LOG_PATH in the env file (the app writes $LOG_PATH/vidya.log).
+LOG_DIR=$( { grep -E '^LOG_PATH=' "$ENV_FILE" 2>/dev/null || true; } | tail -1 | cut -d= -f2- | tr -d '"'"'" )
+LOG_DIR="${LOG_DIR:-$APP_HOME/logs}"
 CURRENT_JAR="$APP_HOME/current.jar"
 LOCK_FILE="/run/lock/${APP_NAME}-deploy.lock"
 SERVICE="${APP_NAME}.service"
@@ -164,7 +170,7 @@ cmd_setup() {
     log "Java     : $java_bin ($("$java_bin" -version 2>&1 | head -1))"
     runuser -u "$APP_USER" -- test -x "$java_bin" || die "User $APP_USER cannot execute $java_bin"
 
-    mkdir -p "$RELEASES_DIR" "$APP_HOME/logs" "$(dirname "$ENV_FILE")"
+    mkdir -p "$RELEASES_DIR" "$LOG_DIR/archive" "$(dirname "$ENV_FILE")"
     chown -R "$APP_USER:$(app_user_group)" "$APP_HOME"
     chmod +x "$REPO_DIR/mvnw" "$SCRIPT_PATH"
     as_app git config --global --add safe.directory "$REPO_DIR" || true
@@ -186,6 +192,12 @@ EOF
 # ---- Vidya backend runtime environment (read by systemd) ----
 SPRING_PROFILES_ACTIVE=prod
 SERVER_PORT=8085
+
+# Log files: $LOG_PATH/vidya.log, rotated daily / at 50MB into $LOG_PATH/archive (gzipped)
+LOG_PATH=/opt/vidya/logs
+LOG_MAX_FILE_SIZE=50MB
+LOG_MAX_HISTORY_DAYS=30
+LOG_TOTAL_SIZE_CAP=2GB
 JAVA_OPTS=-Xms512m -Xmx1536m -XX:+UseG1GC -XX:+ExitOnOutOfMemoryError -Dfile.encoding=UTF-8
 
 # Master database (overrides the values hard-coded in application-prod.yml)
@@ -364,6 +376,26 @@ cmd_status() {
     if is_healthy; then echo "Health  : UP"; else echo "Health  : DOWN ($(health_url))"; fi
 }
 
+cmd_logs() {
+    local what="file"
+    case "${1:-}" in file|errors|journal|deploy) what=$1; shift ;; esac
+    local follow=0; [[ ${1:-} == "-f" ]] && follow=1
+    local log_file="$LOG_DIR/vidya.log"
+    case "$what" in
+        file)
+            [[ -f $log_file ]] || die "No log file at $log_file yet (app not started, or LOG_PATH differs). Try: $0 logs journal"
+            if (( follow )); then tail -n 200 -F "$log_file"; else tail -n 200 "$log_file"; fi ;;
+        errors)
+            [[ -f $log_file ]] || die "No log file at $log_file yet"
+            if (( follow )); then tail -n 0 -F "$log_file" | grep --line-buffered -E ' (WARN|ERROR) '
+            else grep -E ' (WARN|ERROR) ' "$log_file" | tail -n 200; fi ;;
+        journal)
+            if (( follow )); then journalctl -u "$SERVICE" -n 200 -f; else journalctl -u "$SERVICE" -n 200 --no-pager; fi ;;
+        deploy)
+            if (( follow )); then journalctl -u "$DEPLOY_SERVICE" -n 100 -f; else journalctl -u "$DEPLOY_SERVICE" -n 100 --no-pager; fi ;;
+    esac
+}
+
 cmd_uninstall() {
     require_root uninstall
     systemctl disable --now "$DEPLOY_TIMER" "$SERVICE" 2>/dev/null || true
@@ -372,7 +404,7 @@ cmd_uninstall() {
     log "Removed systemd units. Kept $APP_HOME and $ENV_FILE."
 }
 
-usage() { sed -n '2,30p' "$SCRIPT_PATH" | sed 's/^# \{0,1\}//'; }
+usage() { sed -n '2,/^# =\{10,\}$/p' "$SCRIPT_PATH" | sed -n '2,$p' | sed 's/^# \{0,1\}//'; }
 
 main() {
     local cmd="${1:-help}"; shift || true
@@ -383,7 +415,7 @@ main() {
         stop)      require_root stop;    systemctl stop "$SERVICE" ;;
         restart)   require_root restart; systemctl restart "$SERVICE"; wait_healthy ;;
         status)    cmd_status ;;
-        logs)      journalctl -u "$SERVICE" --no-pager -n 200 "$@" ;;
+        logs)      cmd_logs "$@" ;;
         rollback)  cmd_rollback ;;
         releases)  ls -1t "$RELEASES_DIR"/*.jar 2>/dev/null || echo "No releases yet" ;;
         auto-on)   require_root auto-on;  systemctl enable --now "$DEPLOY_TIMER" ;;
