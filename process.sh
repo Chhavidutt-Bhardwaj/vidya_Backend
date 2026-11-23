@@ -250,6 +250,18 @@ EOF
     fi
     chown root:"$(app_user_group)" "$ENV_FILE"; chmod 640 "$ENV_FILE"
 
+    # The app refuses to start with a JWT secret under 32 bytes; generate one if still the placeholder.
+    if grep -qE '^VIDYA_SECURITY_JWT_SECRET=(CHANGE_ME)?$' "$ENV_FILE"; then
+        local jwt_secret
+        jwt_secret=$(openssl rand -hex 48 2>/dev/null || head -c 48 /dev/urandom | od -An -tx1 | tr -d ' \n')
+        sed -i "s|^VIDYA_SECURITY_JWT_SECRET=.*|VIDYA_SECURITY_JWT_SECRET=$jwt_secret|" "$ENV_FILE"
+        log "Generated a random JWT secret in $ENV_FILE"
+    fi
+    if grep -q 'CHANGE_ME' "$ENV_FILE"; then
+        warn "Still placeholders in $ENV_FILE — fill these in before deploying:"
+        grep -n 'CHANGE_ME' "$ENV_FILE" | cut -d= -f1 >&2
+    fi
+
     # Logs live in <project dir>/logs unless LOG_PATH was set to something custom.
     # (/opt/vidya/logs was the previous default and is migrated to the project dir.)
     local current_log_path
