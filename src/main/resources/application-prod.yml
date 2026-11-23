@@ -64,7 +64,7 @@ vidya:
       expiry-seconds: ${JWT_EXPIRY_SECONDS:1800}           # 30 minutes
       refresh-expiry-seconds: ${JWT_REFRESH_EXPIRY_SECONDS:604800} # 7 days
     cors:
-      allowed-origins: *
+      allowed-origins: "*"
 
   payment:
     razorpay:
