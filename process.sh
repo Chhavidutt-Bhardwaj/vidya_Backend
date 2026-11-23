@@ -117,6 +117,22 @@ server_port() {
 
 health_url() { echo "http://127.0.0.1:$(server_port)/actuator/health"; }
 
+# Prints the errors from the last start attempt (crashes before logging starts never reach the log file).
+show_startup_error() {
+    local since; since=$(systemctl show "$SERVICE" -p ExecMainStartTimestamp --value 2>/dev/null)
+    local out
+    out=$(journalctl -u "$SERVICE" --no-pager -o cat ${since:+--since "$since"} 2>/dev/null || true)
+    {
+        echo "------------------------------------------------------------------"
+        # Spring's failure summary first, then the last lines for context.
+        printf '%s\n' "$out" | grep -E -A12 'APPLICATION FAILED TO START|Caused by:|ERROR|Exception' | grep -v '^\s*at ' | head -40
+        echo "--- last 25 lines ---"
+        printf '%s\n' "$out" | tail -25
+        echo "------------------------------------------------------------------"
+        echo "Full output: $SCRIPT_PATH logs journal"
+    } >&2
+}
+
 is_healthy() { curl -fsS --max-time 5 "$(health_url)" 2>/dev/null | grep -q '"status":"UP"'; }
 
 wait_healthy() {
@@ -124,11 +140,15 @@ wait_healthy() {
     log "Waiting up to ${HEALTH_TIMEOUT}s for $(health_url) ..."
     while (( waited < HEALTH_TIMEOUT )); do
         if ! systemctl is-active --quiet "$SERVICE"; then
-            warn "Service stopped while starting"; return 1
+            warn "Service stopped while starting. Startup error (journal):"
+            show_startup_error
+            return 1
         fi
         is_healthy && { log "Application is UP"; return 0; }
         sleep 5; waited=$((waited + 5))
     done
+    warn "Not healthy after ${HEALTH_TIMEOUT}s. Recent output:"
+    show_startup_error
     return 1
 }
 
@@ -236,6 +256,9 @@ EOF
     current_log_path=$( { grep -E '^LOG_PATH=' "$ENV_FILE" || true; } | tail -1 | cut -d= -f2- | tr -d '"'"'" )
     if [[ -z $current_log_path || $current_log_path == "/opt/vidya/logs" ]]; then
         sed -i '/^LOG_PATH=/d' "$ENV_FILE"
+        # Guard against a last line without a trailing newline (e.g. after editing), which would glue
+        # LOG_PATH onto the previous variable.
+        [[ -s $ENV_FILE && $(tail -c1 "$ENV_FILE" | od -An -c | tr -d ' ') != '\n' ]] && echo >> "$ENV_FILE"
         echo "LOG_PATH=$REPO_DIR/logs" >> "$ENV_FILE"
         LOG_DIR="$REPO_DIR/logs"
     else
@@ -358,8 +381,7 @@ cmd_deploy() {
         return 0
     fi
 
-    warn "New release failed its health check — last log lines:"
-    journalctl -u "$SERVICE" -n 40 --no-pager >&2 || true
+    warn "New release failed its health check (startup error shown above)."
     if [[ -n $previous && -f $previous ]]; then
         warn "Rolling back to $(basename "$previous")"
         switch_to "$previous"
